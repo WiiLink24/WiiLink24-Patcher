@@ -929,8 +929,8 @@ exit /b 0
 
 :patching_fast_travel_3
 if not %sdcard%==NUL echo.&echo Copying files. This may take a while. Give me a second.
-if not %sdcard%==NUL xcopy /y "WAD" "%sdcard%:\WAD" /e || set /a errorcopying=1
-if not %sdcard%==NUL xcopy /y "apps" "%sdcard%:\apps" /e|| set /a errorcopying=1
+if not %sdcard%==NUL xcopy /y "WAD" "%sdcard%:\WAD\" /e || set /a errorcopying=1
+if not %sdcard%==NUL xcopy /y "apps" "%sdcard%:\apps\" /e|| set /a errorcopying=1
 
 call :files_cleanup
 
