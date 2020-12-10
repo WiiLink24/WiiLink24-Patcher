@@ -1,0 +1,20 @@
+unpack
+unpack_patched
+
+*.wad
+
+WAD
+apps
+WiinoMa_Patcher
+00000001.app
+00000002.app
+
+*.delta
+*.xdelta
+
+# Other stuff
+
+.DS_Store
+*tmp
+*ini
+thumbs.db
