@@ -103,9 +103,9 @@ for /F "tokens=1-4 delims=:.," %%a in ("%time%") do (
    set /A "start=(((%%a*60)+1%%b %% 100)*60+1%%c %% 100)*100+1%%d %% 100"
 )
 
-if not exist WiinoMa_Patched.wad (echo [ERROR] Could not detect WiinoMa_Patched.wad in the folder where I am. Exiting...) & GOTO:EOF 
+if not exist %3 (echo [ERROR] Could not detect %3 in the folder where I am. Exiting...) & GOTO:EOF 
 
-echo [OK   ] WiinoMa_Patched.wad found.
+echo [OK   ] %3 found.
 echo [INFO ] Beginning downloading tools.
 
 curl -s -f -L --insecure "%FilesHostedOn%/WiinoMa_Patcher/{libWiiSharp.dll,Sharpii.exe,WadInstaller.dll,xdelta3.exe}" -O --remote-name-all
@@ -113,25 +113,25 @@ curl -s -f -L --insecure "%FilesHostedOn%/WiinoMa_Patcher/{libWiiSharp.dll,Sharp
 			if not %temperrorlev%==0 echo [ERROR] Error while downloading tools. CURL Exit code: %temperrorlev% & GOTO:EOF
 
 echo         ...OK^^!
-echo [INFO ] Downloading original Wii no Ma. This will take a second or two...
-call Sharpii.exe NUSD -ID 000100014843494A -wad>NUL
+echo [INFO ] Downloading original channel. This will take a second or two...
+call Sharpii.exe NUSD -ID %2 -o original.wad -wad>NUL
 			set /a temperrorlev=%errorlevel%
 			if not %temperrorlev%==0 echo [ERROR] Downloading Wii no Ma. Exit code: %temperrorlev% & GOTO:EOF
 
 echo         ...OK^^!
 echo [INFO ] Beginning unpacking the original WAD.
-call Sharpii.exe WAD -u 000100014843494Av1025.wad unpack>NUL
+call Sharpii.exe WAD -u original.wad unpack>NUL
 echo         ...OK^^!
 
 echo [INFO ] Beginning unpacking the patched WAD.
-call Sharpii.exe WAD -u WiinoMa_Patched.wad unpack_patched>NUL
+call Sharpii.exe WAD -u %3 unpack_patched>NUL
 echo         ...OK^^!
 
 echo [INFO ] Creating patches.
 xdelta3.exe -e -s unpack\00000001.app unpack_patched\00000001.app 00000001_patch.delta
 xdelta3.exe -e -s unpack\00000002.app unpack_patched\00000002.app 00000002_patch.delta
-xdelta3.exe -e -s unpack\000100014843494a.tmd unpack_patched\000100014843494a.tmd 000100014843494a_tmd_patch.delta
-xdelta3.exe -e -s unpack\000100014843494a.tik unpack_patched\000100014843494a.tik 000100014843494a.tik_patch.delta
+xdelta3.exe -e -s unpack\%2.tmd unpack_patched\%2.tmd %2_tmd_patch.delta
+xdelta3.exe -e -s unpack\%2.tik unpack_patched\%2.tik %2.tik_patch.delta
 
 echo [OK   ] Creating patches completed.
 
@@ -141,7 +141,7 @@ del /s /q libWiiSharp.dll>NUL
 del /s /q Sharpii.exe>NUL
 del /s /q WadInstaller.dll>NUL
 del /s /q xdelta3.exe>NUL
-del /s /q 000100014843494Av1025.wad>NUL
+del /s /q original.wad>NUL
 
 echo [OK   ] Cleanup.
 echo.
