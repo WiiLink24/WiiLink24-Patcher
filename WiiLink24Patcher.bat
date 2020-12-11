@@ -93,7 +93,22 @@ echo     --help          Display this help file.
 echo /C, --create-patch  Will extract and create a patch from WiinoMa_Patched.WAD
 GOTO:EOF
 
+:cli_create_patch_help
+echo.
+echo :-----------------------------------------------------:
+echo : WiiLink24 Patcher                                   : 
+echo : Patch creator                                       :
+echo : Usage:                                              :
+echo : WiiLink24Patcher.bat Title_ID_In Hex Patched WAD    :
+echo :-----------------------------------------------------:
+echo.
+GOTO:EOF
+
+
 :cli_create_patch_1
+if %2=="--help" goto cli_create_patch_help
+if %2=="" goto cli_patch_create_help
+if %3="" goto cli_patch_create_help
 echo.
 echo Beginning patch creation.
 echo.
