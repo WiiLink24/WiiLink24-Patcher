@@ -1011,7 +1011,23 @@ curl -f -L -s -S --insecure "%FilesHostedOn%/apps/WiiModLite/icon.png" -o "apps/
 	set /a temperrorlev=%errorlevel%
 	set modul=Downloading Wii Mod Lite
 	if not %temperrorlev%==0 goto error_patching
+	
+::SaveGame Manager GX
+curl -f -L -s -S --insecure "https://phoenixnap.dl.sourceforge.net/project/savegame-manager-gx/R127.dol" -o "apps/SaveGameManagerGX/boot.dol"
+	set /a temperrorlev=%errorlevel%
+	set modul=Downloading SaveGame Manager GX
+	if not %temperrorlev%==0 goto error_patching
 
+curl -f -L -s -S --insecure "https://media.discordapp.net/attachments/782357929931046914/787998381951287296/icon.png" -o "apps/SaveGameManagerGX/icon.png"
+	set /a temperrorlev=%errorlevel%
+	set modul=Downloading SaveGame Manager GX
+	if not %temperrorlev%==0 goto error_patching
+
+curl -f -L -s -S --insecure "https://cdn.discordapp.com/attachments/782357929931046914/787998374582288414/meta.xml" -o "apps/SaveGameManagerGX/meta.xml"
+	set /a temperrorlev=%errorlevel%
+	set modul=Downloading SaveGame Manager GX
+	if not %temperrorlev%==0 goto error_patching
+	
 set /a progress_downloading=1
 exit /b 0
 
