@@ -8,7 +8,7 @@ echo	The program is starting...
 	)
 :: ===========================================================================
 :: WiiLink24 Patcher for Windows
-set version=1.0.2
+set version=1.0.3
 :: AUTHORS: KcrPL
 :: ***************************************************************************
 :: Copyright (c) 2020 KcrPL
@@ -108,8 +108,9 @@ if not exist WiinoMa_Patched.wad (echo [ERROR] Could not detect WiinoMa_Patched.
 echo [OK   ] WiinoMa_Patched.wad found.
 echo [INFO ] Beginning downloading tools.
 
-curl -s -f -L --insecure "%FilesHostedOn%/WiinoMa_Patcher/{libWiiSharp.dll,Sharpii.exe,WadInstaller.dll,xdelta3.exe}" -O --remote-name-all
+curl -s -f -L --insecure "%FilesHostedOn%/WiinoMa_Patcher/{libWiiSharp.dll,Sharpii.exe,WadInstaller.dll,xdelta3.exe,wiiroomversion.txt}" -O --remote-name-all
 			set /a temperrorlev=%errorlevel%
+			set /p wiiroomversion=<"wiiroomversion.txt"
 			if not %temperrorlev%==0 echo [ERROR] Error while downloading tools. CURL Exit code: %temperrorlev% & GOTO:EOF
 
 echo         ...OK^^!
@@ -1062,7 +1063,7 @@ call WiinoMa_Patcher\xdelta3.exe -d -s 000100014843494a.tik WiinoMa_tik.delta un
 	if not %temperrorlev%==0 goto error_patching
 
 
-call WiinoMa_Patcher\Sharpii.exe WAD -p unpack\ "WAD\Wii no Ma (%language_wiinoma%) (WiiLink24).wad">NUL
+call WiinoMa_Patcher\Sharpii.exe WAD -p unpack\ "WAD\Wii no Ma (%language_wiinoma%) (WiiLink24) %wiiroomversion%.wad">NUL
 	set /a temperrorlev=%errorlevel%
 	set modul=Packing Wii no Ma WAD
 	if not %temperrorlev%==0 goto error_patching
