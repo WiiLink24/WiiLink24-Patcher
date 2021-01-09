@@ -10,7 +10,7 @@ version=0.1
 last_build=2021/01/08
 at=8:30PM
 
-header="WiiLink24 Patcher v$version Created by Noah Pistilli Updated on $last_build at $at"
+header="WiiLink24 Patcher v$version Created by Noah Pistilli. Copyright(c) 2021 Noah Pistilli Updated on $last_build at $at"
 header2="-----------------------------------------------------------------------------------------------------------------------------"
 helpmsg="Please contact SketchMaster2001#0024 on Discord regarding this error." #change the name to whoever I guess
 
