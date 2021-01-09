@@ -17,15 +17,18 @@ helpmsg="Please contact SketchMaster2001#0024 on Discord regarding this error." 
 function check_dependency {
   if [ -z "$2" ]; then
     # Expect that the package name is the same as the command being searched for.
-    $2=$1
+    package_name=$1
+  else
+    # The package name was specified to be different.
+    package_name=$2
   fi
 
   if ! command -v $1 &> /dev/null; then
     case "$OSTYPE" in
       darwin*)
-        echo >&2 "Cannot find the command $1. You can use 'brew install $2' to get this required package. If you don't have brew installed, please install at https://brew.sh/" ;;
+        echo >&2 "Cannot find the command $1. You can use 'brew install $package_name' to get this required package. If you don't have brew installed, please install at https://brew.sh/" ;;
       *)
-        echo >&2 "Cannot find the command $1. Please install with your package manager, or compile and add it to your path." ;;
+        echo >&2 "Cannot find the command $1. Please install $package_name with your package manager, or compile and add it to your path." ;;
     esac
 
     exit 1
@@ -34,15 +37,14 @@ function check_dependency {
 
 function check_dependencies {
   case "$OSTYPE" in
-  linux*) check_dependency xdelta ;;
+  linux*) check_dependency xdelta3 ;;
   # Via Homebrew, xdelta3's binary is named exactly such, but the package is "xdelta".
   darwin*) check_dependency xdelta3 xdelta ;;
   esac
 
   check_dependency mono
+  check_dependency curl
 }
-
-check_dependencies
 
 function main {
     clear
@@ -50,6 +52,10 @@ function main {
     read -p "Choose:" b
 }
 
+
+# Reset if possible
+rm -rf WiinoMa_Patcher unpack
+check_dependencies
 main
 
 function number_1 {
@@ -181,6 +187,7 @@ function patch_2 {
     if [ $percent == 5 ]; then curl -s -o WiinoMa_Patcher/libWiiSharp.dll "$FilesHostedOn1/libWiiSharp.dll"; fi
     if [ $percent == 8 ]; then curl -s -o WiinoMa_Patcher/WadInstaller.dll "$FilesHostedOn1/WadInstaller.dll"; fi
     if [ $percent == 12 ]; then curl -s -o WiinoMa_Patcher/Sharpii.exe "$FilesHostedOn1/Sharpii.exe"; fi
+    if [ $percent == 13 ]; then curl -s -o WiinoMa_Patcher/Sharpii.exe.config "$FilesHostedOn1/Sharpii.exe.config"; fi
 
     #English Patches
 
