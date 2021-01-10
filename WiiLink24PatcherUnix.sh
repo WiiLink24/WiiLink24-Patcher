@@ -1,14 +1,14 @@
 #!/bin/bash
 
-# I am not sure if this works on Linux yet. Tested perfectly on macOS
-
 FilesHostedOn1=https://raw.githubusercontent.com/RiiConnect24/IOS-Patcher/master/UNIX
 FilesHostedOn2=https://kcrpl.github.io/Patchers_Auto_Update/WiiLink24-Patcher/v1
 
 version=0.1
 
-last_build=2021/01/08
-at=8:30PM
+path=`dirname -- "$0"`
+
+last_build=2021/01/09
+at=10:30PM
 
 header="WiiLink24 Patcher v$version Created by Noah Pistilli. Copyright(c) 2021 Noah Pistilli Updated on $last_build at $at"
 header2="-----------------------------------------------------------------------------------------------------------------------------"
@@ -176,51 +176,56 @@ function patch_2 {
 
     #Make Folders
 
-    if [ $percent = 1 ]; then mkdir WiinoMa_Patcher; fi
-    if [ $percent = 2 ] && [ ! -d WAD ]; then mkdir WAD; fi
-    if [ $percent = 3 ]; then mkdir unpack; fi
-    if [ $percent = 4 ] && [ ! -d apps ]; then mkdir apps; mkdir apps/wiimodlite; fi
+    if [ $percent = 1 ]; then mkdir $path/WiinoMa_Patcher; fi
+    if [ $percent = 2 ] && [ ! -d $path/WAD ]; then mkdir $path/WAD; fi
+    if [ $percent = 3 ]; then mkdir $path/unpack; fi
+    if [ $percent = 4 ] && [ ! -d $path/apps ]; then mkdir $path/apps; mkdir $path/apps/wiimodlite; fi
 
 
     task="Downloading Files"
 
-    if [ $percent == 5 ]; then curl -s -o WiinoMa_Patcher/libWiiSharp.dll "$FilesHostedOn1/libWiiSharp.dll"; fi
-    if [ $percent == 8 ]; then curl -s -o WiinoMa_Patcher/WadInstaller.dll "$FilesHostedOn1/WadInstaller.dll"; fi
-    if [ $percent == 12 ]; then curl -s -o WiinoMa_Patcher/Sharpii.exe "$FilesHostedOn1/Sharpii.exe"; fi
-    if [ $percent == 13 ]; then curl -s -o WiinoMa_Patcher/Sharpii.exe.config "$FilesHostedOn1/Sharpii.exe.config"; fi
+    if [ $percent == 5 ]; then curl -f -s -o $path/WiinoMa_Patcher/libWiiSharp.dll "$FilesHostedOn1/libWiiSharp.dll"; fi
+    if [ $percent == 8 ]; then curl -f -s -o $path/WiinoMa_Patcher/WadInstaller.dll "$FilesHostedOn1/WadInstaller.dll"; fi
+    if [ $percent == 12 ]; then curl -f -s -o $path/WiinoMa_Patcher/Sharpii.exe "$FilesHostedOn1/Sharpii.exe"; fi
+    if [ $percent == 13 ]; then curl -f -s -o $path/WiinoMa_Patcher/Sharpii.exe.config "$FilesHostedOn1/Sharpii.exe.config"; fi
 
     #English Patches
 
-    if [[ $percent == 15 && $reg == 1 ]]; then curl -f -s "$FilesHostedOn2/patches/WiiNoMa_1_English.delta" -o WiinoMa_Patcher/WiinoMa_1.delta; fi
-    if [[ $percent == 18 && $reg == 1 ]]; then curl -f -s "$FilesHostedOn2/patches/WiiNoMa_2_English.delta" -o WiinoMa_Patcher/WiinoMa_2.delta; fi
-    if [[ $percent == 21 && $reg == 1 ]]; then curl -f -s "$FilesHostedOn2/patches/WiinoMa_tmd_EN.delta" -o WiinoMa_Patcher/WiinoMa_tmd.delta; fi
-    if [[ $percent == 24 && $reg == 1 ]]; then curl -f -s "$FilesHostedOn2/patches/WiinoMa_tik_EN.delta" -o WiinoMa_Patcher/WiinoMa_tik.delta; fi
+    if [[ $percent == 15 && $reg == 1 ]]; then curl -f -s "$FilesHostedOn2/patches/WiiNoMa_1_English.delta" -o $path/WiinoMa_Patcher/WiinoMa_1.delta; fi
+    if [[ $percent == 18 && $reg == 1 ]]; then curl -f -s "$FilesHostedOn2/patches/WiiNoMa_2_English.delta" -o $path/WiinoMa_Patcher/WiinoMa_2.delta; fi
+    if [[ $percent == 21 && $reg == 1 ]]; then curl -f -s "$FilesHostedOn2/patches/WiinoMa_tmd_EN.delta" -o $path/WiinoMa_Patcher/WiinoMa_tmd.delta; fi
+    if [[ $percent == 24 && $reg == 1 ]]; then curl -f -s "$FilesHostedOn2/patches/WiinoMa_tik_EN.delta" -o $path/WiinoMa_Patcher/WiinoMa_tik.delta; f
 
 
     #Japanese Patches
 
-    if [[ $percent == 15 && $reg == 2 ]]; then curl -f -s "$FilesHostedOn2/patches/WiiNoMa_1_Japanese.delta" -o WiinoMa_Patcher/WiinoMa_1.delta; fi
-    if [[ $percent == 18 && $reg == 2 ]]; then curl -f -s "$FilesHostedOn2/patches/WiiNoMa_2_Japanese.delta" -o WiinoMa_Patcher/WiinoMa_2.delta; fi
-    if [[ $percent == 21 && $reg == 2 ]]; then curl -f -s "$FilesHostedOn2/patches/WiinoMa_tmd_JPN.delta" -o WiinoMa_Patcher/WiinoMa_tmd.delta; fi
-    if [[ $percent == 24 && $reg == 2 ]]; then curl -f -s "$FilesHostedOn2/patches/WiinoMa_tik_JPN.delta" -o WiinoMa_Patcher/WiinoMa_tik.delta; fi
-
+    if [[ $percent == 15 && $reg == 2 ]]; then curl -f -s "$FilesHostedOn2/patches/WiiNoMa_1_Japanese.delta" -o $path/WiinoMa_Patcher/WiinoMa_1.delta; fi
+    if [[ $percent == 18 && $reg == 2 ]]; then curl -f -s "$FilesHostedOn2/patches/WiiNoMa_2_Japanese.delta" -o $path/WiinoMa_Patcher/WiinoMa_2.delta; fi
+    if [[ $percent == 21 && $reg == 2 ]]; then curl -f -s "$FilesHostedOn2/patches/WiinoMa_tmd_JPN.delta" -o $path/WiinoMa_Patcher/WiinoMa_tmd.delta; fi
+    if [[ $percent == 24 && $reg == 2 ]]; then curl -f -s "$FilesHostedOn2/patches/WiinoMa_tik_JPN.delta" -o $path/WiinoMa_Patcher/WiinoMa_tik.delta; fi
 
    task="Patching Wii no Ma"
 
-    if [[ $percent == 38 && ! -f "WiinoMa_Patcher/000100014843494av1025.wad" ]]; then mono WiinoMa_Patcher/Sharpii.exe NUSD -ID 000100014843494A -o WiinoMa_Patcher -all; fi
+    if [[ $percent == 38 ]]; then mono $path/WiinoMa_Patcher/Sharpii.exe NUSD -ID 000100014843494A -o $path/WiinoMa_Patcher -all; fi
 
-    if [[ $percent == 41 ]]; then mono WiinoMa_Patcher/Sharpii.exe WAD -u WiinoMa_Patcher/000100014843494av1025.wad unpack; fi
-    if [[ $percent == 44 ]]; then xdelta3 -f -d -s unpack/00000001.app WiinoMa_Patcher/WiinoMa_1.delta unpack/00000001.app; fi
-    if [[ $percent == 47 ]]; then xdelta3 -f -d -s unpack/00000002.app WiinoMa_Patcher/WiinoMa_2.delta unpack/00000002.app; fi
-    if [[ $percent == 50 ]]; then xdelta3 -f -d -s unpack/000100014843494a.tmd WiinoMa_Patcher/WiinoMa_tmd.delta unpack/000100014843494a.tmd; fi
-    if [[ $percent == 53 ]]; then xdelta3 -f -d -s unpack/000100014843494a.tik WiinoMa_Patcher/WiinoMa_tik.delta unpack/000100014843494a.tik; fi
-    if [[ $percent == 56 ]]; then mono WiinoMa_Patcher/Sharpii.exe WAD -p unpack/ WAD/"Wii no Ma ($lang) (WiiLink24).wad"; fi
+    if [[ $percent == 41 ]]; then mono $path/WiinoMa_Patcher/Sharpii.exe WAD -u $path/WiinoMa_Patcher/000100014843494av1025.wad $path/unpack; fi
+    if [[ $percent == 44 ]]; then xdelta3 -f -d -s $path/unpack/00000001.app $path/WiinoMa_Patcher/WiinoMa_1.delta $path/unpack/00000001.app; fi
+    if [[ $percent == 47 ]]; then xdelta3 -f -d -s $path/unpack/00000002.app $path/WiinoMa_Patcher/WiinoMa_2.delta $path/unpack/00000002.app; fi
+    if [[ $percent == 50 ]]; then xdelta3 -f -d -s $path/unpack/000100014843494a.tmd $path/WiinoMa_Patcher/WiinoMa_tmd.delta $path/unpack/000100014843494a.tmd; fi
+    if [[ $percent == 53 ]]; then xdelta3 -f -d -s $path/unpack/000100014843494a.tik $path/WiinoMa_Patcher/WiinoMa_tik.delta $path/unpack/000100014843494a.tik; fi
+    if [[ $percent == 56 ]]; then mono $path/WiinoMa_Patcher/Sharpii.exe WAD -p $path/unpack $path/WAD/"Wii no Ma ($lang) (WiiLink24).wad"; fi
 
-   #Move to SD Card
+    task="Downloading Wii Mod Lite"
+    
+    if [[ $percent == 59  ]]; then curl -f -s --insecure "$FilesHostedOn2/apps/WiiModLite/boot.dol" -o $path/apps/wiimodlite/boot.dol; fi
+    if [[ $percent == 62  ]]; then curl -f -s --insecure "$FilesHostedOn2/apps/WiiModLite/meta.xml" -o $path/apps/wiimodlite/meta.xml; fi
+    if [[ $percent == 65  ]]; then curl -f -s --insecure "$FilesHostedOn2/apps/WiiModLite/icon.png" -o $path/apps/wiimodlite/icon.png; fi
+   
    task="Moving to SD Card"
 
-    if [ $percent == 69 ] && [ ! -d "$sdcard/WAD" ] && [ $sdcard != null ]; then cp -r WAD $sdcard; fi
-
+    if [ $percent == 68 ] && [ $sdcard != null ]; then cp -r $path/WAD $sdcard; fi
+    if [ $percent == 72 ] && [ $sdcard != null ]; then cp -r $path/apps $sdcard; fi
+   
    #File Cleanup
 
    if [[ $percent == 81 ]]; then rm -rf unpack; fi
