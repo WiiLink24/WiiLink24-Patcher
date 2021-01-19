@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 FilesHostedOn1=https://raw.githubusercontent.com/RiiConnect24/IOS-Patcher/master/UNIX
 FilesHostedOn2=https://kcrpl.github.io/Patchers_Auto_Update/WiiLink24-Patcher/v1
@@ -7,14 +7,18 @@ version=0.1
 
 path=`dirname -- "$0"`
 
-last_build=2021/01/09
-at=10:30PM
+last_build=2021/01/18
+at=11:17PM
 
-header="WiiLink24 Patcher v$version Created by Noah Pistilli. Copyright(c) 2021 Noah Pistilli Updated on $last_build at $at"
-header2="-----------------------------------------------------------------------------------------------------------------------------"
-helpmsg="Please contact SketchMaster2001#0024 on Discord regarding this error." #change the name to whoever I guess
+helpmsg="Please contact SketchMaster2001#0024 on Discord regarding this error." 
 
-function check_dependency {
+header() {
+    clear
+    printf "\033[1mWiiLink24 Patcher v$version Created by Noah Pistilli. Copyright(c) 2021 Noah Pistilli\033[0m\nUpdated on $last_build at $at\n" | fold -s -w "$(tput cols)"
+    printf -- "=%.0s" $(seq "$(tput cols)") && printf "\n\n"
+}
+
+check_dependency() {
   if [ -z "$2" ]; then
     # Expect that the package name is the same as the command being searched for.
     package_name=$1
@@ -25,30 +29,29 @@ function check_dependency {
 
   if ! command -v $1 &> /dev/null; then
     case "$OSTYPE" in
-      darwin*)
-        echo >&2 "Cannot find the command $1. You can use 'brew install $package_name' to get this required package. If you don't have brew installed, please install at https://brew.sh/" ;;
-      *)
-        echo >&2 "Cannot find the command $1. Please install $package_name with your package manager, or compile and add it to your path." ;;
+        darwin*) echo >&2 "Cannot find the command $1. You can use 'brew install $package_name' to get this required package. If you don't have brew installed, please install at https://brew.sh/" ;;
+        *) echo >&2 "Cannot find the command $1. Please install $package_name with your package manager, or compile and add it to your path." ;;
     esac
 
     exit 1
   fi
 }
 
-function check_dependencies {
-  case "$OSTYPE" in
-  linux*) check_dependency xdelta3 ;;
-  # Via Homebrew, xdelta3's binary is named exactly such, but the package is "xdelta".
-  darwin*) check_dependency xdelta3 xdelta ;;
-  esac
+check_dependencies() {
+        case "$OSTYPE" in
+                linux*) check_dependency xdelta3 ;;
+                # Via Homebrew, xdelta3's binary is named exactly such, but the package is "xdelta".
+                darwin*) check_dependency xdelta3 xdelta ;;
+        esac
 
   check_dependency mono
   check_dependency curl
 }
 
-function main {
+main() {
     clear
-    printf "\"$header"\"$header2"\nWiiLink24 Patcher\n\n1. Start\n2. Credits\n\n"
+    header 1 "Start"
+    printf "WiiLink24 Patcher\n\n1. Start\n2. Credits\n\n"
     read -p "Choose:" b
 }
 
@@ -58,77 +61,89 @@ rm -rf WiinoMa_Patcher unpack
 check_dependencies
 main
 
-function number_1 {
-    clear
-    printf "\"$header"\"$header2"\nHello $(whoami). Welcome to the WiiLink24 Patcher.\nThe patcher will guide you through the process of installing WiiLink24.\n\nWhat are we doing today?\n\n1. Install WiiLink24 on your Wii:\n\n"
-    read -p "Choose:" s
+number_1() {
+        clear
+        header 
+        printf "Hello $(whoami). Welcome to the WiiLink24 Patcher.\nThe patcher will guide you through the process of installing WiiLink24.\n\nWhat are we doing today?\n\n1. Install WiiLink24 on your Wii:\n\n" | fold -s -w "$(tput cols)"
+        read -p "Choose:" s
 
-    if [ "$s" == "1" ]; then lang_choose; fi
+        if [ "$s" == "1" ]; then lang_choose; fi
 }
 
-function lang_choose {
-    clear
-    printf "\"$header"\"$header2"\nHello $(whoami). Welcome to the WiiLink24 Installation Process.\n\nThe patcher will download any files that are required to run the patcher.\n\nThe entire process should take about 1 to 3 minutes depending on your computer CPU and internet speed.\n\nBut before starting, you need to tell me one thing:\nFor Wii no Ma, what language do you want to download?\n\n1. English\n2. Japanese\n\n "
-    read -p "Choose:" s
+lang_choose() {
+        clear
+        header
+        printf "Hello $(whoami). Welcome to the WiiLink24 Installation Process.\n\nThe patcher will download any files that are required to run the patcher.\n\nThe entire process should take about 1 to 3 minutes depending on your computer CPU and internet speed.\n\nBut before starting, you need to tell me one thing:\nFor Wii no Ma, what language do you want to download?\n\n1. English\n2. Japanese\n\n" | fold -s -w "$(tput cols)"
+        read -p "Choose:" s
 
-    if [ "$s" == "1" ]; then reg=1; lang=English; sd_status
-    elif [ "$s" == "2" ]; then reg=2; lang=Japanese; sd_status; fi
+        case $s in
+                1) reg=EN; lang=English; sd_status ;;
+                2) reg=JPN; lang=Japanese; sd_status ;;
+        esac
 }
 
-function sd_status {
-    clear
-    printf "\"$header"\"$header2"\nAfter passing this screen, any user interraction won't be needed so you can relax and let me do the work!\n\nTo make patching even easier, I can download everything straight to your SD Card.\n\nPlug in your SD Card right now.\n\n1. Connected\n2. I can't connect my SD Card to my computer\n\n"
-    read -p "Choose:" s
+sd_status() {
+        clear
+        header  
+        printf "After passing this screen, any user interraction won't be needed so you can relax and let me do the work!\n\nTo make patching even easier, I can download everything straight to your SD Card.\n\nPlug in your SD Card right now.\n\n1. Connected\n2. I can't connect my SD Card to my computer\n\n" | fold -s -w "$(tput cols)"
+        read -p "Choose:" s
 
-    if [ "$s" == "1" ]; then sdstatus=1; detect_sd_card
-    elif [ "$s" == "2" ]; then sdstatus=0; pre_patch; fi
-}
+        if [ "$s" == "1" ]; then sdstatus=1; detect_sd_card
+        elif [ "$s" == "2" ]; then sdstatus=0; sdcard=null; pre_patch; fi
+}       
 
-function detect_sd_card {
-    sdcard=null
-    for f in /Volumes/*/; do
-        if [[ -d $f/apps ]]; then
-            sdcard="$f"
-            echo $sdcard
+detect_sd_card() {
+        for f in /Volumes/*/; do
+                if [[ -d $f/apps ]]; then
+                sdcard="$f"
+                echo $sdcard
         fi
-    done
+        done
 
-    pre_patch
+        pre_patch
 }
 
-function pre_patch {
-    clear
-    if [ $sdstatus == 0 ]; then printf "\"$header"\"$header2"\n\nAww, no worries. You will be able to copy files later after patching.\n\nThe entire patching process will download about 100MB of data.\n\nWhat's next?\n\n1. Start Patching\n2. Exit\n\n"; fi
-    if [[ $sdstatus == 1 && $sdcard == null ]]; then printf "\"$header"\"$header2"\n\nHmm... looks like an SD Card wasn't found in your system.\n\nPlease choose the Change volume name option to set your SD Card volume name manually\n\nOtherwise, you will have to copy them later\n\nThe entire patching process will download about 100MB of data.\n\nWhat's next?\n\n1. Start Patching\n2. Exit\n3. Change Volume Name\n\n"; fi
-    if [[ $sdstatus == 1 && $sdcard != null ]]; then printf "\"$header"\"$header2"\n\nCongrats! I've successfully detected your SD Card! Volume name: "$sdcard".\n\nI will be able to automatically download and install everything on your SD Card!\n\nThe entire patching process will download about 100MB of data.\n\nWhat's next?\n\n1. Start Patching\n2. Exit\n3. Change Volume Name\n\n"; fi
-    read -p "Choose: " s
+pre_patch() {
+        clear
+        header 
+        case $sdstatus,$sdcard in
+                0,null) printf "Aww, no worries. You will be able to copy files later after patching.\n\nThe entire patching process will download about 100MB of data.\n\nWhat's next?\n\n1. Start Patching\n2. Exit\n\n" | fold -s -w "$(tput cols)" ;;
+                1,null) printf "Hmm... looks like an SD Card wasn't found in your system.\n\nPlease choose the Change volume name option to set your SD Card volume name manually\n\nOtherwise, you will have to copy them later\n\nThe entire patching process will download about 100MB of data.\n\nWhat's next?\n\n1. Start Patching\n2. Exit\n3. Change Volume Name\n\n" | fold -s -w "$(tput cols)" ;;
+                1,*) printf "Congrats! I've successfully detected your SD Card! Volume name: "$sdcard".\n\nI will be able to automatically download and install everything on your SD Card!\n\nThe entire patching process will download about 100MB of data.\n\nWhat's next?\n\n1. Start Patching\n2. Exit\n3. Change Volume Name\n\n" | fold -s -w "$(tput cols)" ;;
+        esac
+        read -p "Choose: " s
 
-    if [ "$s" == 1 ]; then patch_1
-    elif [ "$s" == 2 ]; then main
-    elif [ "$s" == 3 ]; then vol_name; fi
+        case $s in
+                1) patch_1 ;; 
+                2) main ;;
+                3) vol_name ;;
+                *) printf "Invalid Selection\n"; sleep 2; pre_patch ;;
+        esac
 }
 
-function vol_name {
-    clear
-    echo "\"$header"\"$header2"\n[*] SD Card\n\nCurrent SD Card Volume Name: $sdcard\n\nType in the new volume name (e.g. /Volumes/Wii)\n\n"
-    read -p "" sdcard
+vol_name() {
+        clear
+        header 
+        printf "\[*] SD Card\n\nCurrent SD Card Volume Name: $sdcard\n\nType in the new volume name (e.g. /Volumes/Wii)\n\n"
+        read -p "" sdcard
 
-    pre_patch
+        pre_patch
 }
 
-function patch_1 {
-    clear
-    counter_done=0
-    percent=0
+patch_1() {
+        clear
+        counter_done=0
+        percent=0
 
-    for i in {0..99}; do
-        patch_2
-    done
+        for i in {0..99}; do
+                patch_2
+        done
 }
 
 #Error Detection
 error() {
     clear
+    header 
     printf "\033[1;91mAn error has occurred.\033[0m\n\nERROR DETAILS:\n\t* Task: %s\n\t* Command: %s\n\t* Line: %s\n\t* Exit code: %s\n\n" "$task" "$BASH_COMMAND" "$1" "$2" | fold -s -w "$(tput cols)"
 
     printf "%s\n" "$helpmsg" | fold -s -w "$(tput cols)"
@@ -139,110 +154,93 @@ trap 'error $LINENO $?' ERR
 set -o pipefail
 set -o errtrace
 
-function patch_2 {
-    percent=$((percent+1))
+patch_2() {
+        percent=$((percent+1))
 
-    if [[ $percent -gt 0 && $percent -lt 10 ]]; then counter_done=0; fi
-    if [[ $percent -ge 10 && $percent -lt 20 ]]; then counter_done=1; fi
-    if [[ $percent -ge 20 && $percent -lt 30 ]]; then counter_done=2; fi
-    if [[ $percent -ge 30 && $percent -lt 40 ]]; then counter_done=3; fi
-    if [[ $percent -ge 40 && $percent -lt 50 ]]; then counter_done=4; fi
-    if [[ $percent -ge 50 && $percent -lt 60 ]]; then counter_done=5; fi
-    if [[ $percent -ge 60 && $percent -lt 70 ]]; then counter_done=6; fi
-    if [[ $percent -ge 70 && $percent -lt 80 ]]; then counter_done=7; fi
-    if [[ $percent -ge 80 && $percent -lt 90 ]]; then counter_done=8; fi
-    if [[ $percent -ge 90 && $percent -lt 100 ]]; then counter_done=9; fi
-    if [ $percent == 100 ]; then counter_done=10; fi
+        if [[ $percent -gt 0 && $percent -lt 10 ]]; then counter_done=0; fi
+        if [[ $percent -ge 10 && $percent -lt 20 ]]; then counter_done=1; fi
+        if [[ $percent -ge 20 && $percent -lt 30 ]]; then counter_done=2; fi
+        if [[ $percent -ge 30 && $percent -lt 40 ]]; then counter_done=3; fi
+        if [[ $percent -ge 40 && $percent -lt 50 ]]; then counter_done=4; fi
+        if [[ $percent -ge 50 && $percent -lt 60 ]]; then counter_done=5; fi
+        if [[ $percent -ge 60 && $percent -lt 70 ]]; then counter_done=6; fi
+        if [[ $percent -ge 70 && $percent -lt 80 ]]; then counter_done=7; fi
+        if [[ $percent -ge 80 && $percent -lt 90 ]]; then counter_done=8; fi
+        if [[ $percent -ge 90 && $percent -lt 100 ]]; then counter_done=9; fi
+        if [ $percent == 100 ]; then counter_done=10; fi
 
-    clear
-    echo ""
-    echo $header
-    echo $header2
-    echo " [*] Patching... this can take some time"
-    echo ""
-    echo "  Progress:"
+        clear
+        header 
+        printf "[*] Patching... this can take some time\n\n Progress: "
+        
+        case $counter_done in
+                0) echo ":          : $percent" ;;
+                1) echo ":-         : $percent" ;;
+                2) echo ":--        : $percent" ;;
+                3) echo ":---       : $percent" ;;
+                4) echo ":----      : $percent" ;;
+                5) echo ":-----     : $percent" ;;
+                6) echo ":------    : $percent" ;;
+                7) echo ":-------   : $percent" ;;
+                8) echo ":--------  : $percent" ;;
+                9) echo ":--------- : $percent" ;;
+                10) echo ":----------: $percent" ;;
+        esac
+ 
+      #Make Folders
 
-    if [ $counter_done == 0 ]; then echo ":          : $percent"; fi
-    if [ $counter_done == 1 ]; then echo ":-         : $percent"; fi
-    if [ $counter_done == 2 ]; then echo ":--        : $percent"; fi
-    if [ $counter_done == 3 ]; then echo ":---       : $percent"; fi
-    if [ $counter_done == 4 ]; then echo ":----      : $percent"; fi
-    if [ $counter_done == 5 ]; then echo ":-----     : $percent"; fi
-    if [ $counter_done == 6 ]; then echo ":------    : $percent"; fi
-    if [ $counter_done == 7 ]; then echo ":-------   : $percent"; fi
-    if [ $counter_done == 8 ]; then echo ":--------  : $percent"; fi
-    if [ $counter_done == 9 ]; then echo ":--------- : $percent"; fi
-    if [ $counter_done == 10 ]; then echo ":----------: $percent"; fi
-
-    #Make Folders
-
-    if [ $percent = 1 ]; then mkdir $path/WiinoMa_Patcher; fi
-    if [ $percent = 2 ] && [ ! -d $path/WAD ]; then mkdir $path/WAD; fi
-    if [ $percent = 3 ]; then mkdir $path/unpack; fi
-    if [ $percent = 4 ] && [ ! -d $path/apps ]; then mkdir $path/apps; mkdir $path/apps/wiimodlite; fi
-
-
-    task="Downloading Files"
-
-    if [ $percent == 5 ]; then curl -f -s -o $path/WiinoMa_Patcher/libWiiSharp.dll "$FilesHostedOn1/libWiiSharp.dll"; fi
-    if [ $percent == 8 ]; then curl -f -s -o $path/WiinoMa_Patcher/WadInstaller.dll "$FilesHostedOn1/WadInstaller.dll"; fi
-    if [ $percent == 12 ]; then curl -f -s -o $path/WiinoMa_Patcher/Sharpii.exe "$FilesHostedOn1/Sharpii.exe"; fi
-    if [ $percent == 13 ]; then curl -f -s -o $path/WiinoMa_Patcher/Sharpii.exe.config "$FilesHostedOn1/Sharpii.exe.config"; fi
-
-    #English Patches
-
-    if [[ $percent == 15 && $reg == 1 ]]; then curl -f -s "$FilesHostedOn2/patches/WiiNoMa_1_English.delta" -o $path/WiinoMa_Patcher/WiinoMa_1.delta; fi
-    if [[ $percent == 18 && $reg == 1 ]]; then curl -f -s "$FilesHostedOn2/patches/WiiNoMa_2_English.delta" -o $path/WiinoMa_Patcher/WiinoMa_2.delta; fi
-    if [[ $percent == 21 && $reg == 1 ]]; then curl -f -s "$FilesHostedOn2/patches/WiinoMa_tmd_EN.delta" -o $path/WiinoMa_Patcher/WiinoMa_tmd.delta; fi
-    if [[ $percent == 24 && $reg == 1 ]]; then curl -f -s "$FilesHostedOn2/patches/WiinoMa_tik_EN.delta" -o $path/WiinoMa_Patcher/WiinoMa_tik.delta; f
-
-
-    #Japanese Patches
-
-    if [[ $percent == 15 && $reg == 2 ]]; then curl -f -s "$FilesHostedOn2/patches/WiiNoMa_1_Japanese.delta" -o $path/WiinoMa_Patcher/WiinoMa_1.delta; fi
-    if [[ $percent == 18 && $reg == 2 ]]; then curl -f -s "$FilesHostedOn2/patches/WiiNoMa_2_Japanese.delta" -o $path/WiinoMa_Patcher/WiinoMa_2.delta; fi
-    if [[ $percent == 21 && $reg == 2 ]]; then curl -f -s "$FilesHostedOn2/patches/WiinoMa_tmd_JPN.delta" -o $path/WiinoMa_Patcher/WiinoMa_tmd.delta; fi
-    if [[ $percent == 24 && $reg == 2 ]]; then curl -f -s "$FilesHostedOn2/patches/WiinoMa_tik_JPN.delta" -o $path/WiinoMa_Patcher/WiinoMa_tik.delta; fi
-
-   task="Patching Wii no Ma"
-
-    if [[ $percent == 38 ]]; then mono $path/WiinoMa_Patcher/Sharpii.exe NUSD -ID 000100014843494A -o $path/WiinoMa_Patcher -all; fi
-
-    if [[ $percent == 41 ]]; then mono $path/WiinoMa_Patcher/Sharpii.exe WAD -u $path/WiinoMa_Patcher/000100014843494av1025.wad $path/unpack; fi
-    if [[ $percent == 44 ]]; then xdelta3 -f -d -s $path/unpack/00000001.app $path/WiinoMa_Patcher/WiinoMa_1.delta $path/unpack/00000001.app; fi
-    if [[ $percent == 47 ]]; then xdelta3 -f -d -s $path/unpack/00000002.app $path/WiinoMa_Patcher/WiinoMa_2.delta $path/unpack/00000002.app; fi
-    if [[ $percent == 50 ]]; then xdelta3 -f -d -s $path/unpack/000100014843494a.tmd $path/WiinoMa_Patcher/WiinoMa_tmd.delta $path/unpack/000100014843494a.tmd; fi
-    if [[ $percent == 53 ]]; then xdelta3 -f -d -s $path/unpack/000100014843494a.tik $path/WiinoMa_Patcher/WiinoMa_tik.delta $path/unpack/000100014843494a.tik; fi
-    if [[ $percent == 56 ]]; then mono $path/WiinoMa_Patcher/Sharpii.exe WAD -p $path/unpack $path/WAD/"Wii no Ma ($lang) (WiiLink24).wad"; fi
-
-    task="Downloading Wii Mod Lite"
+        if [ $percent = 1 ] && [ ! -d $path/WAD ]; then mkdir $path/WAD; fi
+        if [ $percent = 2 ] && [ ! -d $path/apps ]; then mkdir $path/apps; mkdir $path/apps/wiimodlite; fi
     
-    if [[ $percent == 59  ]]; then curl -f -s --insecure "$FilesHostedOn2/apps/WiiModLite/boot.dol" -o $path/apps/wiimodlite/boot.dol; fi
-    if [[ $percent == 62  ]]; then curl -f -s --insecure "$FilesHostedOn2/apps/WiiModLite/meta.xml" -o $path/apps/wiimodlite/meta.xml; fi
-    if [[ $percent == 65  ]]; then curl -f -s --insecure "$FilesHostedOn2/apps/WiiModLite/icon.png" -o $path/apps/wiimodlite/icon.png; fi
-   
-   task="Moving to SD Card"
+        case $percent in
+                3) mkdir $path/WiinoMa_Patcher ;;
+                4) mkdir $path/unpack ;;
+                #Downloading Files
+                5) task="Downloading Files"; curl -f -s -o $path/WiinoMa_Patcher/libWiiSharp.dll "$FilesHostedOn1/libWiiSharp.dll" ;;
+                8) curl -f -s -o $path/WiinoMa_Patcher/WadInstaller.dll "$FilesHostedOn1/WadInstaller.dll" ;;
+                12) curl -f -s -o $path/WiinoMa_Patcher/Sharpii.exe "$FilesHostedOn1/Sharpii.exe" ;;
+                13) curl -f -s -o $path/WiinoMa_Patcher/Sharpii.exe.config "$FilesHostedOn1/Sharpii.exe.config" ;;
+                15) curl -f -s "$FilesHostedOn2/patches/WiiNoMa_1_$lang.delta" -o $path/WiinoMa_Patcher/WiinoMa_1.delta ;;
+                18) curl -f -s "$FilesHostedOn2/patches/WiiNoMa_2_$lang.delta" -o $path/WiinoMa_Patcher/WiinoMa_2.delta ;;
+                21) curl -f -s "$FilesHostedOn2/patches/WiinoMa_tmd_$reg.delta" -o $path/WiinoMa_Patcher/WiinoMa_tmd.delta ;;
+                24) curl -f -s "$FilesHostedOn2/patches/WiinoMa_tik_$reg.delta" -o $path/WiinoMa_Patcher/WiinoMa_tik.delta ;;
+                #Patching WAD
+                38) task="Patching Wii no Ma"; mono $path/WiinoMa_Patcher/Sharpii.exe NUSD -ID 000100014843494A -o $path/WiinoMa_Patcher -all ;;
+                41) mono $path/WiinoMa_Patcher/Sharpii.exe WAD -u $path/WiinoMa_Patcher/000100014843494av1025.wad $path/unpack ;;
+                44) xdelta3 -f -d -s $path/unpack/00000001.app $path/WiinoMa_Patcher/WiinoMa_1.delta $path/unpack/00000001.app ;;
+                47) xdelta3 -f -d -s $path/unpack/00000002.app $path/WiinoMa_Patcher/WiinoMa_2.delta $path/unpack/00000002.app ;;
+                50) xdelta3 -f -d -s $path/unpack/000100014843494a.tmd $path/WiinoMa_Patcher/WiinoMa_tmd.delta $path/unpack/000100014843494a.tmd ;;
+                53) xdelta3 -f -d -s $path/unpack/000100014843494a.tik $path/WiinoMa_Patcher/WiinoMa_tik.delta $path/unpack/000100014843494a.tik ;;
+                56) mono $path/WiinoMa_Patcher/Sharpii.exe WAD -p $path/unpack $path/WAD/"Wii no Ma ($lang) (WiiLink24).wad" ;;
+                #Downloading Wii Mod Lite
+                59) task="Downloading Wii Mod Lite"; curl -f -s --insecure "$FilesHostedOn2/apps/WiiModLite/boot.dol" -o $path/apps/wiimodlite/boot.dol ;;
+                62) curl -f -s --insecure "$FilesHostedOn2/apps/WiiModLite/meta.xml" -o $path/apps/wiimodlite/meta.xml ;;
+                65) curl -f -s --insecure "$FilesHostedOn2/apps/WiiModLite/icon.png" -o $path/apps/wiimodlite/icon.png ;;
+                #Clean up, Clean up
+                81) rm -rf unpack ;;
+                84) rm -rf WiinoMa_Patcher;;
+        
+        esac
+    
+    task="Moving to SD Card"
 
     if [ $percent == 68 ] && [ $sdcard != null ]; then cp -r $path/WAD $sdcard; fi
     if [ $percent == 72 ] && [ $sdcard != null ]; then cp -r $path/apps $sdcard; fi
    
-   #File Cleanup
-
-   if [[ $percent == 81 ]]; then rm -rf unpack; fi
-   if [[ $percent == 84 ]]; then rm -rf WiinoMa_Patcher; finish; fi
+   finish 
 }
 
-function finish {
-    clear
-    echo "Patching done!"
-    echo ""
-    if [ $sdstatus == 0 ]; then printf "\"$header"\"$header2"\n\nPlease connect your Wii SD Card and copy the "apps" and "WAD" folders to the root (main folder) of your SD Card. You can find these folders in the Downloads folder of your computer.\n\nPlease proceed with the tutorial that you can find on https://wii.guide/wiilink24.\n\n"; fi
-    if [[ $sdstatus == 1 && $sdcard == null ]]; then printf "\"$header"\"$header2"\n\nPlease connect your Wii SD Card and copy the "apps" and "WAD" folders to the root (main folder) of your SD Card. You can find these folders in the Downloads folder in your computer.\n\nPlease proceed with the tutorial that you can find on https://wii.guide/wiilink24.\n\n"; fi
-    if [[ $sdstatus == 1 && $sdcard != null ]]; then printf "\"$header"\"$header2"\n\nEvery file is in its place on your SD Card!\n\nPlease proceed with the tutorial that you can find on https://wii.guide/wiilink24.\n\n"; fi
-    read -p "Press 1 to close this patcher." p
-
-    if [[ $p == "1" ]]; then exit; fi
+finish() {
+        clear
+        header 
+        case $sdstatus,$sdcard in
+                0,null) printf "Please connect your Wii SD Card and copy the "apps" and "WAD" folders to the root (main folder) of your SD Card. You can find these folders in the Downloads folder of your computer.\n\nPlease proceed with the tutorial that you can find on https://wii.guide/wiilink24.\n\n" | fold -s -w "$(tput cols)" ;;
+                1,null) printf "Please connect your Wii SD Card and copy the "apps" and "WAD" folders to the root (main folder) of your SD Card. You can find these folders in the Downloads folder of your computer.\n\nPlease proceed with the tutorial that you can find on https://wii.guide/wiilink24.\n\n" | fold -s -w "$(tput cols)" ;;
+                1,*) printf "Every file is in its place on your SD Card!\n\nPlease proceed with the tutorial that you can find on https://wii.guide/wiilink24.\n\n" | fold -s -w "$(tput cols)" ;;
+        esac
 }
 
-if [ "$b" == "1" ]; then number_1
-elif [ "$b" == "2" ]; then credits; fi
+case $b in
+        1) number_1 ;;
+        2) credits ;;
+esac
