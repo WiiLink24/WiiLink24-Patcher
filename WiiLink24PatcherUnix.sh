@@ -3,38 +3,42 @@
 FilesHostedOn1=https://raw.githubusercontent.com/RiiConnect24/IOS-Patcher/master/UNIX
 FilesHostedOn2=https://kcrpl.github.io/Patchers_Auto_Update/WiiLink24-Patcher/v1
 
-version=0.1
+version=1.1
 
 path=`dirname -- "$0"`
 
-last_build=2021/01/18
-at=11:17PM
+last_build=2021/01/20
+at=1:30PM
 
 helpmsg="Please contact SketchMaster2001#0024 on Discord regarding this error." 
 
 header() {
-    clear
-    printf "\033[1mWiiLink24 Patcher v$version Created by Noah Pistilli. Copyright(c) 2021 Noah Pistilli\033[0m\nUpdated on $last_build at $at\n" | fold -s -w "$(tput cols)"
-    printf -- "=%.0s" $(seq "$(tput cols)") && printf "\n\n"
+        clear
+        printf "\033[1mWiiLink24 Patcher v$version Created by Noah Pistilli. Copyright(c) 2021 Noah Pistilli\033[0m\nUpdated on $last_build at $at\n" | fold -s -w "$(tput cols)"
+        printf -- "=%.0s" $(seq "$(tput cols)") && printf "\n\n"
 }
 
+choose() {
+        read -p "Choose: " s
+}
+    
 check_dependency() {
-  if [ -z "$2" ]; then
-    # Expect that the package name is the same as the command being searched for.
-    package_name=$1
-  else
-    # The package name was specified to be different.
-    package_name=$2
-  fi
+        if [ -z "$2" ]; then
+         # Expect that the package name is the same as the command being searched for.
+        package_name=$1
+        else
+         # The package name was specified to be different.
+         package_name=$2
+        fi
 
-  if ! command -v $1 &> /dev/null; then
-    case "$OSTYPE" in
-        darwin*) echo >&2 "Cannot find the command $1. You can use 'brew install $package_name' to get this required package. If you don't have brew installed, please install at https://brew.sh/" ;;
-        *) echo >&2 "Cannot find the command $1. Please install $package_name with your package manager, or compile and add it to your path." ;;
-    esac
+        if ! command -v $1 &> /dev/null; then
+        case "$OSTYPE" in
+                darwin*) echo >&2 "Cannot find the command $1. You can use 'brew install $package_name' to get this required package. If you don't have brew installed, please install at https://brew.sh/" ;;
+                *) echo >&2 "Cannot find the command $1. Please install $package_name with your package manager, or compile and add it to your path." ;;
+        esac
 
-    exit 1
-  fi
+        exit 1
+        fi
 }
 
 check_dependencies() {
@@ -44,17 +48,16 @@ check_dependencies() {
                 darwin*) check_dependency xdelta3 xdelta ;;
         esac
 
-  check_dependency mono
-  check_dependency curl
+        check_dependency mono
+        check_dependency curl
 }
 
 main() {
-    clear
-    header 1 "Start"
-    printf "WiiLink24 Patcher\n\n1. Start\n2. Credits\n\n"
-    read -p "Choose:" b
+        clear
+        header 1 "Start"
+        printf "WiiLink24 Patcher\n\n1. Start\n2. Credits\n\n"
+        read -p "Choose:" b
 }
-
 
 # Reset if possible
 rm -rf WiinoMa_Patcher unpack
@@ -65,7 +68,7 @@ number_1() {
         clear
         header 
         printf "Hello $(whoami). Welcome to the WiiLink24 Patcher.\nThe patcher will guide you through the process of installing WiiLink24.\n\nWhat are we doing today?\n\n1. Install WiiLink24 on your Wii:\n\n" | fold -s -w "$(tput cols)"
-        read -p "Choose:" s
+        choose
 
         if [ "$s" == "1" ]; then lang_choose; fi
 }
@@ -74,7 +77,7 @@ lang_choose() {
         clear
         header
         printf "Hello $(whoami). Welcome to the WiiLink24 Installation Process.\n\nThe patcher will download any files that are required to run the patcher.\n\nThe entire process should take about 1 to 3 minutes depending on your computer CPU and internet speed.\n\nBut before starting, you need to tell me one thing:\nFor Wii no Ma, what language do you want to download?\n\n1. English\n2. Japanese\n\n" | fold -s -w "$(tput cols)"
-        read -p "Choose:" s
+        choose
 
         case $s in
                 1) reg=EN; lang=English; sd_status ;;
@@ -86,10 +89,12 @@ sd_status() {
         clear
         header  
         printf "After passing this screen, any user interraction won't be needed so you can relax and let me do the work!\n\nTo make patching even easier, I can download everything straight to your SD Card.\n\nPlug in your SD Card right now.\n\n1. Connected\n2. I can't connect my SD Card to my computer\n\n" | fold -s -w "$(tput cols)"
-        read -p "Choose:" s
+        choose
 
-        if [ "$s" == "1" ]; then sdstatus=1; detect_sd_card
-        elif [ "$s" == "2" ]; then sdstatus=0; sdcard=null; pre_patch; fi
+        case $s in
+                1) sdstatus=1; detect_sd_card ;;
+                2) sdstatus=0; sdcard=null; pre_patch
+        esac
 }       
 
 detect_sd_card() {
@@ -142,12 +147,12 @@ patch_1() {
 
 #Error Detection
 error() {
-    clear
-    header 
-    printf "\033[1;91mAn error has occurred.\033[0m\n\nERROR DETAILS:\n\t* Task: %s\n\t* Command: %s\n\t* Line: %s\n\t* Exit code: %s\n\n" "$task" "$BASH_COMMAND" "$1" "$2" | fold -s -w "$(tput cols)"
+        clear
+        header 
+        printf "\033[1;91mAn error has occurred.\033[0m\n\nERROR DETAILS:\n\t* Task: %s\n\t* Command: %s\n\t* Line: %s\n\t* Exit code: %s\n\n" "$task" "$BASH_COMMAND" "$1" "$2" | fold -s -w "$(tput cols)"
 
-    printf "%s\n" "$helpmsg" | fold -s -w "$(tput cols)"
-    exit
+        printf "%s\n" "$helpmsg" | fold -s -w "$(tput cols)"
+        exit
 }
 
 trap 'error $LINENO $?' ERR
@@ -187,12 +192,9 @@ patch_2() {
                 10) echo ":----------: $percent" ;;
         esac
  
-      #Make Folders
-
-        if [ $percent = 1 ] && [ ! -d $path/WAD ]; then mkdir $path/WAD; fi
-        if [ $percent = 2 ] && [ ! -d $path/apps ]; then mkdir $path/apps; mkdir $path/apps/wiimodlite; fi
-    
         case $percent in
+                1) if [ ! -d $path/WAD ]; then mkdir $path/WAD ;;
+                2) if [ ! -d $path/apps ]; then mkdir $path/apps; mkdir $path/apps/wiimodlite ;;
                 3) mkdir $path/WiinoMa_Patcher ;;
                 4) mkdir $path/unpack ;;
                 #Downloading Files
@@ -216,18 +218,13 @@ patch_2() {
                 59) task="Downloading Wii Mod Lite"; curl -f -s --insecure "$FilesHostedOn2/apps/WiiModLite/boot.dol" -o $path/apps/wiimodlite/boot.dol ;;
                 62) curl -f -s --insecure "$FilesHostedOn2/apps/WiiModLite/meta.xml" -o $path/apps/wiimodlite/meta.xml ;;
                 65) curl -f -s --insecure "$FilesHostedOn2/apps/WiiModLite/icon.png" -o $path/apps/wiimodlite/icon.png ;;
+                68) [ $sdcard != null ]; then cp -r $path/WAD $sdcard ;;
+                72) [ $sdcard != null ]; then cp -r $path/apps $sdcard ;;
                 #Clean up, Clean up
                 81) rm -rf unpack ;;
                 84) rm -rf WiinoMa_Patcher;;
-        
         esac
-    
-    task="Moving to SD Card"
-
-    if [ $percent == 68 ] && [ $sdcard != null ]; then cp -r $path/WAD $sdcard; fi
-    if [ $percent == 72 ] && [ $sdcard != null ]; then cp -r $path/apps $sdcard; fi
-   
-   finish 
+        finish 
 }
 
 finish() {
