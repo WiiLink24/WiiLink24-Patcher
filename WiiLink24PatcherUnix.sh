@@ -60,7 +60,7 @@ main() {
 }
 
 # Reset if possible
-rm -rf WiinoMa_Patcher unpack
+rm -rf $path/WiinoMa_Patcher $path/unpack
 check_dependencies
 main
 
@@ -193,8 +193,8 @@ patch_2() {
         esac
  
         case $percent in
-                1) if [ ! -d $path/WAD ]; then mkdir $path/WAD ;;
-                2) if [ ! -d $path/apps ]; then mkdir $path/apps; mkdir $path/apps/wiimodlite ;;
+                1) if [ ! -d $path/WAD ]; then mkdir $path/WAD; fi ;;
+                2) if [ ! -d $path/apps ]; then mkdir $path/apps; mkdir $path/apps/wiimodlite; fi ;;
                 3) mkdir $path/WiinoMa_Patcher ;;
                 4) mkdir $path/unpack ;;
                 #Downloading Files
@@ -218,11 +218,11 @@ patch_2() {
                 59) task="Downloading Wii Mod Lite"; curl -f -s --insecure "$FilesHostedOn2/apps/WiiModLite/boot.dol" -o $path/apps/wiimodlite/boot.dol ;;
                 62) curl -f -s --insecure "$FilesHostedOn2/apps/WiiModLite/meta.xml" -o $path/apps/wiimodlite/meta.xml ;;
                 65) curl -f -s --insecure "$FilesHostedOn2/apps/WiiModLite/icon.png" -o $path/apps/wiimodlite/icon.png ;;
-                68) [ $sdcard != null ]; then cp -r $path/WAD $sdcard ;;
-                72) [ $sdcard != null ]; then cp -r $path/apps $sdcard ;;
+                68) if [ $sdcard != null ]; then cp -r $path/WAD $sdcard; fi ;;
+                72) if [ $sdcard != null ]; then cp -r $path/apps $sdcard; fi ;;
                 #Clean up, Clean up
-                81) rm -rf unpack ;;
-                84) rm -rf WiinoMa_Patcher;;
+                81) rm -rf $path/unpack ;;
+                84) rm -rf $path/WiinoMa_Patcher;;
         esac
         finish 
 }
