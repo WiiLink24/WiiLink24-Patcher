@@ -1,16 +1,49 @@
 #!/usr/bin/env bash
 
-FilesHostedOn1=https://raw.githubusercontent.com/RiiConnect24/IOS-Patcher/master/UNIX
+FilesHostedOn1="https://sketchmaster2001.github.io/RC24_Patcher/Sharpii"
 FilesHostedOn2=https://kcrpl.github.io/Patchers_Auto_Update/WiiLink24-Patcher/v1
 
 version=1.1
-
-path=`dirname -- "$0"`
-
 last_build=2021/01/20
 at=1:30PM
 
 helpmsg="Please contact SketchMaster2001#0024 on Discord regarding this error." 
+
+cd $(dirname ${0})
+
+#Uses 1 function instead of rewriting "Sharpii...xdelta...curl" for when WiiLink Supports more than 1 Channel
+patchtitle () {
+	./WiiLink_Patcher/Sharpii nusd -id ${2} -o WiiLink_Patcher/${1} -wad -q
+	./WiiLink_Patcher/Sharpii wad -u WiiLink_Patcher/${1}/${2}v1025.wad WiiLink_Patcher/${1} -q
+	
+	xdelta3 -f -d -s WiiLink_Patcher/${1}/${3}.app WiiLink_Patcher/${4}.delta WiiLink_Patcher/${1}/${3}.app
+	xdelta3 -f -d -s WiiLink_Patcher/${1}/${5}.app WiiLink_Patcher/${6}.delta WiiLink_Patcher/${1}/${5}.app
+        xdelta3 -f -d -s WiiLink_Patcher/${1}/${7} WiiLink_Patcher/${8}.delta WiiLink_Patcher/${1}/${7}
+        xdelta3 -f -d -s WiiLink_Patcher/${1}/${9} WiiLink_Patcher/${10}.delta WiiLink_Patcher/${1}/${9}
+	
+	./WiiLink_Patcher/Sharpii wad -p WiiLink_Patcher/${1} "WAD/${11} ($lang).wad" -f -q
+} 
+
+#Downloads Patches
+dwnpatch(){
+    curl --create-dirs -f -s $FilesHostedOn2/patches/${1} -o WiiLink_Patcher/${3}/${2}
+}
+
+#System/Architecture Detector
+case $(uname -m),$(uname) in
+	x86_64,Darwin)
+		sys="macOS"
+		mount=/Volumes
+		;;
+	x86_64,*)
+		sys="linux-x64"
+		mount=/mnt
+		;;
+	*,*)
+		sys="linux-arm"
+		mount=/mnt
+		;;
+esac
 
 header() {
         clear
@@ -48,30 +81,13 @@ check_dependencies() {
                 darwin*) check_dependency xdelta3 xdelta ;;
         esac
 
-        check_dependency mono
         check_dependency curl
 }
 
-main() {
-        clear
-        header 1 "Start"
-        printf "WiiLink24 Patcher\n\n1. Start\n2. Credits\n\n"
-        read -p "Choose:" b
-}
-
 # Reset if possible
-rm -rf $path/WiinoMa_Patcher $path/unpack
+
+rm -rf WiiLink_Patcher 
 check_dependencies
-main
-
-number_1() {
-        clear
-        header 
-        printf "Hello $(whoami). Welcome to the WiiLink24 Patcher.\nThe patcher will guide you through the process of installing WiiLink24.\n\nWhat are we doing today?\n\n1. Install WiiLink24 on your Wii:\n\n" | fold -s -w "$(tput cols)"
-        choose
-
-        if [ "$s" == "1" ]; then lang_choose; fi
-}
 
 lang_choose() {
         clear
@@ -82,6 +98,7 @@ lang_choose() {
         case $s in
                 1) reg=EN; lang=English; sd_status ;;
                 2) reg=JPN; lang=Japanese; sd_status ;;
+                *) printf "Invalid Selection\n"; sleep 2; lang_choose ;;
         esac
 }
 
@@ -93,12 +110,13 @@ sd_status() {
 
         case $s in
                 1) sdstatus=1; detect_sd_card ;;
-                2) sdstatus=0; sdcard=null; pre_patch
+                2) sdstatus=0; sdcard=null; pre_patch ;;
+                *) printf "Invalid Selection\n"; sleep 2; sd_status ;;
         esac
 }       
 
 detect_sd_card() {
-        for f in /Volumes/*/; do
+        for f in ${mount}/*/; do
                 if [[ -d $f/apps ]]; then
                 sdcard="$f"
                 echo $sdcard
@@ -119,9 +137,9 @@ pre_patch() {
         read -p "Choose: " s
 
         case $s in
-                1) patch_1 ;; 
+                1) patch ;; 
                 2) main ;;
-                3) vol_name ;;
+                3) vol_name  ;;
                 *) printf "Invalid Selection\n"; sleep 2; pre_patch ;;
         esac
 }
@@ -129,20 +147,23 @@ pre_patch() {
 vol_name() {
         clear
         header 
-        printf "\[*] SD Card\n\nCurrent SD Card Volume Name: $sdcard\n\nType in the new volume name (e.g. /Volumes/Wii)\n\n"
+        printf "[*] SD Card\n\nCurrent SD Card Volume Name: $sdcard\n\nType in the new volume name (e.g. /Volumes/Wii)\n\n"
         read -p "" sdcard
 
         pre_patch
 }
 
-patch_1() {
-        clear
-        counter_done=0
-        percent=0
-
-        for i in {0..99}; do
-                patch_2
-        done
+#Will serve more of a purpose when more channels are added
+refresh() {
+    clear
+    header
+    printf "Patching... This may take some time depending on your CPU and Internet speed\n\n"
+    if [ "$patch0" == "1" ]
+	then
+		printf "[X] Patching Wii no Ma\n"
+	else
+		printf "[ ] Patching Wii no Ma\n"
+	fi
 }
 
 #Error Detection
@@ -159,71 +180,44 @@ trap 'error $LINENO $?' ERR
 set -o pipefail
 set -o errtrace
 
-patch_2() {
-        percent=$((percent+1))
+#Looks more like the batch patcher without all of the percentages
+patch() {
+        refresh
+        patch0=0
+    
+        mkdir -p WAD 
+        mkdir -p apps; mkdir -p apps/wiimodlite 
+        mkdir WiiLink_Patcher 
+    
+        #Downloading Files
+        task="Downloading Files"
+        curl -f -s -o "WiiLink_Patcher/Sharpii" "$FilesHostedOn1/sharpii($sys)"
+        chmod +x WiiLink_Patcher/Sharpii
+    
+        dwnpatch "WiiNoMa_1_$lang.delta" "WiinoMa_1.delta" 
+        dwnpatch "WiiNoMa_2_$lang.delta" "WiinoMa_2.delta"
+        dwnpatch "WiinoMa_tmd_$reg.delta" "WiinoMa_tmd.delta" 
+        dwnpatch "WiinoMa_tik_$reg.delta" "WiinoMa_tik.delta" 
+    
+        #Patching WAD
+        task="Patching Wii no Ma" 
+        patchtitle WiinoMa 000100014843494A  00000001 WiinoMa_1 00000002 WiinoMa_2 000100014843494a.tmd WiinoMa_tmd 000100014843494a.tik WiinoMa_tik "Wii no Ma" 
 
-        if [[ $percent -gt 0 && $percent -lt 10 ]]; then counter_done=0; fi
-        if [[ $percent -ge 10 && $percent -lt 20 ]]; then counter_done=1; fi
-        if [[ $percent -ge 20 && $percent -lt 30 ]]; then counter_done=2; fi
-        if [[ $percent -ge 30 && $percent -lt 40 ]]; then counter_done=3; fi
-        if [[ $percent -ge 40 && $percent -lt 50 ]]; then counter_done=4; fi
-        if [[ $percent -ge 50 && $percent -lt 60 ]]; then counter_done=5; fi
-        if [[ $percent -ge 60 && $percent -lt 70 ]]; then counter_done=6; fi
-        if [[ $percent -ge 70 && $percent -lt 80 ]]; then counter_done=7; fi
-        if [[ $percent -ge 80 && $percent -lt 90 ]]; then counter_done=8; fi
-        if [[ $percent -ge 90 && $percent -lt 100 ]]; then counter_done=9; fi
-        if [ $percent == 100 ]; then counter_done=10; fi
+        patch0=1
 
-        clear
-        header 
-        printf "[*] Patching... this can take some time\n\n Progress: "
-        
-        case $counter_done in
-                0) echo ":          : $percent" ;;
-                1) echo ":-         : $percent" ;;
-                2) echo ":--        : $percent" ;;
-                3) echo ":---       : $percent" ;;
-                4) echo ":----      : $percent" ;;
-                5) echo ":-----     : $percent" ;;
-                6) echo ":------    : $percent" ;;
-                7) echo ":-------   : $percent" ;;
-                8) echo ":--------  : $percent" ;;
-                9) echo ":--------- : $percent" ;;
-                10) echo ":----------: $percent" ;;
-        esac
- 
-        case $percent in
-                1) if [ ! -d $path/WAD ]; then mkdir $path/WAD; fi ;;
-                2) if [ ! -d $path/apps ]; then mkdir $path/apps; mkdir $path/apps/wiimodlite; fi ;;
-                3) mkdir $path/WiinoMa_Patcher ;;
-                4) mkdir $path/unpack ;;
-                #Downloading Files
-                5) task="Downloading Files"; curl -f -s -o $path/WiinoMa_Patcher/libWiiSharp.dll "$FilesHostedOn1/libWiiSharp.dll" ;;
-                8) curl -f -s -o $path/WiinoMa_Patcher/WadInstaller.dll "$FilesHostedOn1/WadInstaller.dll" ;;
-                12) curl -f -s -o $path/WiinoMa_Patcher/Sharpii.exe "$FilesHostedOn1/Sharpii.exe" ;;
-                13) curl -f -s -o $path/WiinoMa_Patcher/Sharpii.exe.config "$FilesHostedOn1/Sharpii.exe.config" ;;
-                15) curl -f -s "$FilesHostedOn2/patches/WiiNoMa_1_$lang.delta" -o $path/WiinoMa_Patcher/WiinoMa_1.delta ;;
-                18) curl -f -s "$FilesHostedOn2/patches/WiiNoMa_2_$lang.delta" -o $path/WiinoMa_Patcher/WiinoMa_2.delta ;;
-                21) curl -f -s "$FilesHostedOn2/patches/WiinoMa_tmd_$reg.delta" -o $path/WiinoMa_Patcher/WiinoMa_tmd.delta ;;
-                24) curl -f -s "$FilesHostedOn2/patches/WiinoMa_tik_$reg.delta" -o $path/WiinoMa_Patcher/WiinoMa_tik.delta ;;
-                #Patching WAD
-                38) task="Patching Wii no Ma"; mono $path/WiinoMa_Patcher/Sharpii.exe NUSD -ID 000100014843494A -o $path/WiinoMa_Patcher -all ;;
-                41) mono $path/WiinoMa_Patcher/Sharpii.exe WAD -u $path/WiinoMa_Patcher/000100014843494av1025.wad $path/unpack ;;
-                44) xdelta3 -f -d -s $path/unpack/00000001.app $path/WiinoMa_Patcher/WiinoMa_1.delta $path/unpack/00000001.app ;;
-                47) xdelta3 -f -d -s $path/unpack/00000002.app $path/WiinoMa_Patcher/WiinoMa_2.delta $path/unpack/00000002.app ;;
-                50) xdelta3 -f -d -s $path/unpack/000100014843494a.tmd $path/WiinoMa_Patcher/WiinoMa_tmd.delta $path/unpack/000100014843494a.tmd ;;
-                53) xdelta3 -f -d -s $path/unpack/000100014843494a.tik $path/WiinoMa_Patcher/WiinoMa_tik.delta $path/unpack/000100014843494a.tik ;;
-                56) mono $path/WiinoMa_Patcher/Sharpii.exe WAD -p $path/unpack $path/WAD/"Wii no Ma ($lang) (WiiLink24).wad" ;;
-                #Downloading Wii Mod Lite
-                59) task="Downloading Wii Mod Lite"; curl -f -s --insecure "$FilesHostedOn2/apps/WiiModLite/boot.dol" -o $path/apps/wiimodlite/boot.dol ;;
-                62) curl -f -s --insecure "$FilesHostedOn2/apps/WiiModLite/meta.xml" -o $path/apps/wiimodlite/meta.xml ;;
-                65) curl -f -s --insecure "$FilesHostedOn2/apps/WiiModLite/icon.png" -o $path/apps/wiimodlite/icon.png ;;
-                68) if [ $sdcard != null ]; then cp -r $path/WAD $sdcard; fi ;;
-                72) if [ $sdcard != null ]; then cp -r $path/apps $sdcard; fi ;;
-                #Clean up, Clean up
-                81) rm -rf $path/unpack ;;
-                84) rm -rf $path/WiinoMa_Patcher;;
-        esac
+        refresh
+                 
+        #Downloading Wii Mod Lite
+        task="Downloading Wii Mod Lite" 
+        curl -f -s --insecure "$FilesHostedOn2/apps/WiiModLite/boot.dol" -o apps/wiimodlite/boot.dol 
+        curl -f -s --insecure "$FilesHostedOn2/apps/WiiModLite/meta.xml" -o apps/wiimodlite/meta.xml 
+        curl -f -s --insecure "$FilesHostedOn2/apps/WiiModLite/icon.png" -o apps/wiimodlite/icon.png 
+        if [ $sdcard != null ]; then cp -r WAD $sdcard; fi 
+        if [ $sdcard != null ]; then cp -r $apps $sdcard; fi 
+               
+        #Clean up, Clean up
+        rm -rf WiiLink_Patcher
+
         finish 
 }
 
@@ -235,9 +229,30 @@ finish() {
                 1,null) printf "Please connect your Wii SD Card and copy the "apps" and "WAD" folders to the root (main folder) of your SD Card. You can find these folders in the Downloads folder of your computer.\n\nPlease proceed with the tutorial that you can find on https://wii.guide/wiilink24.\n\n" | fold -s -w "$(tput cols)" ;;
                 1,*) printf "Every file is in its place on your SD Card!\n\nPlease proceed with the tutorial that you can find on https://wii.guide/wiilink24.\n\n" | fold -s -w "$(tput cols)" ;;
         esac
+
+        read -n 1 -p "Press any key to exit."
+
+        exit
 }
 
-case $b in
-        1) number_1 ;;
-        2) credits ;;
-esac
+credits() {
+        clear 
+        header
+        printf "Credits:\n\n    - SketchMaster2001: Unix Patcher\n\n    - TheShadowEevee: Sharpii-NetCore\n\n    - person66, and leathl: Original Sharpii, and libWiiSharp developers\n\n     WiiLink24 website: https://wiilink24.com\n\n"
+
+        read -n 1 -p "Press any key to return to the main menu."
+}
+
+while true
+do  
+        clear
+        header 1 "Start"
+        printf "WiiLink24 Patcher\n\n1. Start\n2. Credits\n\n"
+        read -p "Choose: " b
+
+        case $b in
+                1) lang_choose ;;
+                2) credits ;;
+                *) printf "Invalid Selection\n"; sleep 2 ;;
+        esac
+done
