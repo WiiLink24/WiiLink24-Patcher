@@ -3,7 +3,7 @@
 FilesHostedOn1="https://sketchmaster2001.github.io/RC24_Patcher/Sharpii"
 FilesHostedOn2=https://kcrpl.github.io/Patchers_Auto_Update/WiiLink24-Patcher/v1
 
-version=1.1
+version=1.0.2
 last_build=2021/01/20
 at=1:30PM
 
