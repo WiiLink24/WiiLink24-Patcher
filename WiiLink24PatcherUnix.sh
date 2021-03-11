@@ -201,7 +201,7 @@ patch() {
     
         #Patching WAD
         task="Patching Wii no Ma" 
-        patchtitle WiinoMa 000100014843494A  00000001 WiinoMa_1 00000002 WiinoMa_2 000100014843494a.tmd WiinoMa_tmd 000100014843494a.tik WiinoMa_tik "Wii no Ma" 
+        patchtitle WiinoMa 000100014843494a  00000001 WiinoMa_1 00000002 WiinoMa_2 000100014843494a.tmd WiinoMa_tmd 000100014843494a.tik WiinoMa_tik "Wii no Ma" 
 
         patch0=1
 
