@@ -31,7 +31,7 @@ dwnpatch(){
 
 #System/Architecture Detector
 case $(uname -m),$(uname) in
-	x86_64,Darwin)
+	x86_64,Darwin|arm64,Darwin))
 		sys="macOS"
 		mount=/Volumes
 		;;
