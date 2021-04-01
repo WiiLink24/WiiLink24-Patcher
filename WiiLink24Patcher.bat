@@ -8,7 +8,7 @@ echo	The program is starting...
 	)
 :: ===========================================================================
 :: WiiLink24 Patcher for Windows
-set version=1.0.2
+set version=1.0.3
 :: AUTHORS: KcrPL
 :: ***************************************************************************
 :: Copyright (c) 2020 KcrPL
@@ -49,8 +49,8 @@ set title=WiiLink24 Patcher v%version% Created by @KcrPL
 
 title %title%
 
-set last_build=2020/12/05
-set at=22:20
+set last_build=2021/04/01
+set at=18:54
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
@@ -907,6 +907,8 @@ if %counter_done%==8 echo :--------  :
 if %counter_done%==9 echo :--------- : 
 if %counter_done%==10 echo :----------:
 echo.
+echo This will take some time...
+echo.
 if "%progress_downloading%"=="0" echo [ ] Downloading files
 if "%progress_downloading%"=="1" echo [X] Downloading files
 if "%progress_wiinoma%"=="0" echo [ ] Wii no Ma
@@ -973,6 +975,8 @@ curl -f -L -s -S --insecure "%FilesHostedOn%/patches/WiinoMa_tik_EN.delta" -o "W
 	set /a temperrorlev=%errorlevel%
 	set modul=Downloading English Delta
 	if not %temperrorlev%==0 goto error_patching
+		curl -f -L -s -S --insecure "https://files.wiilink24.com/wiifit(u).wad" -o "WAD\Wii Fit Body Check Channel (USA) (WiiLink24).wad"
+		curl -f -L -s -S --insecure "https://files.wiilink24.com/wiifit(e).wad" -o "WAD\Wii Fit Body Check Channel (Europe) (WiiLink24).wad"
 	
 set language_wiinoma=English
 	)
@@ -995,6 +999,7 @@ curl -f -L -s -S --insecure "%FilesHostedOn%/patches/WiinoMa_tik_JPN.delta" -o "
 	set modul=Downloading Japanese Delta
 	if not %temperrorlev%==0 goto error_patching
 set language_wiinoma=Japanese
+		curl -f -L -s -S --insecure "https://files.wiilink24.com/wiifit(j).wad" -o "WAD\Wii Fit Body Check Channel (Japanese) (WiiLink24).wad"
 	)
 
 
