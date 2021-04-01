@@ -96,9 +96,36 @@ lang_choose() {
         choose
 
         case $s in
-                1) reg=EN; lang=English; sd_status ;;
-                2) reg=JPN; lang=Japanese; sd_status ;;
+                1) reg=EN; lang=English; app_choose ;;
+                2) reg=JPN; lang=Japanese; app_choose ;;
                 *) printf "Invalid Selection\n"; sleep 2; lang_choose ;;
+        esac
+}
+
+app_choose() {
+        clear
+        header
+        printf "What channel would you like to install?\n\n1. Wii no Ma\n2. Wii Fit Body Check Channel\n\n"
+        choose
+
+        case $s in
+                1) channel="1"; sd_status ;;
+                2) channel="2"; select_region ;;
+                *) printf "Invalid Selection\n"; sleep 2; app_choose ;;
+        esac
+}
+
+select_region() {
+        clear
+        header
+        printf "Please select your region\n\n1. Americas\n2. Europe\n3. Japan\n\n"
+        choose
+
+        case $s in
+                1) region="(u)"; sd_status ;;
+                2) region="(e)"; sd_status ;;
+                3) region="(j)"; sd_status ;;
+                *) printf "Invalid Selection\n"; sleep 2; select_region ;;
         esac
 }
 
@@ -158,12 +185,9 @@ refresh() {
     clear
     header
     printf "Patching... This may take some time depending on your CPU and Internet speed\n\n"
-    if [ "$patch0" == "1" ]
-	then
-		printf "[X] Patching Wii no Ma\n"
-	else
-		printf "[ ] Patching Wii no Ma\n"
-	fi
+    printf "[ ] Patching Wii Fit Body Check Channel\n"
+        
+
 }
 
 #Error Detection
@@ -182,30 +206,48 @@ set -o errtrace
 
 #Looks more like the batch patcher without all of the percentages
 patch() {
-        refresh
-        patch0=0
+        
     
         mkdir -p WAD 
         mkdir -p apps; mkdir -p apps/wiimodlite 
         mkdir WiiLink_Patcher 
     
-        #Downloading Files
-        task="Downloading Files"
-        curl -f -s -o "WiiLink_Patcher/Sharpii" "$FilesHostedOn1/sharpii($sys)"
-        chmod +x WiiLink_Patcher/Sharpii
+        if [ ${channel} == "1" ]
+        then
+                refresh
+                patch0=0
+        
+                #Downloading Files
+                task="Downloading Files"
+                curl -f -s -o "WiiLink_Patcher/Sharpii" "$FilesHostedOn1/sharpii($sys)"
+                chmod +x WiiLink_Patcher/Sharpii
     
-        dwnpatch "WiiNoMa_1_$lang.delta" "WiinoMa_1.delta" 
-        dwnpatch "WiiNoMa_2_$lang.delta" "WiinoMa_2.delta"
-        dwnpatch "WiinoMa_tmd_$reg.delta" "WiinoMa_tmd.delta" 
-        dwnpatch "WiinoMa_tik_$reg.delta" "WiinoMa_tik.delta" 
+                dwnpatch "WiiNoMa_1_$lang.delta" "WiinoMa_1.delta" 
+                dwnpatch "WiiNoMa_2_$lang.delta" "WiinoMa_2.delta"
+                dwnpatch "WiinoMa_tmd_$reg.delta" "WiinoMa_tmd.delta" 
+                dwnpatch "WiinoMa_tik_$reg.delta" "WiinoMa_tik.delta" 
     
-        #Patching WAD
-        task="Patching Wii no Ma" 
-        patchtitle WiinoMa 000100014843494a  00000001 WiinoMa_1 00000002 WiinoMa_2 000100014843494a.tmd WiinoMa_tmd 000100014843494a.tik WiinoMa_tik "Wii no Ma" 
+                #Patching WAD
+                task="Patching Wii no Ma" 
+                patchtitle WiinoMa 000100014843494a  00000001 WiinoMa_1 00000002 WiinoMa_2 000100014843494a.tmd WiinoMa_tmd 000100014843494a.tik WiinoMa_tik "Wii no Ma" 
 
-        patch0=1
+                patch0=2
 
-        refresh
+                refresh
+        else
+                refresh
+                patch1="0"
+        
+                #Downloading Files
+                task="Downloading Files"
+                curl -f -s -o "WiiLink_Patcher/Sharpii" "$FilesHostedOn1/sharpii($sys)"
+                chmod +x WiiLink_Patcher/Sharpii
+
+                curl -f -s -o "WAD/Wii-Fit-Body-Check-Channel(WiiLink24).wad" "https://files.wiilink24.com/wiifit$region.wad"
+
+                patch1="1"
+        fi
+
                  
         #Downloading Wii Mod Lite
         task="Downloading Wii Mod Lite" 
