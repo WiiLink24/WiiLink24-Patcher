@@ -1,4 +1,3 @@
-
 #!/usr/bin/env bash
 FilesHostedOn1="https://sketchmaster2001.github.io/RC24_Patcher/Sharpii"
 FilesHostedOn2=https://kcrpl.github.io/Patchers_Auto_Update/WiiLink24-Patcher/v1
