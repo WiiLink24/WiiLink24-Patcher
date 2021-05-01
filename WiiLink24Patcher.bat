@@ -8,7 +8,7 @@ echo	The program is starting...
 	)
 :: ===========================================================================
 :: WiiLink24 Patcher for Windows
-set version=1.0.3
+set version=1.0.4
 :: AUTHORS: KcrPL
 :: ***************************************************************************
 :: Copyright (c) 2020 KcrPL
@@ -49,8 +49,8 @@ set title=WiiLink24 Patcher v%version% Created by @KcrPL
 
 title %title%
 
-set last_build=2021/04/01
-set at=18:54
+set last_build=2021/05/01
+set at=19:58
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
@@ -128,6 +128,7 @@ call Sharpii.exe WAD -u WiinoMa_Patched.wad unpack_patched>NUL
 echo         ...OK^^!
 
 echo [INFO ] Creating patches.
+xdelta3.exe -e -s unpack\00000000.app unpack_patched\00000000.app 00000000_patch.delta
 xdelta3.exe -e -s unpack\00000001.app unpack_patched\00000001.app 00000001_patch.delta
 xdelta3.exe -e -s unpack\00000002.app unpack_patched\00000002.app 00000002_patch.delta
 xdelta3.exe -e -s unpack\000100014843494a.tmd unpack_patched\000100014843494a.tmd 000100014843494a_tmd_patch.delta
@@ -163,7 +164,7 @@ if %cc% lss 10 set cc=%cc%
 
 echo Job finished. Took %mm%m %ss%s.
 echo.
-echo The following files were created: 00000001_patch.delta, 00000002_patch.delta, 000100014843494a_tmd_patch.delta and 000100014843494a.tik_patch.delta.
+echo The following files were created: 00000000_patch.delta, 00000001_patch.delta, 00000002_patch.delta, 000100014843494a_tmd_patch.delta and 000100014843494a.tik_patch.delta.
 
 GOTO:EOF
 
@@ -930,8 +931,10 @@ if exist WiinoMa_tik.delta del /q WiinoMa_tik.delta
 if exist WiinoMa_tmd.delta del /q WiinoMa_tmd.delta
 if exist 000100014843494a.tik del /q 000100014843494a.tik
 if exist 000100014843494a.tmd del /q 000100014843494a.tmd
+if exist 00000000.app del /q 00000000.app
 if exist 00000001.app del /q 00000001.app
 if exist 00000002.app del /q 00000002.app
+if exist WiiNoMa_0.delta del /q WiiNoMa_0.delta
 if exist WiiNoMa_1.delta del /q WiiNoMa_1.delta
 if exist WiiNoMa_2.delta del /q WiiNoMa_2.delta
 if exist unpack rmdir /s /q unpack
@@ -959,6 +962,10 @@ curl -s -f -L --insecure "%FilesHostedOn%/WiinoMa_Patcher/{libWiiSharp.dll,Sharp
 :: 1 - English
 :: 2 - Japanese
 if %region%==1 (
+curl -f -L -s -S --insecure "%FilesHostedOn%/patches/WiiNoMa_0_English.delta" -o "WiinoMa_0.delta"
+	set /a temperrorlev=%errorlevel%
+	set modul=Downloading English Delta
+	if not %temperrorlev%==0 goto error_patching
 curl -f -L -s -S --insecure "%FilesHostedOn%/patches/WiiNoMa_1_English.delta" -o "WiinoMa_1.delta"
 	set /a temperrorlev=%errorlevel%
 	set modul=Downloading English Delta
@@ -975,13 +982,14 @@ curl -f -L -s -S --insecure "%FilesHostedOn%/patches/WiinoMa_tik_EN.delta" -o "W
 	set /a temperrorlev=%errorlevel%
 	set modul=Downloading English Delta
 	if not %temperrorlev%==0 goto error_patching
-		curl -f -L -s -S --insecure "https://files.wiilink24.com/wiifit(u).wad" -o "WAD\Wii Fit Body Check Channel (USA) (WiiLink24).wad"
-		curl -f -L -s -S --insecure "https://files.wiilink24.com/wiifit(e).wad" -o "WAD\Wii Fit Body Check Channel (Europe) (WiiLink24).wad"
-	
 set language_wiinoma=English
 	)
 
 if %region%==2 (
+curl -f -L -s -S --insecure "%FilesHostedOn%/patches/WiiNoMa_0_Japanese.delta" -o "WiinoMa_0.delta"
+	set /a temperrorlev=%errorlevel%
+	set modul=Downloading Japanese Delta
+	if not %temperrorlev%==0 goto error_patching
 curl -f -L -s -S --insecure "%FilesHostedOn%/patches/WiiNoMa_1_Japanese.delta" -o "WiinoMa_1.delta"
 	set /a temperrorlev=%errorlevel%
 	set modul=Downloading Japanese Delta
@@ -999,7 +1007,6 @@ curl -f -L -s -S --insecure "%FilesHostedOn%/patches/WiinoMa_tik_JPN.delta" -o "
 	set modul=Downloading Japanese Delta
 	if not %temperrorlev%==0 goto error_patching
 set language_wiinoma=Japanese
-		curl -f -L -s -S --insecure "https://files.wiilink24.com/wiifit(j).wad" -o "WAD\Wii Fit Body Check Channel (Japanese) (WiiLink24).wad"
 	)
 
 
@@ -1021,6 +1028,7 @@ set /a progress_downloading=1
 exit /b 0
 
 :patching_fast_travel_2
+
 ::Download WAD
 
 call WiinoMa_Patcher\Sharpii.exe NUSD -ID 000100014843494A -wad>NUL
@@ -1030,6 +1038,10 @@ call WiinoMa_Patcher\Sharpii.exe NUSD -ID 000100014843494A -wad>NUL
 call WiinoMa_Patcher\Sharpii.exe WAD -u 000100014843494Av1025.wad unpack>NUL
 	set /a temperrorlev=%errorlevel%
 	set modul=Downloading Wii no Ma
+	if not %temperrorlev%==0 goto error_patching
+move unpack\00000000.app 00000000.app>NUL
+	set /a temperrorlev=%errorlevel%
+	set modul=Moving Wii no Ma .app
 	if not %temperrorlev%==0 goto error_patching
 move unpack\00000001.app 00000001.app>NUL
 	set /a temperrorlev=%errorlevel%
@@ -1048,7 +1060,10 @@ move unpack\000100014843494a.tik 000100014843494a.tik>NUL
 	set modul=Moving Wii no Ma .tik
 	if not %temperrorlev%==0 goto error_patching
 
-
+call WiinoMa_Patcher\xdelta3.exe -d -s 00000000.app WiinoMa_0.delta unpack\00000000.app>NUL
+	set /a temperrorlev=%errorlevel%
+	set modul=Applying Wii no Ma patch
+	if not %temperrorlev%==0 goto error_patching
 call WiinoMa_Patcher\xdelta3.exe -d -s 00000001.app WiinoMa_1.delta unpack\00000001.app>NUL
 	set /a temperrorlev=%errorlevel%
 	set modul=Applying Wii no Ma patch
@@ -1076,6 +1091,7 @@ set /a progress_wiinoma=1
 exit /b 0
 
 :patching_fast_travel_3
+set /a errorcopying=0
 if not %sdcard%==NUL echo.&echo Copying files. This may take a while. Give me a second.
 if not %sdcard%==NUL xcopy /y "WAD" "%sdcard%:\WAD\" /e || set /a errorcopying=1
 if not %sdcard%==NUL xcopy /y "apps" "%sdcard%:\apps\" /e|| set /a errorcopying=1
@@ -1092,11 +1108,11 @@ echo %header%
 echo %line%
 echo Patching done^^!
 echo.
-if %sdcardstatus%==0 echo Please connect your Wii SD Card and copy apps and WAD folder to the root (main folder) of your SD Card.
-if %sdcardstatus%==1 if %sdcard%==NUL echo Please connect your Wii SD Card and copy apps and WAD folder to the root (main folder) of your SD Card.
+if "%sdcardstatus%"=="0" echo Please connect your Wii SD Card and copy apps and WAD folder to the root (main folder) of your SD Card.
+if "%sdcardstatus%"=="1" if "%sdcard%"=="NUL" echo Please connect your Wii SD Card and copy apps and WAD folder to the root (main folder) of your SD Card.
 
-if %sdcardstatus%==1 if not %sdcard%==NUL if %errorcopying%==0 echo Every file is in it's place on your SD Card^^!
-if %sdcardstatus%==1 if not %sdcard%==NUL if %errorcopying%==1 echo You can find these folders next to WiiLink24Patcher.bat
+if "%sdcardstatus%"=="1" if not "%sdcard%"=="NUL" if "%errorcopying%"=="0" echo Every file is in it's place on your SD Card^^!
+if "%sdcardstatus%"=="1" if not "%sdcard%"=="NUL" if "%errorcopying%"=="1" echo You can find these folders next to WiiLink24Patcher.bat
 echo.
 echo Please install the .WAD file on your Wii by using Wii Mod Lite.
 echo I also attached it with the WAD.
