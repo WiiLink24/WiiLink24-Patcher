@@ -166,6 +166,7 @@ patch() {
         curl -f -s -o "WiiLink_Patcher/Sharpii" "$FilesHostedOn1/sharpii($sys)"
         chmod +x WiiLink_Patcher/Sharpii
     
+        dwnpatch "WiiNoMa_0_$lang.delta" "WiinoMa_0.delta"
         dwnpatch "WiiNoMa_1_$lang.delta" "WiinoMa_1.delta" 
         dwnpatch "WiiNoMa_2_$lang.delta" "WiinoMa_2.delta"
         dwnpatch "WiinoMa_tmd_$reg.delta" "WiinoMa_tmd.delta" 
@@ -173,7 +174,7 @@ patch() {
     
         #Patching WAD
         task="Patching Wii no Ma" 
-        patchtitle WiinoMa 000100014843494a  00000001 WiinoMa_1 00000002 WiinoMa_2 000100014843494a.tmd WiinoMa_tmd 000100014843494a.tik WiinoMa_tik "Wii no Ma" 
+        patchtitle WiinoMa 000100014843494a 00000000 WiinoMa_0 00000001 WiinoMa_1 00000002 WiinoMa_2 000100014843494a.tmd WiinoMa_tmd 000100014843494a.tik WiinoMa_tik "Wii no Ma" 
         patch0=1
         refresh
                  
