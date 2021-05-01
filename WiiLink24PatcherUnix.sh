@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 FilesHostedOn1="https://sketchmaster2001.github.io/RC24_Patcher/Sharpii"
 FilesHostedOn2=https://kcrpl.github.io/Patchers_Auto_Update/WiiLink24-Patcher/v1
-version=1.0.2
-last_build=2021/01/20
+version=1.0.4
+last_build=2021/05/01
 at=1:30PM
 helpmsg="Please contact SketchMaster2001#0024 on Discord regarding this error." 
 cd $(dirname ${0})
@@ -11,10 +11,14 @@ patchtitle () {
 	./WiiLink_Patcher/Sharpii nusd -id ${2} -o WiiLink_Patcher/${1} -wad -q
 	./WiiLink_Patcher/Sharpii wad -u WiiLink_Patcher/${1}/${2}v1025.wad WiiLink_Patcher/${1} -q
 	
+	# Contents
 	xdelta3 -f -d -s WiiLink_Patcher/${1}/${3}.app WiiLink_Patcher/${4}.delta WiiLink_Patcher/${1}/${3}.app
 	xdelta3 -f -d -s WiiLink_Patcher/${1}/${5}.app WiiLink_Patcher/${6}.delta WiiLink_Patcher/${1}/${5}.app
-        xdelta3 -f -d -s WiiLink_Patcher/${1}/${7} WiiLink_Patcher/${8}.delta WiiLink_Patcher/${1}/${7}
-        xdelta3 -f -d -s WiiLink_Patcher/${1}/${9} WiiLink_Patcher/${10}.delta WiiLink_Patcher/${1}/${9}
+	xdelta3 -f -d -s WiiLink_Patcher/${1}/${7}.app WiiLink_Patcher/${8}.delta WiiLink_Patcher/${1}/${7}.app
+
+	# TMD, ticket
+  xdelta3 -f -d -s WiiLink_Patcher/${1}/${9} WiiLink_Patcher/${10}.delta WiiLink_Patcher/${1}/${9}
+  xdelta3 -f -d -s WiiLink_Patcher/${1}/${11} WiiLink_Patcher/${12}.delta WiiLink_Patcher/${1}/${11}
 	
 	./WiiLink_Patcher/Sharpii wad -p WiiLink_Patcher/${1} "WAD/${11} ($lang).wad" -f -q
 } 
@@ -25,7 +29,6 @@ dwnpatch(){
 
  #System/Architecture Detector
  case $(uname -m),$(uname) in
- 	x86_64,Darwin|arm64,Darwin))
  	x86_64,Darwin|arm64,Darwin)
  		sys="macOS"
  		mount=/Volumes
