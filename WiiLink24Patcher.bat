@@ -866,7 +866,7 @@ if %errorlevel%==0 goto error_NUS_DOWN
 set /a patching_size_required_bytes=%patching_size_required_wii_bytes%
 set /a patching_size_required_megabytes=%wii_patching_requires%
 
-for /f "usebackq delims== tokens=2" %%x in (`wmic logicaldisk where "DeviceID='%running_on_drive%:'" get FreeSpace /format:value`) do set free_drive_space_bytes=%%x
+for /f "usebackq delims== tokens=2" %%x in (`C:\windows\system32\wbem\wmic.exe logicaldisk where "DeviceID='%running_on_drive%:'" get FreeSpace /format:value`) do set free_drive_space_bytes=%%x
 if /i %free_drive_space_bytes% LSS %patching_size_required_bytes% goto disk_space_insufficient
 
 goto 1_install_wiilink24_2
