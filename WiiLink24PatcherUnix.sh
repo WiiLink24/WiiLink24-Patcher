@@ -43,6 +43,14 @@ download_patch2(){
 		sys="linux-x64"
 		mount=/mnt
 		;;
+        aarch64,*)
+		sys="(linux-arm64)"
+		mount=/mnt
+		;;
+        *,*)
+		sys="(linux-arm)"
+		mount=/mnt
+		;;
   x86_32,*)
     clear
     header
