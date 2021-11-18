@@ -1,0 +1,68 @@
+msgid "Choose Channel"
+msgstr "채널 선택"
+
+msgid "Please choose which channel you would like to load."
+msgstr "로드할 채널을 선택하십시오."
+
+msgid "Wii Menu"
+msgstr "Wii 메뉴"
+
+msgid "Cancel"
+msgstr "취소"
+
+msgid "Error"
+msgstr "오류"
+
+msgid "You have entered an invalid email address. Please enter a valid one."
+msgstr "잘못된 이메일 주소를 입력했습니다. 올바른 값을 입력하세요."
+
+msgid "Retry"
+msgstr "재시도"
+
+msgid "Main Menu"
+msgstr "메인 메뉴"
+
+msgid "You cannot have an empty field. Either try again or return to the main menu."
+msgstr "필드를 비워 둘 수 없습니다. 다시 시도하거나 주 메뉴로 돌아가십시오."
+
+msgid "Credits"
+msgstr "크레딧"
+
+msgid "Back"
+msgstr "뒤로"
+
+msgid "Set Personal Data"
+msgstr "개인 정보 설정"
+
+msgid "First Name"
+msgstr "이름"
+
+msgid "Last Name"
+msgstr "성"
+
+msgid "Email"
+msgstr "이메일"
+
+msgid "Address"
+msgstr "주소"
+
+msgid "Home"
+msgstr "집"
+
+msgid "City"
+msgstr "시"
+
+msgid "Done"
+msgstr "완료"
+
+msgid "Error saving"
+msgstr "저장 중 오류 발생"
+
+msgid "An error occurred while attempting to save your information. Would you like to retry?"
+msgstr "정보를 저장하는 중 오류가 발생하였습니다. 다시 시도하시겠습니까?"
+
+msgid "Email Address"
+msgstr "이메일"
+
+msgid "Home Address"
+msgstr "집 주소"

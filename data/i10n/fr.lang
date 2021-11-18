@@ -1,0 +1,69 @@
+msgid "Choose Channel"
+msgstr "Choisissez une chaîne"
+
+msgid "Please choose which channel you would like to load."
+msgstr "Veuillez choisir la chaîne que vous souhaitez démarrer."
+
+msgid "Wii Menu"
+msgstr "Menu Wii"
+
+msgid "Cancel"
+msgstr "Annuler"
+
+msgid "Error"
+msgstr "Erreur"
+
+msgid "You have entered an invalid email address. Please enter a valid one."
+msgstr "Votre adresse email est invalide. Veuillez réessayer."
+
+msgid "Retry"
+msgstr "Réessayer"
+
+msgid "Main Menu"
+msgstr "Menu principal"
+
+msgid "You cannot have an empty field. Either try again or return to the main menu."
+msgstr "Tous les champs doivent être remplis. Veuillez réessayer ou retournez au menu principal."
+
+msgid "Credits"
+msgstr "Crédits"
+
+msgid "Back"
+msgstr "Retour"
+
+msgid "Set Personal Data"
+msgstr "Config. des données personnelles"
+
+msgid "First Name"
+msgstr "Prénom"
+
+msgid "Last Name"
+msgstr "Nom"
+
+msgid "Email"
+msgstr "Email"
+
+msgid "Address"
+msgstr "Adresse"
+
+msgid "Home"
+msgstr "Accueil"
+
+msgid "City"
+msgstr "Ville"
+
+msgid "Done"
+msgstr "Terminé"
+
+msgid "Error saving"
+msgstr "Erreur de sauvegarde"
+
+msgid "An error occurred while attempting to save your information. Would you like to retry?"
+msgstr "Une erreur s'est produite lors de l'enregistrement de vos informations. Voulez-vous réessayer ?"
+
+msgid "Email Address"
+msgstr "Adresse email"
+
+msgid "Home Address"
+msgstr "Adresse"
+

@@ -1,0 +1,83 @@
+msgid ""
+msgstr ""
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Crowdin-Project: wiilink\n"
+"X-Crowdin-Project-ID: 473500\n"
+"X-Crowdin-Language: es-ES\n"
+"X-Crowdin-File: Set Personal Data.po\n"
+"X-Crowdin-File-ID: 55\n"
+"Project-Id-Version: wiilink\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language-Team: Spanish\n"
+"Language: es_ES\n"
+"PO-Revision-Date: 2021-10-10 18:01\n"
+
+msgid "Choose Channel"
+msgstr "Eliga un canal"
+
+msgid "Please choose which channel you would like to load."
+msgstr "Por favor elija el canal que deseas iniciar."
+
+msgid "Wii Menu"
+msgstr "Menú de Wii"
+
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgid "Error"
+msgstr "Error"
+
+msgid "You have entered an invalid email address. Please enter a valid one."
+msgstr "El correo electronico no esta formateado correctamente. Por favor ingrese una válida."
+
+msgid "Retry"
+msgstr "Reintentar"
+
+msgid "Main Menu"
+msgstr "Menú Principal"
+
+msgid "You cannot have an empty field. Either try again or return to the main menu."
+msgstr "Tienes que llenar la forma completamente. Intente de nuevo o regrese al menú principal."
+
+msgid "Credits"
+msgstr "Créditos"
+
+msgid "Back"
+msgstr "Atrás"
+
+msgid "Set Personal Data"
+msgstr "Establecer Datos Personales"
+
+msgid "First Name"
+msgstr "Nombre"
+
+msgid "Last Name"
+msgstr "Apellido"
+
+msgid "Email"
+msgstr "Electronico"
+
+msgid "Address"
+msgstr "Dirección"
+
+msgid "Home"
+msgstr "Casa"
+
+msgid "City"
+msgstr "Ciudad"
+
+msgid "Done"
+msgstr "Listo"
+
+msgid "Error saving"
+msgstr "Error guardando"
+
+msgid "An error occurred while attempting to save your information. Would you like to retry?"
+msgstr "A ocurrido un error guardando tu informacion. Quieres intentar de nuevo?"
+
+msgid "Email Address"
+msgstr "Correo electronico"
+
+msgid "Home Address"
+msgstr "Dirección"
+
