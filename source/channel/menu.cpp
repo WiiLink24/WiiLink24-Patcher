@@ -320,85 +320,34 @@ static int MenuCredits() {
     GuiTrigger trigHome;
     trigHome.SetButtonOnlyTrigger(
             -1, WPAD_BUTTON_HOME | WPAD_CLASSIC_BUTTON_HOME, 0);
-    
+
     GuiText englishBtnTxt(_("English"), 22, (GXColor){0, 0, 0, 255});
     englishBtnTxt.SetWrap(true, btnLargeOutline.GetWidth() - 30);
     GuiImage englishBtnImg(&btnLargeOutline);
     GuiImage englishBtnImgOver(&btnLargeOutlineOver);
     GuiButton englishBtn(btnLargeOutline.GetWidth(),
-                           btnLargeOutline.GetHeight());
+                         btnLargeOutline.GetHeight());
     englishBtn.SetAlignment(ALIGN_CENTRE, ALIGN_TOP);
-    englishBtn.SetPosition(-175, 120);
+    englishBtn.SetPosition(-125, 120);
     englishBtn.SetLabel(&englishBtnTxt);
     englishBtn.SetImage(&englishBtnImg);
     englishBtn.SetImageOver(&englishBtnImgOver);
     englishBtn.SetTrigger(&trigA);
     englishBtn.SetEffectGrow();
 
-    GuiText frenchBtnTxt(_("French"), 22, (GXColor){0, 0, 0, 255});
-    frenchBtnTxt.SetWrap(true, btnLargeOutline.GetWidth() - 30);
-    GuiImage frenchBtnImg(&btnLargeOutline);
-    GuiImage frenchImgOver(&btnLargeOutlineOver);
-    GuiButton frenchBtn(btnLargeOutline.GetWidth(),
-                          btnLargeOutline.GetHeight());
-    frenchBtn.SetAlignment(ALIGN_CENTRE, ALIGN_TOP);
-    frenchBtn.SetPosition(0, 120);
-    frenchBtn.SetLabel(&frenchBtnTxt);
-    frenchBtn.SetImage(&frenchBtnImg);
-    frenchBtn.SetImageOver(&frenchImgOver);
-    frenchBtn.SetTrigger(&trigA);
-    frenchBtn.SetEffectGrow();
-
-    GuiText spanishBtnTxt(_("Spanish"), 22, (GXColor){0, 0, 0, 255});
-    GuiImage spanishBtnImg(&btnLargeOutline);
-    GuiImage spanishBtnImgOver(&btnLargeOutlineOver);
-    GuiButton spanishBtn(btnLargeOutline.GetWidth(), btnLargeOutline.GetHeight());
-    spanishBtn.SetAlignment(ALIGN_CENTRE, ALIGN_TOP);
-    spanishBtn.SetPosition(175, 120);
-    spanishBtn.SetLabel(&spanishBtnTxt);
-    spanishBtn.SetImage(&spanishBtnImg);
-    spanishBtn.SetImageOver(&spanishBtnImgOver);
-    spanishBtn.SetTrigger(&trigA);
-    spanishBtn.SetEffectGrow();
-
-    GuiText italianBtnTxt(_("Italian"), 22, (GXColor){0, 0, 0, 255});
-    GuiImage italianBtnImg(&btnLargeOutline);
-    GuiImage italianBtnImgOver(&btnLargeOutlineOver);
-    GuiButton italianBtn(btnLargeOutline.GetWidth(),
-                               btnLargeOutline.GetHeight());
-    italianBtn.SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
-    italianBtn.SetPosition(-65, 250);
-    italianBtn.SetLabel(&italianBtnTxt);
-    italianBtn.SetImage(&italianBtnImg);
-    italianBtn.SetImageOver(&italianBtnImgOver);
-    italianBtn.SetTrigger(&trigA);
-    italianBtn.SetEffectGrow();
-
-    GuiText dutchBtnTxt(_("Dutch"), 22, (GXColor){0, 0, 0, 255});
-    GuiImage dutchBtnImg(&btnLargeOutline);
-    GuiImage dutchBtnImgOver(&btnLargeOutlineOver);
-    GuiButton dutchBtn(btnLargeOutline.GetWidth(),
-                              btnLargeOutline.GetHeight());
-    dutchBtn.SetAlignment(ALIGN_CENTRE, ALIGN_TOP);
-    dutchBtn.SetPosition(-175, 250);
-    dutchBtn.SetLabel(&dutchBtnTxt);
-    dutchBtn.SetImage(&dutchBtnImg);
-    dutchBtn.SetImageOver(&dutchBtnImgOver);
-    dutchBtn.SetTrigger(&trigA);
-    dutchBtn.SetEffectGrow();
-
-    GuiText germanBtnTxt(_("German"), 22, (GXColor){0, 0, 0, 255});
-    GuiImage germanBtnImg(&btnLargeOutline);
-    GuiImage germanBtnImgOver(&btnLargeOutlineOver);
-    GuiButton germanBtn(btnLargeOutline.GetWidth(),
-                         btnLargeOutline.GetHeight());
-    germanBtn.SetAlignment(ALIGN_CENTRE, ALIGN_TOP);
-    germanBtn.SetPosition(0, 250);
-    germanBtn.SetLabel(&germanBtnTxt);
-    germanBtn.SetImage(&germanBtnImg);
-    germanBtn.SetImageOver(&germanBtnImgOver);
-    germanBtn.SetTrigger(&trigA);
-    germanBtn.SetEffectGrow();
+    GuiText jpnBtnTxt(_("Japanese"), 22, (GXColor){0, 0, 0, 255});
+    jpnBtnTxt.SetWrap(true, btnLargeOutline.GetWidth() - 30);
+    GuiImage jpnBtnImg(&btnLargeOutline);
+    GuiImage jpnImgOver(&btnLargeOutlineOver);
+    GuiButton jpnBtn(btnLargeOutline.GetWidth(),
+                     btnLargeOutline.GetHeight());
+    jpnBtn.SetAlignment(ALIGN_CENTRE, ALIGN_TOP);
+    jpnBtn.SetPosition(125, 120);
+    jpnBtn.SetLabel(&jpnBtnTxt);
+    jpnBtn.SetImage(&jpnBtnImg);
+    jpnBtn.SetImageOver(&jpnImgOver);
+    jpnBtn.SetTrigger(&trigA);
+    jpnBtn.SetEffectGrow();
 
     GuiText backBtnTxt(_("Back"), 22, (GXColor){0, 0, 0, 255});
     GuiImage backBtnImg(&btnOutline);
@@ -415,20 +364,13 @@ static int MenuCredits() {
     HaltGui();
     GuiWindow w(screenwidth, screenheight);
     w.Append(&titleTxt);
-    if (RegionCode == 1 || 2) {
-        w.Append(&englishBtn);
-        w.Append(&frenchBtn);
-        w.Append(&spanishBtn);
-
-        if (RegionCode == 2) {
-            w.Append(&italianBtn);
-            w.Append(&dutchBtn);
-            w.Append(&germanBtn);
-        }
-    }
+    w.Append(&englishBtn);
+    w.Append(&jpnBtn);
 
     w.Append(&backBtn);
     mainWindow->Append(&w);
+
+    ResumeGui();
 
     ResumeGui();
 
@@ -440,6 +382,9 @@ static int MenuCredits() {
             menu = MENU_PRIMARY;
         } else if (englishBtn.GetState() == STATE_CLICKED) {
             LanguageCode = 1;
+            menu = DOWNLOAD_WAD;
+        } else if (jpnBtn.GetState() == STATE_CLICKED) {
+            LanguageCode = 0;
             menu = DOWNLOAD_WAD;
         }
     }
@@ -550,7 +495,8 @@ static int MenuCredits() {
      if (isRoom) {
          wadFile = "fat:/Wii_Room.wad";
          channelName = "Installing Wii Room";
-         channelUrl = "https://wiilink.is-pretty.cool/5sSLWf8.wad";
+         channelUrl.append(std::to_string(language));
+         channelUrl.append("/Wii_Room.wad");
      } else if (isDigicam) {
          wadFile = "fat:/Digicam.wad";
          channelName = "Installing Digicam Print Channel";
