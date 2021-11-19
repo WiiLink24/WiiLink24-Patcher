@@ -659,6 +659,8 @@ static int MenuCredits() {
          }
 
          if (btn1.GetState() == STATE_CLICKED) {
+             isDigicam = false;
+             isRoom = false;
              menu = MENU_PRIMARY;
          }
      }
