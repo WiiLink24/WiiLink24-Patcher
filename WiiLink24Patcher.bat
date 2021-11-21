@@ -8,7 +8,7 @@ echo	The program is starting...
 	)
 :: ===========================================================================
 :: WiiLink24 Patcher for Windows
-set version=1.0.5
+set version=1.0.6
 :: AUTHORS: KcrPL
 :: ***************************************************************************
 :: Copyright (c) 2020 KcrPL
@@ -49,8 +49,8 @@ set title=WiiLink24 Patcher v%version% Created by @KcrPL
 
 title %title%
 
-set last_build=2021/05/15
-set at=19:26
+set last_build=2021/11/19
+set at=21:00
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
