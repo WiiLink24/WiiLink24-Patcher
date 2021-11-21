@@ -5,6 +5,7 @@ WiiLink Patcher is a program made for easier installation of WiiLink. With it, y
 ### Features
 * Auto updating - Keep the patcher up-to-date!
 * Patch directly from your Wii, or patch from your computer.
+* Works with Wii no Ma and the Digicam Print Channel.
 * The patcher will automatically download the required files.
 * Copying patched files to an SD Card that is already connected to the PC.
 * Downloads Wii Mod Lite and putting it on SD Card along with the WADs.
