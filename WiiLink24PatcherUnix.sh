@@ -2,9 +2,9 @@
 FilesHostedOn1="https://sketchmaster2001.github.io/RC24_Patcher/Sharpii"
 FilesHostedOn2=https://kcrpl.github.io/Patchers_Auto_Update/WiiLink24-Patcher/v1
 FilesHostedOn3=https://patcher.wiilink24.com
-version=1.0.5
-last_build=2021/05/14
-at=10:16AM
+version=1.0.6
+last_build=2021/11/19
+at=09:00PM
 helpmsg="Please contact SketchMaster2001#0024 on Discord regarding this error." 
 cd "$(dirname ${0})"
 
