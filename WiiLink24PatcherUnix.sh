@@ -35,8 +35,12 @@ download_patch2(){
 
  #System/Architecture Detector
  case $(uname -m),$(uname) in
- 	x86_64,Darwin|arm64,Darwin)
- 		sys="macOS"
+ 	x86_64,Darwin)
+ 		sys="macOS-x64"
+ 		mount=/Volumes
+ 		;;
+        arm64,Darwin)
+ 		sys="macOS-arm64"
  		mount=/Volumes
  		;;
 	x86_64,*)
