@@ -32,7 +32,7 @@ s32 Title_FakesignTik(signed_blob *p_tik) {
         int result = mbedtls_sha1_ret((u8*)tik_data, sizeof(tik), hash);
 
         /* Found valid hash */
-        if (result != 0)
+        if (result != 0 && hash[0] == 0x00)
             return 0;
     }
 
