@@ -3,8 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <malloc.h>
-
-#include "sha1.h"
+#include <mbedtls/sha1.h>
 
 s32 Title_ZeroSignature(signed_blob *p_sig) {
     u8 *ptr = (u8 *)p_sig;
@@ -26,16 +25,16 @@ s32 Title_FakesignTik(signed_blob *p_tik) {
     tik_data = (tik *)SIGNATURE_PAYLOAD(p_tik);
 
     for (fill = 0; fill < USHRT_MAX; fill++) {
-        sha1 hash;
+        unsigned char hash[20];
 
         /* Modify ticket padding field */
         tik_data->padding = fill;
 
         /* Calculate hash */
-        SHA1((u8 *)tik_data, sizeof(tik), hash);
+        int result = mbedtls_sha1_ret((u8*)tik_data, sizeof(tik), hash);
 
         /* Found valid hash */
-        if (!hash[0])
+        if (result != 0)
             return 0;
     }
 
