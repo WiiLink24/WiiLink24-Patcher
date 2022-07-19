@@ -46,10 +46,6 @@ GuiTextField::~GuiTextField() {
 }
 
 wchar_t *GuiTextField::GetText() {
-    if (!value) {
-        return NULL;
-    }
-
     return wcsdup(value);
 }
 

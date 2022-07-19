@@ -6,10 +6,8 @@
 #include <mbedtls/sha1.h>
 
 s32 Title_ZeroSignature(signed_blob *p_sig) {
-    u8 *ptr = (u8 *)p_sig;
-
     /* Fill signature with zeroes */
-    memset(ptr + 4, 0, SIGNATURE_SIZE(p_sig) - 4);
+    memset(SIGNATURE_SIG(p_sig), 0, SIGNATURE_SIZE(p_sig));
 
     return 0;
 }

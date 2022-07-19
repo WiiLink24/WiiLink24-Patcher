@@ -590,14 +590,6 @@ void FreeTypeGX::getOffset(wchar_t *text, ftgxDataOffset *offset) {
 }
 
 /**
- *
- * \overload
- */
-void FreeTypeGX::getOffset(wchar_t const *text, ftgxDataOffset *offset) {
-    this->getOffset(text, offset);
-}
-
-/**
  * Copies the supplied texture quad to the EFB.
  *
  * This routine uses the in-built GX quad builder functions to define the
