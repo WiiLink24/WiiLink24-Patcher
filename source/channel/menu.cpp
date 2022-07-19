@@ -19,11 +19,18 @@
 #include "download.h"
 #include "main.h"
 #include "menu.h"
+#include <ogc/machine/processor.h>
 
 extern "C" {
     #include "wad/wad.h"
 }
 
+bool is_in_vwii() {
+    // Even in vWii mode, 0x0d8005a0 (LT_CHIPREVID) will have its upper
+    // 16 bits set to 0xCAFE. We can compare against this.
+    // See also: https://wiiubrew.org/wiki/Hardware/Latte_registers
+    return read32(0x0d8005a0) >> 16 == 0xCAFE;
+}
 
 #define THREAD_SLEEP 100
 // 48 KiB was chosen after many days of testing.
@@ -505,7 +512,11 @@ static int MenuCredits() {
      } else {
          wadFile = "fat:/SPD.wad";
          channelName = "Installing Set Personal Data";
-         channelUrl.append("WiiLink24_SPD.wad");
+         if (is_in_vwii()) {
+            channelUrl.append("WiiLink24_SPD_vWii.wad");
+         } else {
+            channelUrl.append("WiiLink24_SPD.wad");
+         }
      }
 
      int menu = MENU_NONE;
