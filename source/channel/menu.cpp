@@ -23,6 +23,10 @@
 
 extern "C" {
     #include "wad/wad.h"
+    // "Private" function, of sorts,
+    // from libpatcher. Should likely be made public
+    // in the future.
+    extern bool is_dolphin();
 }
 
 bool is_in_vwii() {
@@ -589,15 +593,35 @@ static int MenuCredits() {
          usleep(THREAD_SLEEP);
 
          if (state == STATE_INSTALL) {
-             msgTxt.SetText("Installing WAD...");
-             fp = fopen(wadFile, "rb");
-             install_code = install_WAD(fp);
-             fclose(fp);
-             if (install_code != 0) {
-                state = STATE_INSTALL_ERROR;
-             } else {
-                 state = STATE_FINISHED;
-             }
+            // Determine if we're running under Dolphin.
+            if (is_dolphin()) {
+                state = STATE_DOLPHIN_MESSAGE;
+            } else {
+                msgTxt.SetText("Installing WAD...");
+                fp = fopen(wadFile, "rb");
+                install_code = install_WAD(fp);
+                fclose(fp);
+                if (install_code != 0) {
+                    state = STATE_INSTALL_ERROR;
+                } else {
+                    state = STATE_FINISHED;
+                }
+            }
+         } else if (state == STATE_DOLPHIN_MESSAGE) {
+            mainWindow->Remove(&promptWindow);
+            promptWindow.Append(&btn1);
+            titleTxt.SetText("WAD Downloaded");
+
+            mainWindow->Remove(&promptWindow);
+            promptWindow.Append(&btn1);
+            titleTxt.SetText("WAD Downloaded");
+            // Space out the domain to allow for line wrapping.
+            msgTxt.SetText("Next, install the WAD from the SD card: https://dolphin-emu.org/ docs/guides/virtual-sd-card-guide/");
+            HaltGui();
+            mainWindow->Append(&promptWindow);
+            mainWindow->ChangeFocus(&promptWindow);
+            ResumeGui();
+            state = STATE_NONE;
          } else if (state == STATE_FINISHED) {
              mainWindow->Remove(&promptWindow);
              promptWindow.Append(&btn1);
