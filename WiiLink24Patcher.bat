@@ -8,10 +8,10 @@ echo	The program is starting...
 	)
 :: ===========================================================================
 :: WiiLink24 Patcher for Windows
-set version=1.0.6
+set version=1.0.5
 :: AUTHORS: KcrPL
 :: ***************************************************************************
-:: Copyright (c) 2020-2022 KcrPL
+:: Copyright (c) 2020 KcrPL
 :: ===========================================================================
 set FilesHostedOn=https://patcher.wiilink24.com/Patchers_Auto_Update/WiiLink24-Patcher/v1
 
@@ -23,10 +23,6 @@ set FilesHostedOn=https://patcher.wiilink24.com/Patchers_Auto_Update/WiiLink24-P
 	if "%1"=="/C" goto cli_create_patch_1
 	if "%1"=="--create-patch" goto cli_create_patch_1
 	
-if not "%1"=="-conhost" (
-	start conhost.exe %~dpnx0 -conhost 
-	exit /b 0
-	)
 
 :script_start
 echo 	.. Setting up the variables
@@ -53,8 +49,8 @@ set title=WiiLink24 Patcher v%version% Created by @KcrPL
 
 title %title%
 
-set last_build=2022/09/02
-set at=21:39 CEST
+set last_build=2021/05/15
+set at=19:26
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
@@ -169,6 +165,26 @@ if exist 000100014843444av1024.wad del /s /q 000100014843444av1024.wad>NUL
 echo [OK   ] Cleanup.
 echo.
 
+goto cli_create_patch_2
+
+
+:cli_create_patch_2
+echo [INFO ] Creating patch for: Digicam Print Channel
+echo.
+
+if not exist Digicam_Print_Channel_Patched.wad (
+
+	echo [ERROR] Could not detect Digicam_Print_Channel_Patched.wad in the folder where I am. Exiting...
+	
+if exist unpack_patched rmdir /s /q unpack_patched>NUL
+if exist unpack rmdir /s /q unpack>NUL
+if exist libWiiSharp.dll del /s /q libWiiSharp.dll>NUL
+if exist Sharpii.exe del /s /q Sharpii.exe>NUL
+if exist WadInstaller.dll del /s /q WadInstaller.dll>NUL
+if exist xdelta3.exe del /s /q xdelta3.exe>NUL
+if exist 000100014843494Av1025.wad del /s /q 000100014843494Av1025.wad>NUL
+if exist 000100014843444av1024.wad del /s /q 000100014843444av1024.wad>NUL
+
 	if "%wiinoma_completed%"=="1" ( 
 
 		echo.
@@ -180,21 +196,7 @@ echo.
 		echo - WiinoMa_000100014843494a_tmd_patch.delta
 		echo - WiinoMa_000100014843494a.tik_patch.delta
 	)
-
-
-goto cli_create_patch_2
-
-
-:cli_create_patch_2
-echo.
-echo [INFO ] Creating patch for: Digicam Print Channel
-set /a digicamprint_completed=0
-
-if not exist Digicam_Print_Channel_Patched.wad (
-
-	echo [ERROR] Could not detect Digicam_Print_Channel_Patched.wad in the folder where I am.
-
-goto cli_create_patch_3
+goto cli_create_patch_job_done
 )
 
 echo [OK   ] Digicam_Print_Channel_Patched.wad found.
@@ -234,7 +236,6 @@ xdelta3.exe -f -e -s unpack\000100014843444a.tmd unpack_patched\000100014843444a
 xdelta3.exe -f -e -s unpack\000100014843444a.tik unpack_patched\000100014843444a.tik DigicamPrintChannel_000100014843444a.tik_patch.delta
 
 echo [OK   ] Creating patches completed.
-set /a digicamprint_completed=1
 
 if exist unpack_patched rmdir /s /q unpack_patched>NUL
 if exist unpack rmdir /s /q unpack>NUL
@@ -249,158 +250,22 @@ echo [OK   ] Cleanup.
 echo.
 echo The following files were created: 
 echo.
-	if "%digicamprint_completed%"=="1" (
+	if "%wiinoma_completed%"=="1" (
+		echo - WiinoMa_00000000_patch.delta
+		echo - WiinoMa_00000001_patch.delta
+		echo - WiinoMa_00000002_patch.delta
+		echo - WiinoMa_000100014843494a_tmd_patch.delta
+		echo - WiinoMa_000100014843494a.tik_patch.delta
+		echo.
+	)
 echo - DigicamPrintChannel_00000000_patch.delta
 echo - DigicamPrintChannel_00000001_patch.delta
 echo - DigicamPrintChannel_00000002_patch.delta
 echo - DigicamPrintChannel_000100014843444a_tmd_patch
 echo - DigicamPrintChannel_000100014843444a.tik_patch.delta
 echo.
-)
-goto cli_create_patch_3
-:cli_create_patch_3
-echo.
-echo [INFO ] Creating patch for: Demae Channel [JP]
-set /a demae_completed=0
-if not exist Demae_Channel_Patched_JP.wad (
-
-	echo [ERROR] Could not detect Demae_Channel_Patched_JP.wad in the folder where I am. 
-	
-goto :cli_create_patch_3_1
-)
-
-
-echo [OK   ] Demae_Channel_Patched_JP.wad found.
-
-
-
-if not "%tools_downloaded%"=="1" ( 
-
-echo [INFO ] Beginning downloading tools.
-curl -s -f -L --insecure "%FilesHostedOn%/WiinoMa_Patcher/{libWiiSharp.dll,Sharpii.exe,WadInstaller.dll,xdelta3.exe}" -O --remote-name-all
-			set /a temperrorlev=%errorlevel%
-			if not !temperrorlev!==0 echo [ERROR] Error while downloading tools. CURL Exit code: %temperrorlev% & GOTO:EOF
-			set /a tools_downloaded=1
-echo         ...OK^^!
-)
-
-
-echo [INFO ] Downloading original Demae Channel. This will take a second or two...
-call Sharpii.exe NUSD -ID 000100014843484a -wad>NUL
-			set /a temperrorlev=%errorlevel%
-			if not %temperrorlev%==0 echo [ERROR] Downloading Demae. Exit code: %temperrorlev% & GOTO:EOF
-echo         ...OK^^!
-echo [INFO ] Beginning unpacking the original WAD.
-call Sharpii.exe WAD -u 000100014843484av512.wad unpack>NUL
-echo         ...OK^^!
-
-echo [INFO ] Beginning unpacking the patched WAD.
-call Sharpii.exe WAD -u Demae_Channel_Patched_JP.wad unpack_patched>NUL
-
-echo         ...OK^^!
-
-echo [INFO ] Creating patches.
-xdelta3.exe -f -e -s unpack\00000001.app unpack_patched\00000001.app DemaeChannel_JP_00000001_patch.delta
-xdelta3.exe -f -e -s unpack\000100014843484a.tmd unpack_patched\000100014843484a.tmd DemaeChannel_JP_000100014843484a.tmd_patch.delta
-xdelta3.exe -f -e -s unpack\000100014843484a.tik unpack_patched\000100014843484a.tik DemaeChannel_JP_000100014843484a.tik_patch.delta
-
-echo [OK   ] Creating patches completed.
-set /a demae_completed=1
-if exist 000100014843484av512.wad del /s /q 000100014843484av512.wad>NUL
-if exist unpack_patched rmdir /s /q unpack_patched>NUL
-if exist unpack rmdir /s /q unpack>NUL
-
-echo The following files were created: 
-echo.
-		echo - DemaeChannel_JP_00000001_patch.delta
-		echo - DemaeChannel_JP_000100014843484a.tmd_patch.delta
-		echo - DemaeChannel_JP_000100014843484a.tik_patch.delta
-		echo.
-	)
-
-goto cli_create_patch_3_1
-:cli_create_patch_3_1
-echo.
-echo [INFO ] Creating patch for: Demae Channel [EN]
-set /a demae_completed=0
-if not exist Demae_Channel_Patched_EN.wad (
-
-	echo [ERROR] Could not detect Demae_Channel_Patched_EN.wad in the folder where I am. 
-	
-goto :cli_create_patch_4
-)
-
-
-echo [OK   ] Demae_Channel_Patched_EN.wad found.
-
-if not "%tools_downloaded%"=="1" ( 
-
-echo [INFO ] Beginning downloading tools.
-curl -s -f -L --insecure "%FilesHostedOn%/WiinoMa_Patcher/{libWiiSharp.dll,Sharpii.exe,WadInstaller.dll,xdelta3.exe}" -O --remote-name-all
-			set /a temperrorlev=%errorlevel%
-			if not !temperrorlev!==0 echo [ERROR] Error while downloading tools. CURL Exit code: %temperrorlev% & GOTO:EOF
-			set /a tools_downloaded=1
-echo         ...OK^^!
-)
-
-
-echo [INFO ] Downloading original Demae Channel. This will take a second or two...
-call Sharpii.exe NUSD -ID 000100014843484a -wad>NUL
-			set /a temperrorlev=%errorlevel%
-			if not %temperrorlev%==0 echo [ERROR] Downloading Demae. Exit code: %temperrorlev% & GOTO:EOF
-
-echo         ...OK^^!
-echo [INFO ] Beginning unpacking the original WAD.
-call Sharpii.exe WAD -u 000100014843484av512.wad unpack>NUL
-echo         ...OK^^!
-
-echo [INFO ] Beginning unpacking the patched WAD.
-call Sharpii.exe WAD -u Demae_Channel_Patched_EN.wad unpack_patched>NUL
-echo         ...OK^^!
-
-echo [INFO ] Creating patches.
-xdelta3.exe -f -e -s unpack\00000000.app unpack_patched\00000000.app DemaeChannel_EN_00000000_patch.delta
-xdelta3.exe -f -e -s unpack\00000001.app unpack_patched\00000001.app DemaeChannel_EN_00000001_patch.delta
-xdelta3.exe -f -e -s unpack\00000002.app unpack_patched\00000002.app DemaeChannel_EN_00000002_patch.delta
-xdelta3.exe -f -e -s unpack\000100014843484a.tmd unpack_patched\000100014843484a.tmd DemaeChannel_EN_000100014843484a.tmd_patch.delta
-xdelta3.exe -f -e -s unpack\000100014843484a.tik unpack_patched\000100014843484a.tik DemaeChannel_EN_000100014843484a.tik_patch.delta
-
-echo [OK   ] Creating patches completed.
-set /a demae_completed=1
-
-:: Cleanup
-if exist 000100014843484av512.wad del /s /q 000100014843484av512.wad>NUL
-if exist unpack_patched rmdir /s /q unpack_patched>NUL
-if exist unpack rmdir /s /q unpack>NUL
-
-echo The following files were created: 
-echo.
-		echo - DemaeChannel_EN_00000000_patch.delta
-		echo - DemaeChannel_EN_00000001_patch.delta
-		echo - DemaeChannel_EN_00000002_patch.delta
-		echo - DemaeChannel_EN_000100014843484a.tmd_patch.delta
-		echo - DemaeChannel_EN_000100014843484a.tik_patch.delta
-		echo.
-	)
-
-goto cli_create_patch_4
-
-:cli_create_patch_4
 goto cli_create_patch_job_done
 :cli_create_patch_job_done
-:: Cleanup
-
-if exist unpack_patched rmdir /s /q unpack_patched>NUL
-if exist unpack rmdir /s /q unpack>NUL
-if exist libWiiSharp.dll del /s /q libWiiSharp.dll>NUL
-if exist Sharpii.exe del /s /q Sharpii.exe>NUL
-if exist WadInstaller.dll del /s /q WadInstaller.dll>NUL
-if exist xdelta3.exe del /s /q xdelta3.exe>NUL
-if exist 000100014843494Av1025.wad del /s /q 000100014843494Av1025.wad>NUL
-if exist 000100014843444av1024.wad del /s /q 000100014843444av1024.wad>NUL
-if exist 000100014843484av512.wad del /s /q 000100014843484av512.wad>NUL
-
-
 
 :: Get end time:
 for /F "tokens=1-4 delims=:.," %%a in ("%time%") do (
@@ -934,7 +799,6 @@ if exist "%TempStorage%\annoucement.txt" (
 	echo.
 	echo --------------------
 	)
-	echo.
 ::if "%translation_download_error%"=="1" if not "%language%"=="English" ( 
 ::echo :-----------------------------------------------------------------------:
 ::echo : There was an error while downloading the up-to-date translation.      :
@@ -1042,32 +906,16 @@ echo The entire process should take about 1 to 3 minutes depending on your compu
 echo.
 echo But before starting, you need to tell me one thing:
 echo.
-echo What language of the channels do you want? 
+echo For Wii no Ma, what language do you want to download? 
 echo.
 echo 1. English
 echo 2. Japanese
 echo.
 set /p s=Choose: 
-if %s%==1 set /a region=1& goto 1_install_wiilink24_3_2
-if %s%==2 set /a region=2& goto 1_install_wiilink24_3_2
+if %s%==1 set /a region=1& goto 1_install_wiilink24_4
+if %s%==2 set /a region=2& goto 1_install_wiilink24_4
 goto 1_install_wiilink24_3
-:1_install_wiilink24_3_2
-cls
-echo %header%
-echo %line%
-echo.
-echo Before be begin, I need to know what platform you're installing WiiLink on.
-echo This setting will change the version of SPD that I will download so channels like Demae works.
-echo.
-echo What platform are you using?
-echo.
-echo 1. Wii (or Dolphin Emulator)
-echo 2. Wii U (vWii)
-echo.
-set /p s=Choose: 
-if %s%==1 set /a platform_type=wii& goto 1_install_wiilink24_4
-if %s%==2 set /a platform_type=wiiu& goto 1_install_wiilink24_4
-goto 1_install_wiilink24_3_2
+
 :1_install_wiilink24_4
 cls
 echo %header%
@@ -1139,7 +987,7 @@ echo 1. Yes
 echo 2. No
 set /p s=Choose: 
 if %s%==1 rmdir /s /q "WAD"& goto 1_install_wiilink24_6
-if %s%==2 goto begin_main
+if %s%==2 goto 2_1_summary_wiiu
 goto 1_install_wiilink24_5_wad_folder
 :1_install_wiilink24_6
 cls
@@ -1152,7 +1000,6 @@ set /a temperrorlev=0
 set /a progress_downloading=0
 set /a progress_wiinoma=0
 set /a progress_digicam_print_channel=0
-set /a progress_demae_channel=0
 set /a progress_finishing=0
 
 if "%prerelease_status%"=="1" goto 1_install_wiilink24_6_prerelease
@@ -1190,10 +1037,9 @@ if %s%==2 goto begin_main
 ::if %percent%==100 set /a counter_done=10
 
 if %percent%==1 set counter_done=2
-if %percent%==2 set counter_done=3
-if %percent%==3 set counter_done=5
-if %percent%==4 set counter_done=7
-if %percent%==5 set counter_done=9
+if %percent%==2 set counter_done=5
+if %percent%==3 set counter_done=7
+if %percent%==4 set counter_done=8
 
 
 cls
@@ -1222,13 +1068,11 @@ if "%progress_wiinoma%"=="0" echo [ ] Wii no Ma
 if "%progress_wiinoma%"=="1" echo [X] Wii no Ma
 if "%progress_digicam_print_channel%"=="0" echo [ ] Digicam Print Channel
 if "%progress_digicam_print_channel%"=="1" echo [X] Digicam Print Channel
-if "%progress_demae_channel%"=="0" echo [ ] Demae Channel
-if "%progress_demae_channel%"=="1" echo [X] Demae Channel
 if "%progress_finishing%"=="0" echo [ ] Finishing...
 if "%progress_finishing%"=="1" echo [X] Finishing...
 
 call :patching_fast_travel_%percent%
-if %percent%==6 goto 1_install_wiilink24_8
+if %percent%==5 goto 1_install_wiilink24_8
 
 set /a percent=%percent%+1
 goto 1_install_wiilink24_7
@@ -1245,27 +1089,18 @@ if exist DigicamPrintChannel_1.delta del /q DigicamPrintChannel_1.delta
 if exist DigicamPrintChannel_2.delta del /q DigicamPrintChannel_2.delta
 if exist DigicamPrintChannel_tik.delta del /q DigicamPrintChannel_tik.delta
 if exist DigicamPrintChannel_tmd.delta del /q DigicamPrintChannel_tmd.delta
-if exist DemaeChannel_0_English.delta del /q DemaeChannel_0_English.delta
-if exist DemaeChannel_1_English.delta del /q DemaeChannel_1_English.delta
-if exist DemaeChannel_1_Japanese.delta del /q DemaeChannel_1_Japanese.delta
-if exist DemaeChannel_2_English.delta del /q DemaeChannel_2_English.delta
-if exist DemaeChannel_tik.delta del /q DemaeChannel_tik.delta
-if exist DemaeChannel_tmd.delta del /q DemaeChannel_tmd.delta
 if exist WiinoMa_tik.delta del /q WiinoMa_tik.delta
 if exist WiinoMa_tmd.delta del /q WiinoMa_tmd.delta
 
 	set /a clean_runtime=0
 	)
 	
-if exist 000100014843484av512.wad del /q 000100014843484av512.wad
 if exist 000100014843494Av1025.wad del /q 000100014843494Av1025.wad
 if exist 000100014843444av1024.wad del /q 000100014843444av1024.wad
 if exist 000100014843444a.tik del /q 000100014843444a.tik
 if exist 000100014843494a.tik del /q 000100014843494a.tik
 if exist 000100014843494a.tmd del /q 000100014843494a.tmd
-if exist 000100014843444a.tmd del /q 000100014843444a.tmd
-if exist 000100014843484a.tik del /q 000100014843484a.tik
-if exist 000100014843484a.tmd del /q 000100014843484a.tmd
+if exist 000100014843444a.tmd	 del /q 000100014843444a.tmd
 if exist 00000000.app del /q 00000000.app
 if exist 00000001.app del /q 00000001.app
 if exist 00000002.app del /q 00000002.app
@@ -1341,34 +1176,10 @@ curl -f -L -s -S --insecure "%FilesHostedOn%/patches/DigicamPrintChannel_tik_EN.
 	set modul=Downloading English Delta
 	if not %temperrorlev%==0 goto error_patching
 	
-curl -f -L -s -S --insecure "%FilesHostedOn%/patches/DemaeChannel_0_English.delta" -o "DemaeChannel_0_English.delta"
-	set /a temperrorlev=%errorlevel%
-	set modul=Downloading English Delta
-	if not %temperrorlev%==0 goto error_patching
-curl -f -L -s -S --insecure "%FilesHostedOn%/patches/DemaeChannel_1_English.delta" -o "DemaeChannel_1_English.delta"
-	set /a temperrorlev=%errorlevel%
-	set modul=Downloading English Delta
-	if not %temperrorlev%==0 goto error_patching
-curl -f -L -s -S --insecure "%FilesHostedOn%/patches/DemaeChannel_2_English.delta" -o "DemaeChannel_2_English.delta"
-	set /a temperrorlev=%errorlevel%
-	set modul=Downloading English Delta
-	if not %temperrorlev%==0 goto error_patching
-curl -f -L -s -S --insecure "%FilesHostedOn%/patches/DemaeChannel_tmd_EN.delta" -o "DemaeChannel_tmd.delta"
-	set /a temperrorlev=%errorlevel%
-	set modul=Downloading English Delta
-	if not %temperrorlev%==0 goto error_patching
-curl -f -L -s -S --insecure "%FilesHostedOn%/patches/DemaeChannel_tik_EN.delta" -o "DemaeChannel_tik.delta"
-	set /a temperrorlev=%errorlevel%
-	set modul=Downloading English Delta
-	if not %temperrorlev%==0 goto error_patching
 	
-	
-
-
 
 set language_wiinoma=English
 set language_digicam_print_channel=English
-set language_demae_channel=English
 	)
 
 if %region%==2 (
@@ -1414,27 +1225,10 @@ curl -f -L -s -S --insecure "%FilesHostedOn%/patches/DigicamPrintChannel_tik_JPN
 	set modul=Downloading Japanese Delta
 	if not %temperrorlev%==0 goto error_patching
 	
-curl -f -L -s -S --insecure "%FilesHostedOn%/patches/DemaeChannel_1_Japanese.delta" -o "DemaeChannel_1_Japanese.delta"
-	set /a temperrorlev=%errorlevel%
-	set modul=Downloading Japanese Delta
-	if not %temperrorlev%==0 goto error_patching
-curl -f -L -s -S --insecure "%FilesHostedOn%/patches/DemaeChannel_tmd_JPN.delta" -o "DemaeChannel_tmd.delta"
-	set /a temperrorlev=%errorlevel%
-	set modul=Downloading Japanese Delta
-	if not %temperrorlev%==0 goto error_patching
-curl -f -L -s -S --insecure "%FilesHostedOn%/patches/DemaeChannel_tik_JPN.delta" -o "DemaeChannel_tik.delta"
-	set /a temperrorlev=%errorlevel%
-	set modul=Downloading Japanese Delta
-	if not %temperrorlev%==0 goto error_patching
-	
-	
-	
-	
-	
 	
 set language_wiinoma=Japanese
 set language_digicam_print_channel=Japanese
-set language_demae_channel=Japanese
+
 
 	)
 
@@ -1453,24 +1247,6 @@ curl -f -L -s -S --insecure "%FilesHostedOn%/apps/WiiModLite/icon.png" -o "apps/
 	set modul=Downloading Wii Mod Lite
 	if not %temperrorlev%==0 goto error_patching
 
-curl -f -L -s -S --insecure "%FilesHostedOn%/apps/WiiModLite/icon.png" -o "apps/WiiModLite/icon.png"
-	set /a temperrorlev=%errorlevel%
-	set modul=Downloading Wii Mod Lite
-	if not %temperrorlev%==0 goto error_patching
-	
-if "%platform_type%"=="wii" (
-curl -f -L -s -S --insecure "https://patcher.wiilink24.com/WiiLink24_SPD.wad" -o "WAD/WiiLink24 SPD (Wii).wad"
-	set /a temperrorlev=%errorlevel%
-	set modul=Downloading Wii Mod Lite
-	if not %temperrorlev%==0 goto error_patching
-	)
-
-if "%platform_type%"=="wiiu" (
-curl -f -L -s -S --insecure "https://patcher.wiilink24.com/WiiLink24_SPD_vWii.wad" -o "WAD/WiiLink24 SPD (vWii).wad"
-	set /a temperrorlev=%errorlevel%
-	set modul=Downloading Wii Mod Lite
-	if not %temperrorlev%==0 goto error_patching
-	)
 
 set /a progress_downloading=1
 exit /b 0
@@ -1601,94 +1377,11 @@ call WiinoMa_Patcher\Sharpii.exe WAD -p unpack\ "WAD\Digicam Print Channel (%lan
 	set modul=Packing Digicam Print Channel WAD
 	if not %temperrorlev%==0 goto error_patching
 
-set /a clean_runtime=0
-call :files_cleanup
 
 set /a progress_digicam_print_channel=1
 exit /b 0
 
 :patching_fast_travel_4
-
-::Download Demae Channel
-:: 1 - ENG 2 - JPN
-call WiinoMa_Patcher\Sharpii.exe NUSD -ID 000100014843484a -wad>NUL
-	set /a temperrorlev=%errorlevel%
-	set modul=Downloading Demae Channel
-	if not %temperrorlev%==0 goto error_patching
-	
-call WiinoMa_Patcher\Sharpii.exe WAD -u 000100014843484av512.wad unpack>NUL
-	set /a temperrorlev=%errorlevel%
-	set modul=Downloading Demae Channel
-	if not %temperrorlev%==0 goto error_patching
-	
-if %region%==1 (
-	move unpack\00000000.app 00000000.app>NUL
-	set /a temperrorlev=%errorlevel%
-	set modul=Moving Demae Channel .app
-	if not %temperrorlev%==0 goto error_patching
-	)
-move unpack\00000001.app 00000001.app>NUL
-	set /a temperrorlev=%errorlevel%
-	set modul=Moving Demae Channel .app
-	if not %temperrorlev%==0 goto error_patching
-if %region%==1 (
-	move unpack\00000002.app 00000002.app>NUL
-	set /a temperrorlev=%errorlevel%
-	set modul=Moving Demae Channel .app
-	if not %temperrorlev%==0 goto error_patching
-	)
-move unpack\000100014843484a.tmd 000100014843484a.tmd>NUL
-	set /a temperrorlev=%errorlevel%
-	set modul=Moving Demae Channel .tmd
-	if not %temperrorlev%==0 goto error_patching
-move unpack\000100014843484a.tik 000100014843484a.tik>NUL
-	set /a temperrorlev=%errorlevel%
-	set modul=Moving Demae Channel .tik
-	if not %temperrorlev%==0 goto error_patching
-
-if %region%==1 (
-
-call WiinoMa_Patcher\xdelta3.exe -d -s 00000000.app DemaeChannel_0_English.delta unpack\00000000.app>NUL
-	set /a temperrorlev=%errorlevel%
-	set modul=Applying Demae Channel patch
-	if not %temperrorlev%==0 goto error_patching
-call WiinoMa_Patcher\xdelta3.exe -d -s 00000001.app DemaeChannel_1_English.delta unpack\00000001.app>NUL
-	set /a temperrorlev=%errorlevel%
-	set modul=Applying Demae Channel patch
-	if not %temperrorlev%==0 goto error_patching
-call WiinoMa_Patcher\xdelta3.exe -d -s 00000002.app DemaeChannel_2_English.delta unpack\00000002.app>NUL
-	set /a temperrorlev=%errorlevel%
-	set modul=Applying Demae Channel patch
-	if not %temperrorlev%==0 goto error_patching
-	)
-if %region%==2 (
-
-call WiinoMa_Patcher\xdelta3.exe -d -s 00000001.app DemaeChannel_1_Japanese.delta unpack\00000001.app>NUL
-	set /a temperrorlev=%errorlevel%
-	set modul=Applying Demae Channel patch
-	if not %temperrorlev%==0 goto error_patching
-	)
-	
-call WiinoMa_Patcher\xdelta3.exe -d -s 000100014843484a.tmd DemaeChannel_tmd.delta unpack\000100014843484a.tmd>NUL
-	set /a temperrorlev=%errorlevel%
-	set modul=Applying Demae Channel patch
-	if not %temperrorlev%==0 goto error_patching
-call WiinoMa_Patcher\xdelta3.exe -d -s 000100014843484a.tik DemaeChannel_tik.delta unpack\000100014843484a.tik>NUL
-	set /a temperrorlev=%errorlevel%
-	set modul=Applying Demae Channel patch
-	if not %temperrorlev%==0 goto error_patching
-
-
-call WiinoMa_Patcher\Sharpii.exe WAD -p unpack\ "WAD\Demae Channel (%language_demae_channel%) (WiiLink24).wad">NUL
-	set /a temperrorlev=%errorlevel%
-	set modul=Packing Demae Channel WAD
-	if not %temperrorlev%==0 goto error_patching
-
-set /a progress_demae_channel=1
-exit /b 0
-
-
-:patching_fast_travel_5
 set /a errorcopying=0
 if not %sdcard%==NUL echo.&echo Copying files. This may take a while. Give me a second.
 if not %sdcard%==NUL xcopy /y "WAD" "%sdcard%:\WAD\" /e || set /a errorcopying=1
@@ -1715,7 +1408,7 @@ if "%sdcardstatus%"=="1" if not "%sdcard%"=="NUL" if "%errorcopying%"=="0" echo 
 if "%sdcardstatus%"=="1" if not "%sdcard%"=="NUL" if "%errorcopying%"=="1" echo You can find these folders next to WiiLink24Patcher.bat
 echo.
 echo Please install the .WAD file on your Wii by using Wii Mod Lite.
-echo I also attached it with the WADs.
+echo I also attached it with the WAD.
 echo.
 echo What next?
 echo.
