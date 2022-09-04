@@ -8,7 +8,7 @@ echo	The program is starting...
 	)
 :: ===========================================================================
 :: WiiLink24 Patcher for Windows
-set version=1.0.6
+set version=1.0.7
 :: AUTHORS: KcrPL
 :: ***************************************************************************
 :: Copyright (c) 2020-2022 KcrPL
@@ -22,11 +22,6 @@ set FilesHostedOn=https://patcher.wiilink24.com/Patchers_Auto_Update/WiiLink24-P
 	
 	if "%1"=="/C" goto cli_create_patch_1
 	if "%1"=="--create-patch" goto cli_create_patch_1
-	
-if not "%1"=="-conhost" (
-	start conhost.exe %~dpnx0 -conhost 
-	exit /b 0
-	)
 
 :script_start
 echo 	.. Setting up the variables
@@ -53,8 +48,8 @@ set title=WiiLink24 Patcher v%version% Created by @KcrPL
 
 title %title%
 
-set last_build=2022/09/02
-set at=21:39 CEST
+set last_build=2022/09/04
+set at=15:01 CEST
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
