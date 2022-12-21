@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-FilesHostedOn1="https://sketchmaster2001.github.io/RC24_Patcher/Sharpii"
+FilesHostedOn1="https://noahpistilli.github.io/RC24_Patcher/Sharpii"
 FilesHostedOn2=https://kcrpl.github.io/Patchers_Auto_Update/WiiLink24-Patcher/v1
 FilesHostedOn3=https://patcher.wiilink24.com
 version=1.0.5
 last_build=2021/05/14
 at=10:16AM
-helpmsg="Please contact SketchMaster2001#0024 on Discord regarding this error." 
+helpmsg="Please contact Sketch#4374 on Discord regarding this error." 
 cd "$(dirname ${0})"
 
 # Uses 1 function instead of rewriting "Sharpii...xdelta...curl" for when WiiLink Supports more than 1 Channel
