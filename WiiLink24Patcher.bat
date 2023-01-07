@@ -2,6 +2,8 @@
 setlocal EnableDelayedExpansion
 cd /d "%~dp0"
 
+ver | C:\Windows\system32\findstr.exe "10.0">NUL && set /a conhost_enable=1
+
 if "%1"=="" (
 echo 	Starting up...
 echo	The program is starting...
@@ -11,7 +13,7 @@ echo	The program is starting...
 set version=1.0.7
 :: AUTHORS: KcrPL
 :: ***************************************************************************
-:: Copyright (c) 2020-2022 KcrPL
+:: Copyright (c) 2020-2023 KcrPL
 :: ===========================================================================
 set FilesHostedOn=https://patcher.wiilink24.com/Patchers_Auto_Update/WiiLink24-Patcher/v1
 
@@ -22,6 +24,11 @@ set FilesHostedOn=https://patcher.wiilink24.com/Patchers_Auto_Update/WiiLink24-P
 	
 	if "%1"=="/C" goto cli_create_patch_1
 	if "%1"=="--create-patch" goto cli_create_patch_1
+	
+if %conhost_enable%==1 if not "%1"=="-conhost" (
+	start conhost.exe "%~dpnx0" -conhost
+	exit /b 0
+	)
 
 :script_start
 echo 	.. Setting up the variables
@@ -48,8 +55,8 @@ set title=WiiLink24 Patcher v%version% Created by @KcrPL
 
 title %title%
 
-set last_build=2022/09/04
-set at=15:01 CEST
+set last_build=2023/01/07
+set at=22:45 CEST
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
@@ -381,6 +388,248 @@ echo.
 goto cli_create_patch_4
 
 :cli_create_patch_4
+echo.
+echo [INFO ] Creating patch for: Nintendo Channel [USA]
+set /a nc_completed=0
+if not exist Nintendo_Channel_Patched_USA.wad (
+
+	echo [ERROR] Could not detect Nintendo_Channel_Patched_USA.wad in the folder where I am. 
+	
+goto :cli_create_patch_4_1
+)
+
+
+echo [OK   ] Nintendo_Channel_Patched_USA.wad found.
+
+if not "%tools_downloaded%"=="1" ( 
+
+echo [INFO ] Beginning downloading tools.
+curl -s -f -L --insecure "%FilesHostedOn%/WiinoMa_Patcher/{libWiiSharp.dll,Sharpii.exe,WadInstaller.dll,xdelta3.exe}" -O --remote-name-all
+			set /a temperrorlev=%errorlevel%
+			if not !temperrorlev!==0 echo [ERROR] Error while downloading tools. CURL Exit code: %temperrorlev% & GOTO:EOF
+			set /a tools_downloaded=1
+echo         ...OK^^!
+)
+
+
+echo [INFO ] Downloading original Nintendo Channel. This will take a second or two...
+
+if not exist 0001000148415445v1792 md 0001000148415445v1792
+curl -s -f -L --insecure "%FilesHostedOn%/NC_Patcher/cert.sys" --output "0001000148415445v1792\cert.sys"
+curl -s -f -L --insecure "%FilesHostedOn%/NC_Patcher/dwn/0001000148415445v1792/cetk" --output "0001000148415445v1792\cetk"
+curl -s -f -L --insecure "%FilesHostedOn%/NC_Patcher/NUS_Downloader_Decrypt.exe" --output "0001000148415445v1792\NUS_Downloader_Decrypt.exe"
+
+
+call Sharpii.exe NUSD -ID 0001000148415445 -encrypt
+			set /a temperrorlev=%errorlevel%
+			if not %temperrorlev%==0 echo [ERROR] Downloading Nintendo Channel. Exit code: %temperrorlev% & GOTO:EOF
+
+echo         ...OK^^!
+
+
+ren "0001000148415445v1792\tmd.1792" "tmd"
+cd 0001000148415445v1792
+call NUS_Downloader_Decrypt.exe
+cd ..
+
+move "0001000148415445v1792\*.wad" "0001000148415445v1792.wad"
+
+echo [INFO ] Beginning unpacking the original WAD.
+call Sharpii.exe WAD -u 0001000148415445v1792.wad unpack>NUL
+echo         ...OK^^!
+
+echo [INFO ] Beginning unpacking the patched WAD.
+call Sharpii.exe WAD -u Nintendo_Channel_Patched_USA.wad unpack_patched>NUL
+echo         ...OK^^!
+
+echo [INFO ] Creating patches.
+::xdelta3.exe -f -e -s unpack\00000000.app unpack_patched\00000000.app DemaeChannel_USA_00000000_patch.delta
+xdelta3.exe -f -e -s unpack\00000001.app unpack_patched\00000001.app NintendoChannel_USA_00000001_patch.delta
+::xdelta3.exe -f -e -s unpack\00000002.app unpack_patched\00000002.app DemaeChannel_USA_00000002_patch.delta
+xdelta3.exe -f -e -s unpack\0001000148415445.tmd unpack_patched\0001000148415445.tmd NintendoChannel_USA_0001000148415445.tmd_patch.delta
+xdelta3.exe -f -e -s unpack\0001000148415445.tik unpack_patched\0001000148415445.tik NintendoChannel_USA_0001000148415445.tik_patch.delta
+
+echo [OK   ] Creating patches completed.
+set /a nc_completed=1
+:: Cleanup
+if exist 0001000148415445v1792.wad del /s /q 0001000148415445v1792.wad>NUL
+if exist unpack_patched rmdir /s /q unpack_patched>NUL
+if exist unpack rmdir /s /q unpack>NUL
+if exist 0001000148415445v1792 rmdir /s /q 0001000148415445v1792>NUL
+
+echo The following files were created: 
+echo.
+		echo - NintendoChannel_USA_00000001_patch.delta
+		echo - NintendoChannel_USA_0001000148415445.tmd_patch.delta
+		echo - NintendoChannel_USA_0001000148415445.tik_patch.delta
+		echo.
+	)
+goto cli_create_patch_4_1
+
+
+:cli_create_patch_4_1
+echo.
+echo [INFO ] Creating patch for: Nintendo Channel [JPN]
+set /a nc_completed=0
+if not exist Nintendo_Channel_Patched_JPN.wad (
+
+	echo [ERROR] Could not detect Nintendo_Channel_Patched_JPN.wad in the folder where I am. 
+	
+goto :cli_create_patch_4_2
+)
+
+
+echo [OK   ] Nintendo_Channel_Patched_JPN.wad found.
+
+if not "%tools_downloaded%"=="1" ( 
+
+echo [INFO ] Beginning downloading tools.
+curl -s -f -L --insecure "%FilesHostedOn%/WiinoMa_Patcher/{libWiiSharp.dll,Sharpii.exe,WadInstaller.dll,xdelta3.exe}" -O --remote-name-all
+			set /a temperrorlev=%errorlevel%
+			if not !temperrorlev!==0 echo [ERROR] Error while downloading tools. CURL Exit code: %temperrorlev% & GOTO:EOF
+			set /a tools_downloaded=1
+echo         ...OK^^!
+)
+
+
+echo [INFO ] Downloading original Nintendo Channel. This will take a second or two...
+
+if not exist 000100014841544av1792 md 000100014841544av1792
+curl -s -f -L --insecure "%FilesHostedOn%/NC_Patcher/cert.sys" --output "000100014841544av1792\cert.sys"
+curl -s -f -L --insecure "%FilesHostedOn%/NC_Patcher/dwn/000100014841544av1792/cetk" --output "000100014841544av1792\cetk"
+curl -s -f -L --insecure "%FilesHostedOn%/NC_Patcher/NUS_Downloader_Decrypt.exe" --output "000100014841544av1792\NUS_Downloader_Decrypt.exe"
+
+
+call Sharpii.exe NUSD -ID 000100014841544a -encrypt
+			set /a temperrorlev=%errorlevel%
+			if not %temperrorlev%==0 echo [ERROR] Downloading Nintendo Channel. Exit code: %temperrorlev% & GOTO:EOF
+
+echo         ...OK^^!
+
+
+ren "000100014841544av1792\tmd.1792" "tmd"
+cd 000100014841544av1792
+call NUS_Downloader_Decrypt.exe
+cd ..
+
+move "000100014841544av1792\*.wad" "000100014841544av1792.wad"
+
+echo [INFO ] Beginning unpacking the original WAD.
+call Sharpii.exe WAD -u 000100014841544av1792.wad unpack>NUL
+echo         ...OK^^!
+
+echo [INFO ] Beginning unpacking the patched WAD.
+call Sharpii.exe WAD -u Nintendo_Channel_Patched_JPN.wad unpack_patched>NUL
+echo         ...OK^^!
+
+echo [INFO ] Creating patches.
+::xdelta3.exe -f -e -s unpack\00000000.app unpack_patched\00000000.app DemaeChannel_USA_00000000_patch.delta
+xdelta3.exe -f -e -s unpack\00000001.app unpack_patched\00000001.app NintendoChannel_JPN_00000001_patch.delta
+::xdelta3.exe -f -e -s unpack\00000002.app unpack_patched\00000002.app DemaeChannel_USA_00000002_patch.delta
+xdelta3.exe -f -e -s unpack\000100014841544a.tmd unpack_patched\000100014841544a.tmd NintendoChannel_JPN_000100014841544a.tmd_patch.delta
+xdelta3.exe -f -e -s unpack\000100014841544a.tik unpack_patched\000100014841544a.tik NintendoChannel_JPN_000100014841544a.tik_patch.delta
+
+echo [OK   ] Creating patches completed.
+set /a nc_completed=1
+
+:: Cleanup
+if exist 000100014841544av1792.wad del /s /q 000100014841544av1792.wad>NUL
+if exist 000100014841544av1792 rmdir /s /q 000100014841544av1792>NUL
+if exist unpack_patched rmdir /s /q unpack_patched>NUL
+if exist unpack rmdir /s /q unpack>NUL
+
+echo The following files were created: 
+echo.
+		echo - NintendoChannel_JPN_00000001_patch.delta
+		echo - NintendoChannel_JPN_000100014841544a.tmd_patch.delta
+		echo - NintendoChannel_JPN_000100014841544a.tik_patch.delta
+		echo.
+	)
+goto cli_create_patch_4_2
+
+:cli_create_patch_4_2
+echo.
+echo [INFO ] Creating patch for: Nintendo Channel [PAL]
+set /a nc_completed=0
+if not exist Nintendo_Channel_Patched_PAL.wad (
+
+	echo [ERROR] Could not detect Nintendo_Channel_Patched_PAL.wad in the folder where I am. 
+	
+goto :cli_create_patch_5
+)
+
+
+echo [OK   ] Nintendo_Channel_Patched_PAL.wad found.
+
+if not "%tools_downloaded%"=="1" ( 
+
+echo [INFO ] Beginning downloading tools.
+curl -s -f -L --insecure "%FilesHostedOn%/WiinoMa_Patcher/{libWiiSharp.dll,Sharpii.exe,WadInstaller.dll,xdelta3.exe}" -O --remote-name-all
+			set /a temperrorlev=%errorlevel%
+			if not !temperrorlev!==0 echo [ERROR] Error while downloading tools. CURL Exit code: %temperrorlev% & GOTO:EOF
+			set /a tools_downloaded=1
+echo         ...OK^^!
+)
+
+
+echo [INFO ] Downloading original Nintendo Channel. This will take a second or two...
+
+if not exist 0001000148415450v1792 md 0001000148415450v1792
+curl -s -f -L --insecure "%FilesHostedOn%/NC_Patcher/cert.sys" --output "0001000148415450v1792\cert.sys"
+curl -s -f -L --insecure "%FilesHostedOn%/NC_Patcher/dwn/0001000148415450v1792/cetk" --output "0001000148415450v1792\cetk"
+curl -s -f -L --insecure "%FilesHostedOn%/NC_Patcher/NUS_Downloader_Decrypt.exe" --output "0001000148415450v1792\NUS_Downloader_Decrypt.exe"
+
+
+call Sharpii.exe NUSD -ID 0001000148415450 -encrypt
+			set /a temperrorlev=%errorlevel%
+			if not %temperrorlev%==0 echo [ERROR] Downloading Nintendo Channel. Exit code: %temperrorlev% & GOTO:EOF
+
+echo         ...OK^^!
+
+
+ren "0001000148415450v1792\tmd.1792" "tmd"
+cd 0001000148415450v1792
+call NUS_Downloader_Decrypt.exe
+cd ..
+
+move "0001000148415450v1792\*.wad" "0001000148415450v1792.wad"
+
+echo [INFO ] Beginning unpacking the original WAD.
+call Sharpii.exe WAD -u 0001000148415450v1792.wad unpack>NUL
+echo         ...OK^^!
+
+echo [INFO ] Beginning unpacking the patched WAD.
+call Sharpii.exe WAD -u Nintendo_Channel_Patched_PAL.wad unpack_patched>NUL
+echo         ...OK^^!
+
+echo [INFO ] Creating patches.
+::xdelta3.exe -f -e -s unpack\00000000.app unpack_patched\00000000.app DemaeChannel_USA_00000000_patch.delta
+xdelta3.exe -f -e -s unpack\00000001.app unpack_patched\00000001.app NintendoChannel_PAL_00000001_patch.delta
+::xdelta3.exe -f -e -s unpack\00000002.app unpack_patched\00000002.app DemaeChannel_USA_00000002_patch.delta
+xdelta3.exe -f -e -s unpack\0001000148415450.tmd unpack_patched\0001000148415450.tmd NintendoChannel_PAL_0001000148415450.tmd_patch.delta
+xdelta3.exe -f -e -s unpack\0001000148415450.tik unpack_patched\0001000148415450.tik NintendoChannel_PAL_0001000148415450.tik_patch.delta
+
+echo [OK   ] Creating patches completed.
+set /a nc_completed=1
+pause
+:: Cleanup
+if exist 0001000148415450v1792.wad del /s /q 0001000148415450v1792.wad>NUL
+if exist 0001000148415450v1792 rmdir /s /q 0001000148415450v1792>NUL
+if exist unpack_patched rmdir /s /q unpack_patched>NUL
+if exist unpack rmdir /s /q unpack>NUL
+
+echo The following files were created: 
+echo.
+		echo - NintendoChannel_PAL_00000001_patch.delta
+		echo - NintendoChannel_PAL_0001000148415450.tmd_patch.delta
+		echo - NintendoChannel_PAL_0001000148415450.tik_patch.delta
+		echo.
+	)
+goto cli_create_patch_5
+
+
+:cli_create_patch_5
+
 goto cli_create_patch_job_done
 :cli_create_patch_job_done
 :: Cleanup
@@ -1037,7 +1286,7 @@ echo The entire process should take about 1 to 3 minutes depending on your compu
 echo.
 echo But before starting, you need to tell me one thing:
 echo.
-echo What language of the channels do you want? 
+echo For Wii no Ma, Digicam Print Channel and Demae Channel - what language of the channels do you want? 
 echo.
 echo 1. English
 echo 2. Japanese
@@ -1051,7 +1300,32 @@ cls
 echo %header%
 echo %line%
 echo.
-echo Before be begin, I need to know what platform you're installing WiiLink on.
+echo Alright, what region of Nintendo Channel do you want?
+echo.
+echo 1. Europe (E)
+echo 2. USA (U)
+echo 3. Japan (J)
+echo.
+set /p s=Choose: 
+if "%s%"=="e" set /a channels_region=1& goto 1_install_wiilink24_3_3
+if "%s%"=="E" set /a channels_region=1& goto 1_install_wiilink24_3_3
+if "%s%"=="1" set /a channels_region=1& goto 1_install_wiilink24_3_3
+
+if "%s%"=="u" set /a channels_region=2& goto 1_install_wiilink24_3_3
+if "%s%"=="U" set /a channels_region=2& goto 1_install_wiilink24_3_3
+if "%s%"=="2" set /a channels_region=2& goto 1_install_wiilink24_3_3
+
+if "%s%"=="J" set /a channels_region=3& goto 1_install_wiilink24_3_3
+if "%s%"=="j" set /a channels_region=3& goto 1_install_wiilink24_3_3
+if "%s%"=="3" set /a channels_region=3& goto 1_install_wiilink24_3_3
+goto 1_install_wiilink24_3_2
+
+:1_install_wiilink24_3_3
+cls
+echo %header%
+echo %line%
+echo.
+echo Before we begin, I need to know what platform you're installing WiiLink on.
 echo This setting will change the version of SPD that I will download so channels like Demae works.
 echo.
 echo What platform are you using?
@@ -1062,7 +1336,7 @@ echo.
 set /p s=Choose: 
 if %s%==1 set /a platform_type=wii& goto 1_install_wiilink24_4
 if %s%==2 set /a platform_type=wiiu& goto 1_install_wiilink24_4
-goto 1_install_wiilink24_3_2
+goto 1_install_wiilink24_3_3
 :1_install_wiilink24_4
 cls
 echo %header%
@@ -1148,6 +1422,7 @@ set /a progress_downloading=0
 set /a progress_wiinoma=0
 set /a progress_digicam_print_channel=0
 set /a progress_demae_channel=0
+set /a progress_nc_channel=0
 set /a progress_finishing=0
 
 if "%prerelease_status%"=="1" goto 1_install_wiilink24_6_prerelease
@@ -1219,11 +1494,13 @@ if "%progress_digicam_print_channel%"=="0" echo [ ] Digicam Print Channel
 if "%progress_digicam_print_channel%"=="1" echo [X] Digicam Print Channel
 if "%progress_demae_channel%"=="0" echo [ ] Demae Channel
 if "%progress_demae_channel%"=="1" echo [X] Demae Channel
+if "%progress_nc_channel%"=="0" echo [ ] Nintendo Channel
+if "%progress_nc_channel%"=="1" echo [X] Nintendo Channel
 if "%progress_finishing%"=="0" echo [ ] Finishing...
 if "%progress_finishing%"=="1" echo [X] Finishing...
 
 call :patching_fast_travel_%percent%
-if %percent%==6 goto 1_install_wiilink24_8
+if %percent%==7 goto 1_install_wiilink24_8
 
 set /a percent=%percent%+1
 goto 1_install_wiilink24_7
@@ -1248,6 +1525,11 @@ if exist DemaeChannel_tik.delta del /q DemaeChannel_tik.delta
 if exist DemaeChannel_tmd.delta del /q DemaeChannel_tmd.delta
 if exist WiinoMa_tik.delta del /q WiinoMa_tik.delta
 if exist WiinoMa_tmd.delta del /q WiinoMa_tmd.delta
+if exist NintendoChannel_1_PAL.delta del /q NintendoChannel_1_PAL.delta
+if exist NintendoChannel_1_USA.delta del /q NintendoChannel_1_USA.delta
+if exist NintendoChannel_1_JPN.delta del /q NintendoChannel_1_JPN.delta
+if exist NintendoChannel_tik.delta del /q NintendoChannel_tik.delta
+if exist NintendoChannel_tmd.delta del /q NintendoChannel_tmd.delta
 
 	set /a clean_runtime=0
 	)
@@ -1264,6 +1546,20 @@ if exist 000100014843484a.tmd del /q 000100014843484a.tmd
 if exist 00000000.app del /q 00000000.app
 if exist 00000001.app del /q 00000001.app
 if exist 00000002.app del /q 00000002.app
+
+if exist 000100014841544a.tik del /q 000100014841544a.tik
+if exist 000100014841544a.tmd del /q 000100014841544a.tmd
+if exist 000100014841544av1792.wad del /q 000100014841544av1792.wad
+if exist 0001000148415445.tik del /q 0001000148415445.tik
+if exist 0001000148415445.tmd del /q 0001000148415445.tmd
+if exist 0001000148415445v1792.wad del /q 0001000148415445v1792.wad
+if exist 0001000148415450.tik del /q 0001000148415450.tik
+if exist 0001000148415450.tmd del /q 0001000148415450.tmd
+if exist 0001000148415450v1792.wad del /q 0001000148415450v1792.wad
+if exist 000100014841544av1792 rmdir /s /q 000100014841544av1792
+if exist 0001000148415445v1792 rmdir /s /q 0001000148415445v1792
+if exist 0001000148415450v1792 rmdir /s /q 0001000148415450v1792
+
 if exist unpack rmdir /s /q unpack
 exit /b 0
 
@@ -1466,6 +1762,66 @@ curl -f -L -s -S --insecure "https://patcher.wiilink24.com/WiiLink24_SPD_vWii.wa
 	set modul=Downloading Wii Mod Lite
 	if not %temperrorlev%==0 goto error_patching
 	)
+
+:: Channels region - NC
+:: 1. Europe
+:: 2. USA 
+:: 3. Japan
+
+if %channels_region%==1 (
+curl -f -L -s -S --insecure "%FilesHostedOn%/patches/NintendoChannel_1_PAL.delta" -o "NintendoChannel_1_PAL.delta"
+	set /a temperrorlev=%errorlevel%
+	set modul=Downloading PAL NC Delta
+	if not %temperrorlev%==0 goto error_patching
+
+curl -f -L -s -S --insecure "%FilesHostedOn%/patches/NintendoChannel_tik_PAL.delta" -o "NintendoChannel_tik.delta"
+	set /a temperrorlev=%errorlevel%
+	set modul=Downloading PAL NC Delta
+	if not %temperrorlev%==0 goto error_patching
+
+curl -f -L -s -S --insecure "%FilesHostedOn%/patches/NintendoChannel_tmd_PAL.delta" -o "NintendoChannel_tmd.delta"
+	set /a temperrorlev=%errorlevel%
+	set modul=Downloading PAL NC Delta
+	if not %temperrorlev%==0 goto error_patching
+
+)
+
+if %channels_region%==2 (
+curl -f -L -s -S --insecure "%FilesHostedOn%/patches/NintendoChannel_1_USA.delta" -o "NintendoChannel_1_USA.delta"
+	set /a temperrorlev=%errorlevel%
+	set modul=Downloading USA NC Delta
+	if not %temperrorlev%==0 goto error_patching
+
+curl -f -L -s -S --insecure "%FilesHostedOn%/patches/NintendoChannel_tik_USA.delta" -o "NintendoChannel_tik.delta"
+	set /a temperrorlev=%errorlevel%
+	set modul=Downloading USA NC Delta
+	if not %temperrorlev%==0 goto error_patching
+
+curl -f -L -s -S --insecure "%FilesHostedOn%/patches/NintendoChannel_tmd_USA.delta" -o "NintendoChannel_tmd.delta"
+	set /a temperrorlev=%errorlevel%
+	set modul=Downloading USA NC Delta
+	if not %temperrorlev%==0 goto error_patching
+
+)
+
+if %channels_region%==3 (
+curl -f -L -s -S --insecure "%FilesHostedOn%/patches/NintendoChannel_1_JPN.delta" -o "NintendoChannel_1_JPN.delta"
+	set /a temperrorlev=%errorlevel%
+	set modul=Downloading JPN NC Delta
+	if not %temperrorlev%==0 goto error_patching
+
+curl -f -L -s -S --insecure "%FilesHostedOn%/patches/NintendoChannel_tik_JPN.delta" -o "NintendoChannel_tik.delta"
+	set /a temperrorlev=%errorlevel%
+	set modul=Downloading JPN NC Delta
+	if not %temperrorlev%==0 goto error_patching
+
+curl -f -L -s -S --insecure "%FilesHostedOn%/patches/NintendoChannel_tmd_JPN.delta" -o "NintendoChannel_tmd.delta"
+	set /a temperrorlev=%errorlevel%
+	set modul=Downloading JPN NC Delta
+	if not %temperrorlev%==0 goto error_patching
+
+)
+
 
 set /a progress_downloading=1
 exit /b 0
@@ -1682,8 +2038,138 @@ call WiinoMa_Patcher\Sharpii.exe WAD -p unpack\ "WAD\Demae Channel (%language_de
 set /a progress_demae_channel=1
 exit /b 0
 
-
 :patching_fast_travel_5
+
+::Download Nintendo Channel
+:: 1 - EUROPE 2 - USA 3 - JAPAN
+
+if %channels_region%==1 (
+if not exist 0001000148415450v1792 md 0001000148415450v1792
+curl -s -f -L --insecure "%FilesHostedOn%/NC_Patcher/cert.sys" --output "0001000148415450v1792\cert.sys"
+curl -s -f -L --insecure "%FilesHostedOn%/NC_Patcher/dwn/0001000148415450v1792/cetk" --output "0001000148415450v1792\cetk"
+curl -s -f -L --insecure "%FilesHostedOn%/NC_Patcher/NUS_Downloader_Decrypt.exe" --output "0001000148415450v1792\NUS_Downloader_Decrypt.exe"
+
+	call WiinoMa_Patcher\Sharpii.exe NUSD -ID 0001000148415450 -encrypt
+	set /a temperrorlev=%errorlevel%
+	set modul=Downloading Nintendo Channel
+	if not %temperrorlev%==0 goto error_patching
+	
+	ren "0001000148415450v1792\tmd.1792" "tmd"
+	cd 0001000148415450v1792
+	call NUS_Downloader_Decrypt.exe
+	cd ..
+	
+	move "0001000148415450v1792\*.wad" "0001000148415450v1792.wad"
+	call WiinoMa_Patcher\Sharpii.exe WAD -u 0001000148415450v1792.wad unpack>NUL
+	
+	move "unpack\00000001.app" "00000001.app"
+	move "unpack\0001000148415450.tik" "0001000148415450.tik">NUL
+	move "unpack\0001000148415450.tmd" "0001000148415450.tmd"
+	call WiinoMa_Patcher\xdelta3.exe -d -s 00000001.app NintendoChannel_1_PAL.delta unpack\00000001.app
+	set /a temperrorlev=%errorlevel%
+	set modul=Applying Nintendo Channel patch
+	if not %temperrorlev%==0 goto error_patching
+	
+call WiinoMa_Patcher\xdelta3.exe -d -s 0001000148415450.tik NintendoChannel_tik.delta unpack\0001000148415450.tik
+	set /a temperrorlev=%errorlevel%
+	set modul=Applying Nintendo Channel patch
+	if not %temperrorlev%==0 goto error_patching
+call WiinoMa_Patcher\xdelta3.exe -d -s 0001000148415450.tmd NintendoChannel_tmd.delta unpack\0001000148415450.tmd
+	set /a temperrorlev=%errorlevel%
+	set modul=Applying Nintendo Channel patch
+	if not %temperrorlev%==0 goto error_patching
+
+
+call WiinoMa_Patcher\Sharpii.exe WAD -p unpack\ "WAD\Nintendo Channel (PAL) (WiiLink24).wad">NUL
+
+	)
+
+if %channels_region%==2 (
+if not exist 0001000148415445v1792 md 0001000148415445v1792
+curl -s -f -L --insecure "%FilesHostedOn%/NC_Patcher/cert.sys" --output "0001000148415445v1792\cert.sys"
+curl -s -f -L --insecure "%FilesHostedOn%/NC_Patcher/dwn/0001000148415445v1792/cetk" --output "0001000148415445v1792\cetk"
+curl -s -f -L --insecure "%FilesHostedOn%/NC_Patcher/NUS_Downloader_Decrypt.exe" --output "0001000148415445v1792\NUS_Downloader_Decrypt.exe"
+
+	call WiinoMa_Patcher\Sharpii.exe NUSD -ID 0001000148415445 -encrypt
+	set /a temperrorlev=%errorlevel%
+	set modul=Downloading Nintendo Channel
+	if not %temperrorlev%==0 goto error_patching
+	
+	ren "0001000148415445v1792\tmd.1792" "tmd"
+	cd 0001000148415445v1792
+	call NUS_Downloader_Decrypt.exe
+	cd ..
+	
+	move "0001000148415445v1792\*.wad" "0001000148415445v1792.wad"
+	call WiinoMa_Patcher\Sharpii.exe WAD -u 0001000148415445v1792.wad unpack>NUL
+	
+	move "unpack\00000001.app" "00000001.app"
+	move "unpack\0001000148415445.tik" "0001000148415445.tik">NUL
+	move "unpack\0001000148415445.tmd" "0001000148415445.tmd"
+	call WiinoMa_Patcher\xdelta3.exe -d -s 00000001.app NintendoChannel_1_USA.delta unpack\00000001.app
+	set /a temperrorlev=%errorlevel%
+	set modul=Applying Nintendo Channel patch
+	if not %temperrorlev%==0 goto error_patching
+	
+call WiinoMa_Patcher\xdelta3.exe -d -s 0001000148415445.tik NintendoChannel_tik.delta unpack\0001000148415445.tik
+	set /a temperrorlev=%errorlevel%
+	set modul=Applying Nintendo Channel patch
+	if not %temperrorlev%==0 goto error_patching
+call WiinoMa_Patcher\xdelta3.exe -d -s 0001000148415445.tmd NintendoChannel_tmd.delta unpack\0001000148415445.tmd
+	set /a temperrorlev=%errorlevel%
+	set modul=Applying Nintendo Channel patch
+	if not %temperrorlev%==0 goto error_patching
+
+
+call WiinoMa_Patcher\Sharpii.exe WAD -p unpack\ "WAD\Nintendo Channel (USA) (WiiLink24).wad">NUL
+
+	)
+
+if %channels_region%==3 (
+if not exist 000100014841544av1792 md 000100014841544av1792
+curl -s -f -L --insecure "%FilesHostedOn%/NC_Patcher/cert.sys" --output "000100014841544av1792\cert.sys"
+curl -s -f -L --insecure "%FilesHostedOn%/NC_Patcher/dwn/000100014841544av1792/cetk" --output "000100014841544av1792\cetk"
+curl -s -f -L --insecure "%FilesHostedOn%/NC_Patcher/NUS_Downloader_Decrypt.exe" --output "000100014841544av1792\NUS_Downloader_Decrypt.exe"
+
+	call WiinoMa_Patcher\Sharpii.exe NUSD -ID 000100014841544a -encrypt
+	set /a temperrorlev=%errorlevel%
+	set modul=Downloading Nintendo Channel
+	if not %temperrorlev%==0 goto error_patching
+	
+	ren "000100014841544av1792\tmd.1792" "tmd"
+	cd 000100014841544av1792
+	call NUS_Downloader_Decrypt.exe
+	cd ..
+	
+	move "000100014841544av1792\*.wad" "000100014841544av1792.wad"
+	call WiinoMa_Patcher\Sharpii.exe WAD -u 000100014841544av1792.wad unpack>NUL
+	
+	move "unpack\00000001.app" "00000001.app"
+	move "unpack\000100014841544a.tik" "000100014841544a.tik">NUL
+	move "unpack\000100014841544a.tmd" "000100014841544a.tmd"
+	call WiinoMa_Patcher\xdelta3.exe -d -s 00000001.app NintendoChannel_1_JPN.delta unpack\00000001.app
+	set /a temperrorlev=%errorlevel%
+	set modul=Applying Nintendo Channel patch
+	if not %temperrorlev%==0 goto error_patching
+	
+call WiinoMa_Patcher\xdelta3.exe -d -s 000100014841544a.tik NintendoChannel_tik.delta unpack\000100014841544a.tik
+	set /a temperrorlev=%errorlevel%
+	set modul=Applying Nintendo Channel patch
+	if not %temperrorlev%==0 goto error_patching
+call WiinoMa_Patcher\xdelta3.exe -d -s 000100014841544a.tmd NintendoChannel_tmd.delta unpack\000100014841544a.tmd
+	set /a temperrorlev=%errorlevel%
+	set modul=Applying Nintendo Channel patch
+	if not %temperrorlev%==0 goto error_patching
+
+
+call WiinoMa_Patcher\Sharpii.exe WAD -p unpack\ "WAD\Nintendo Channel (JPN) (WiiLink24).wad">NUL
+	)
+
+
+set /a progress_nc_channel=1
+exit /b 0
+
+:patching_fast_travel_6
 set /a errorcopying=0
 if not %sdcard%==NUL echo.&echo Copying files. This may take a while. Give me a second.
 if not %sdcard%==NUL xcopy /y "WAD" "%sdcard%:\WAD\" /e || set /a errorcopying=1
