@@ -2,6 +2,7 @@
 setlocal EnableDelayedExpansion
 cd /d "%~dp0"
 
+set /a conhost_enable=0
 ver | C:\Windows\system32\findstr.exe "10.0">NUL && set /a conhost_enable=1
 
 if "%1"=="" (
@@ -611,7 +612,7 @@ xdelta3.exe -f -e -s unpack\0001000148415450.tik unpack_patched\0001000148415450
 
 echo [OK   ] Creating patches completed.
 set /a nc_completed=1
-pause
+
 :: Cleanup
 if exist 0001000148415450v1792.wad del /s /q 0001000148415450v1792.wad>NUL
 if exist 0001000148415450v1792 rmdir /s /q 0001000148415450v1792>NUL
