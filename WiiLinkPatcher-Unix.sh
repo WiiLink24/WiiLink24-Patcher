@@ -476,7 +476,7 @@ pre_patch() {
             case $prog_language in
                 "en")
                     printf "Ayy caramba! No worries, though. You will be able to copy files later after patching.\n" | fold -s -w "$(tput cols)"
-                    printf "The entire patching process will download about 70MB of data.\n" | fold -s -w "$(tput cols)"
+                    printf "The entire patching process will download about 160MB of data.\n" | fold -s -w "$(tput cols)"
                     printf "What's next?\n\n" | fold -s -w "$(tput cols)"
                     printf "1. Start Patching\n" | fold -s -w "$(tput cols)"
                     printf "2. Go Back to Main Menu\n\n" | fold -s -w "$(tput cols)"
@@ -489,7 +489,7 @@ pre_patch() {
                     printf "Hmm... looks like an SD Card wasn't found in your system.\n\n" | fold -s -w "$(tput cols)"
                     printf "Please choose the Change volume name option to set your SD Card volume name manually,\n" | fold -s -w "$(tput cols)"
                     printf "otherwise, you will have to copy them later.\n\n" | fold -s -w "$(tput cols)"
-                    printf "The entire patching process will download about 70MB of data.\n\n" | fold -s -w "$(tput cols)"
+                    printf "The entire patching process will download about 160MB of data.\n\n" | fold -s -w "$(tput cols)"
                     printf "What's next?\n\n" | fold -s -w "$(tput cols)"
                     printf "1. Start Patching\n" | fold -s -w "$(tput cols)"
                     printf "2. Go Back to Main Menu\n" | fold -s -w "$(tput cols)"
@@ -503,7 +503,7 @@ pre_patch() {
                     printf "Congrats! I've successfully detected your SD Card!\n" | fold -s -w "$(tput cols)"
                     printf "\e[1mVolume name:\e[0m \e[1;32m%s\e[0m\n\n" "$sdcard" | fold -s -w "$(tput cols)"
                     printf "I will be able to automatically download and install everything on your SD Card!\n\n" | fold -s -w "$(tput cols)"
-                    printf "The entire patching process will download about 70MB of data.\n\n" | fold -s -w "$(tput cols)"
+                    printf "The entire patching process will download about 160MB of data.\n\n" | fold -s -w "$(tput cols)"
                     printf "What's next?\n\n" | fold -s -w "$(tput cols)"
                     printf "1. Start Patching\n" | fold -s -w "$(tput cols)"
                     printf "2. Go Back to Main Menu\n" | fold -s -w "$(tput cols)"
