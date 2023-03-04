@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
 # New links to use
-FilesHostedOn=https://patcher.wiilink24.com
-FilesHostedOnPablo=http://pabloscorner.akawah.net/WL24-Patcher/ # Temporary host for some files
+WiiLinkPatcherURL=https://patcher.wiilink24.com
+PabloURL=http://pabloscorner.akawah.net/WL24-Patcher # Temporary host for some files
 
 ### Build info ###
-version=1.0.8
+version=1.0.8.1n
 
-last_build_en="February 23th, 2023"
-at_en="3:17 PM"
+last_build_en="February 28th, 2023"
+at_en="5:19 PM"
 
 # Title bar text
 printf "\033]0;WiiLink Patcher v%s\007" "$version"
@@ -16,8 +16,8 @@ printf "\033]0;WiiLink Patcher v%s\007" "$version"
 
 cd "$(dirname "${0}")" || exit
 
+# Set inital language to English
 prog_language=en
-
 
 # For patching the core Japanese-exclusive channels
 patch_core_channel() {
@@ -44,7 +44,7 @@ patch_core_channel() {
     ./WiiLink_Patcher/Sharpii wad -u "$output_wad" "$title_folder" -q
     
     # Download patched TMD file and rename to ${title_id}.tmd
-    curl --create-dirs -s -o ${title_folder}/"${title_id}".tmd ${FilesHostedOn}/"${url_subdir}"/"$1".tmd
+    curl --create-dirs --insecure -s -o ${title_folder}/"${title_id}".tmd ${WiiLinkPatcherURL}/"${url_subdir}"/"$1".tmd
     
     task="Applying delta patches for ${channel_name}"
     [ "$reg" == "EN" ] || [ "${1}" == "dominos" ] && xdelta3 -f -d -s "$title_folder/$3.app" "$patch_folder/$4.delta" "$title_folder/$3.app"
@@ -69,8 +69,8 @@ patch_wc24_channel() {
     [ ! -d "$patch_folder" ] && mkdir -p "$patch_folder"
 
     task="Downloading necessary files for ${channel_name}"
-                                         curl --create-dirs -s -f "$FilesHostedOnPablo/WC24_Patcher/${1}/cert/${title_id}.cert" -o "${title_folder}/${title_id}.cert"
-    [ "$title_id" == "$nc_title_id" ] && curl --create-dirs -s -f "$FilesHostedOnPablo/WC24_Patcher/${1}/tik/${title_id}.tik" -o "${title_folder}/cetk"
+                                         curl --create-dirs --insecure -s -f "${PabloURL}/WC24_Patcher/${1}/cert/${title_id}.cert" -o "${title_folder}/${title_id}.cert"
+    [ "$title_id" == "$nc_title_id" ] && curl --create-dirs --insecure -s -f "${PabloURL}/WC24_Patcher/${1}/tik/${title_id}.tik" -o "${title_folder}/cetk"
         
     task="Extracting files from ${channel_name}"
     ./WiiLink_Patcher/Sharpii nusd -id "$title_id" -o "$title_folder" -q -decrypt
@@ -87,17 +87,17 @@ patch_wc24_channel() {
 }
 
 download_patch() {
-    local patch_url="${FilesHostedOn}/${1}/${2}"
+    local patch_url="${WiiLinkPatcherURL}/${1}/${2}"
     local patch_destination_path="WiiLink_Patcher/${4}/${3}"
     
-    curl --create-dirs -f -s "$patch_url" -o "$patch_destination_path"
+    curl --create-dirs --insecure -f -s "$patch_url" -o "$patch_destination_path"
 }
 
 # Download the correct SPD WAD for the chosen platform
 spd_download() {
     case "$platform_type" in
-        "Wii") curl --create-dirs -f -s "${FilesHostedOn}/spd/SPD_Wii.wad" -o "WAD/WiiLink_SPD (Wii).wad" ;;
-        "vWii") curl --create-dirs -f -s "${FilesHostedOn}/spd/SPD_vWii.wad" -o "WAD/WiiLink_SPD (vWii).wad" ;;
+        "Wii") curl --create-dirs --insecure -f -s "${WiiLinkPatcherURL}/spd/SPD_Wii.wad" -o "WAD/WiiLink_SPD (Wii).wad" ;;
+        "vWii") curl --create-dirs --insecure -f -s "${WiiLinkPatcherURL}/spd/SPD_vWii.wad" -o "WAD/WiiLink_SPD (vWii).wad" ;;
     esac
 }
 
@@ -113,10 +113,6 @@ case "$(uname -m),$(uname)" in
     ;;
     x86_64,Linux)
         sys="linux-x64"
-        mount=/mnt
-    ;;
-    x86_64,MSYS_NT-10.0-22623)
-        sys="win-x64"
         mount=/mnt
     ;;
     aarch64,Linux)
@@ -161,7 +157,7 @@ announcement() {
         "en")
             printf "\e[1;32m--- Announcement ---\e[0m\n" | fold -s -w "$(tput cols)"
             printf "If you have any issues with the patcher or services offered by WiiLink, please report them here:\n" | fold -s -w "$(tput cols)"
-            printf "https://discord.gg/wiilink - Thank you.\n" | fold -s -w "$(tput cols)"
+            printf "\e[1mhttps://discord.gg/WiiLink\e[0m - Thank you.\n" | fold -s -w "$(tput cols)"
             printf "\e[1;32m--------------------\e[0m\n\n" | fold -s -w "$(tput cols)"
             ;;
     esac
@@ -169,6 +165,9 @@ announcement() {
 
 # Checks some things that are needed for the patcher to work
 check_dependency() {
+    header
+    
+    # Set the package name
     if [ -z "$2" ]; then
         # Expect that the package name is the same as the command being searched for.
         package_name=$1
@@ -176,10 +175,13 @@ check_dependency() {
         # The package name was specified to be different.
         package_name=$2
     fi
+    
+    # Check if the command exists.
     if ! command -v "$1" &>/dev/null; then
+        printf "\e[5;31mDependency Error:\e[0m\n\n"
         case "$OSTYPE" in
-            darwin*) echo >&2 "Cannot find the command $1. You can use 'brew install $package_name' to get this required package. If you don't have brew installed, please install at https://brew.sh/" ;;
-            *) echo >&2 "Cannot find the command $1. Please install $package_name with your package manager, or compile and add it to your path." ;;
+            darwin*) printf "Cannot find the command \e[1m%s\e[0m.\n\nYou can use '\e[1mbrew install %s\e[0m' to get this required package. If you don't have brew installed, please install at https://brew.sh/\n\n" "$1" "$package_name" ;;
+            *) printf "Cannot find the command \e[1m%s\e[0m.\n\nPlease install \e[1m%s\e[0m with your package manager, or compile and add it to your path.\n\n" "$1" "$package_name" ;;
         esac
         exit 1
     fi
@@ -198,7 +200,6 @@ check_dependencies
 
 # Your journey starts here
 install_choose() {
-    clear
     header
     announcement
 
@@ -243,7 +244,6 @@ install_choose() {
 
 # Choose your language for the Japanese channels
 lang_choose() {
-    clear
     header
     
     case $prog_language in
@@ -280,7 +280,6 @@ lang_choose() {
 
 # Choose which version of Demae Channel you want
 demae_configuration() {
-    clear
     header
     
     case $prog_language in
@@ -311,7 +310,6 @@ demae_configuration() {
 
 # Nintendo Channel Region Choice
 nc_setup() {
-    clear
     header
     
     case $prog_language in
@@ -346,7 +344,6 @@ nc_setup() {
 
 # Forecast Channel Region Choice
 fc_setup(){
-    clear
     header
     
     case $prog_language in
@@ -381,7 +378,6 @@ fc_setup(){
 
 # Choose your platform
 platform_choice() {
-    clear
     header
     
     case $prog_language in
@@ -413,7 +409,6 @@ platform_choice() {
 }
 
 sd_status() {
-    clear
     header
     
     case $prog_language in
@@ -432,7 +427,8 @@ sd_status() {
     case $choice in
         1)
             sdstatus=1
-            detect_sd_card "goto_prepatch" ;;
+            detect_sd_card
+            pre_patch ;;
         2)	
             sdstatus=0
             sdcard=null
@@ -449,25 +445,19 @@ sd_status() {
 
 # Checks to see if you got an SD Card inserted
 # More specifically, if it's got the apps folder
-detect_sd_card() {
-    local goto_prepatch=$1
-    
+detect_sd_card() { 
     sdcard=null
-    
+
+    # Check if SD Card is connected and if it's a valid SD Card, while checking for the apps folder
     for f in "${mount}"/*/; do
         if [[ -d $f/apps ]]; then
             sdcard="$f"
         fi
     done
-    
-    if [[ $goto_prepatch == "goto_prepatch" ]]; then
-        pre_patch
-    fi
 }
 
 # The result of the SD Card check
 pre_patch() {
-    clear
     header
     
     # Check if SD Card is connected and if it's a valid SD Card
@@ -539,13 +529,11 @@ pre_patch() {
 
 # Change SD Card Volume Name if you need to
 vol_name() {
-    clear
     header
     
     case $prog_language in
         "en")
             printf "SD Card\n\n" | fold -s -w "$(tput cols)"
-            printf "Current SD Card Volume Name: %s\n\n" "$sdcard" | fold -s -w "$(tput cols)"
             printf "Type in the new volume name (e.g. /Volumes/Wii)\n\n" | fold -s -w "$(tput cols)"
             ;;
     esac
@@ -556,17 +544,24 @@ vol_name() {
     if [ ! -d "$sdcard" ]; then
         case $prog_language in
             "en")
-                printf "\e[1;91mThe SD Card Volume Name you entered is not mounted!\e[0m\n\n"
+                printf "\e[1;31mThe SD Card Volume Name you entered is not mounted!\e[0m\n\n"
                 printf "Please make sure that the SD Card is mounted and try again.\n\n"
                 ;;
         esac
-        sleep 2
+        read -n 1 -s -r -p "Press any key to try again..."
         pre_patch
     fi
 
-    # Create /apps folder in SD Card if it doesn't exist
+    # Check if /apps folder exists in the new drive letter, if not, display an error message and try again
     if [ ! -d "$sdcard/apps" ]; then
-        mkdir "$sdcard/apps"
+        case $prog_language in
+            "en")
+                printf "\e[1;31mA drive has been detected, however, the /apps folder was not found.\e[0m\n"
+                printf "Please create it on the root of the SD Card and try again!\n\n"
+                ;;
+        esac
+        read -n 1 -s -r -p "Press any key to try again..."
+        pre_patch
     fi
 
     pre_patch
@@ -577,19 +572,22 @@ server_down() {
 
     case $prog_language in
         "en")
-            printf "\e[1;91mThe WiiLink server is currently down!\e[0m\n\n"
-            printf "It seems that the server is currently down. We're trying to get it back up as soon as possible.\n\n"
-            printf "Please try again later.\n\n"
+            printf "\e[5;31mThe WiiLink server is currently down!\e[0m\n\n"
+            printf "It seems that our server is currently down. We're trying to get it back up as soon as possible.\n\n"
+            printf "Stay tuned on our Discord server for updates:\n"
+            printf "\e[1;32mhttps://discord.gg/WiiLink\e[0m\n\n"
             ;;
     esac
+    read -n 1 -s -r -p "Press any key to exit..."
+    printf "\n"
     exit
 }
 
-# Check is server is up, if not go to server_down function
-curl --silent --head --fail "$FilesHostedOn" > /dev/null
-if [[ $? -ne 22 ]]; then
+# Check is server is up, if not go to server_down function and pass the exit code to it
+if ! curl --silent --head --fail --insecure "${WiiLinkPatcherURL}/wiinoma/WiinoMa_1_English.delta" > /dev/null; then
     server_down
 fi
+
 
 # You should only ever see this if something went really wrong
 error() {
@@ -602,7 +600,7 @@ error() {
 
     case $prog_language in
         "en") 
-            printf "\e[1;91mAn error has occurred.\e[0m\n\nERROR DETAILS:\n" | fold -s -w "$(tput cols)"
+            printf "\e[5;31mAn error has occurred.\e[0m\n\nERROR DETAILS:\n" | fold -s -w "$(tput cols)"
             printf "\t* Task: %s\n" "$task" | fold -s -w "$(tput cols)"
             printf "\t* Command: %s\n" "$BASH_COMMAND" | fold -s -w "$(tput cols)"
             printf "\t* Line: %s\n" "$1" | fold -s -w "$(tput cols)"
@@ -678,7 +676,7 @@ download_all_patches() {
     task="Downloading patches"
     
     # Downloading Sharpii
-    curl --create-dirs -f -s -o WiiLink_Patcher/Sharpii "${FilesHostedOnPablo}/Sharpii/sharpii(${sys})"
+    curl --create-dirs --insecure -f -s -o WiiLink_Patcher/Sharpii "${PabloURL}/Sharpii/sharpii(${sys})"
     chmod +x WiiLink_Patcher/Sharpii
     
     # Download SPD if English is selected
@@ -714,9 +712,9 @@ download_all_patches() {
     
     #Downloading Wii Mod Lite
     task="Downloading Wii Mod Lite"
-    curl --create-dirs -f -s "https://hbb1.oscwii.org/unzipped_apps/WiiModLite/apps/WiiModLite/boot.dol" -o apps/WiiModLite/boot.dol
-    curl --create-dirs -f -s "https://hbb1.oscwii.org/unzipped_apps/WiiModLite/apps/WiiModLite/meta.xml" -o apps/WiiModLite/meta.xml
-    curl --create-dirs -f -s "https://hbb1.oscwii.org/hbb/WiiModLite.png" -o apps/WiiModLite/icon.png
+    curl --create-dirs --insecure -f -s "https://hbb1.oscwii.org/unzipped_apps/WiiModLite/apps/WiiModLite/boot.dol" -o apps/WiiModLite/boot.dol
+    curl --create-dirs --insecure -f -s "https://hbb1.oscwii.org/unzipped_apps/WiiModLite/apps/WiiModLite/meta.xml" -o apps/WiiModLite/meta.xml
+    curl --create-dirs --insecure -f -s "https://hbb1.oscwii.org/hbb/WiiModLite.png" -o apps/WiiModLite/icon.png
     
     # Nintendo Channel patch downloading
     download_patch "nc" "NC_1_${nc_region}.delta" "NintendoChannel_1_${nc_region}.delta" "Nintendo_Channel"
@@ -931,7 +929,7 @@ patch_progress() {
         esac
         
         header
-        
+
         case $prog_language in
             "en")
                 printf " \e[1m[*] Patching... this can take some time depending on the processing speed (CPU) of your computer.\e[0m\n\n" | fold -s -w "$(tput cols)"
@@ -940,36 +938,40 @@ patch_progress() {
         esac
         
         case $counter_done in
-            0) printf "[\e[1;32m          \e[0m]\n" ;;
-            1) printf "[\e[1;32m=         \e[0m]\n" ;;
-            2) printf "[\e[1;32m==        \e[0m]\n" ;;
-            3) printf "[\e[1;32m===       \e[0m]\n" ;;
-            4) printf "[\e[1;32m====      \e[0m]\n" ;;
-            5) printf "[\e[1;32m=====     \e[0m]\n" ;;
-            6) printf "[\e[1;32m======    \e[0m]\n" ;;
-            7) printf "[\e[1;32m=======   \e[0m]\n" ;;
-            8) printf "[\e[1;32m========  \e[0m]\n" ;;
-            9) printf "[\e[1;32m========= \e[0m]\n" ;;
-            10) printf "[\e[1;32m==========\e[0m]\n" ;;
+            0) printf "[\e[1;32m          \e[0m]" ;;
+            1) printf "[\e[1;32m=         \e[0m]" ;;
+            2) printf "[\e[1;32m==        \e[0m]" ;;
+            3) printf "[\e[1;32m===       \e[0m]" ;;
+            4) printf "[\e[1;32m====      \e[0m]" ;;
+            5) printf "[\e[1;32m=====     \e[0m]" ;;
+            6) printf "[\e[1;32m======    \e[0m]" ;;
+            7) printf "[\e[1;32m=======   \e[0m]" ;;
+            8) printf "[\e[1;32m========  \e[0m]" ;;
+            9) printf "[\e[1;32m========= \e[0m]" ;;
+            10) printf "[\e[1;32m==========\e[0m]" ;;
         esac
-        
+
+        # Calculate percentage2
+        percent_done=$((counter_done*100/11))
+        printf " \e[1m%s%% completed\e[0m\n" "$percent_done"
+
         case $prog_language in
-            "en") printf "\nThis will take some time...\n\n" ;;
+            "en") printf "\nPlease wait while the patching process is in progress...\n\n" ;;
         esac
         
         # Show progress of each channel
         for i in "${!patching_progress[@]}"; do
             status="${patching_progress[$i]##*:}"
-            case "$status" in
-                "not_started") symbol="${progress_box[0]}" ;;
-                "in_progress") symbol="${progress_box[1]}" ;;
-                "done") symbol="${progress_box[2]}" ;;
-            esac
-
             message="${progress_messages[$i]}"
-            printf "%s %s\n" "$symbol" "$message"
+
+            case "$status" in
+                "not_started") printf "%s %s\n" "${progress_box[0]}" "$message" ;;
+                "in_progress") printf "\e[5m%s\e[0m %s\n" "${progress_box[2]}" "$message" ;;
+                "done") printf "\e[32m%s\e[0m %s\n" "${progress_box[2]}" "$message" ;;
+            esac
         done
-        
+        printf "\n"
+
         # Go to the next setup process
         ${setup_functions[percent]}
         
@@ -984,7 +986,6 @@ patch_progress() {
 
 # We made it! We're done! Yay! Now go install the channels!
 finish() {
-    clear
     header
     
     case $prog_language in
@@ -1027,7 +1028,7 @@ finish() {
     esac
 }
 
-# Language selection menu (Choose between English and Japanese)
+# Language selection menu
 # set_installer_language() {
 #     clear
 #     header
@@ -1054,7 +1055,6 @@ finish() {
 
 # The wonderful folks who contributed to this patcher
 credits() {
-    clear
     header
     
     case $prog_language in
@@ -1080,7 +1080,7 @@ main() {
         
         case $prog_language in
             "en")
-                printf "\e[1mWelcome to the WiiLink24 Patcher!\e[0m\n\n"
+                printf "\e[1mWelcome to the WiiLink Patcher!\e[0m\n\n"
                 printf "1. Start\n"
                 printf "2. Credits\n\n"
                 printf "3. Exit Patcher\n\n"

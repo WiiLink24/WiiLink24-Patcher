@@ -1,44 +1,57 @@
+setlocal
 @echo OFF
 chcp 65001 > nul
 setlocal EnableDelayedExpansion
 
 :: Links to use
-set FilesHostedOn=https://patcher.wiilink24.com
-set FilesHostedOnTemp=http://pabloscorner.akawah.net/WL24-Patcher
+set "WiiLinkPatcherURL=https://patcher.wiilink24.com"
+set "PabloURL=http://pabloscorner.akawah.net/WL24-Patcher"
 
 :: Set inital language to English
 set prog_language=en
 
 :: ######### Build info #########
-set version=1.0.8
+set version=1.0.8.1n
 set copyright_year=2023
 
-set last_build_en=February 23, 2023
-set at_en=3:17 PM
+set last_build_long=February 28, 2023
+set last_build_short=2/28/2023
+set at_en=5:19 PM
 
 title WiiLink Patcher v%version%
 :: ##############################
 
-:: Check to see if WiiLink server is up
-ping -n 1 %FilesHostedOn% > nul
-if %errorlevel% neq 1 (
-    goto server_down
+:: New line character
+(set \n=^
+%=This is Mandatory Space=%
 )
+
+:: Windows Compatibility Check
+for /f "tokens=2 delims==" %%a in ('wmic os get version /value') do set "OSVersion=%%a"
+for /f "tokens=1-2 delims=." %%a in ("%OSVersion%") do (
+    set "MajorVersion=%%a"
+)
+if not %MajorVersion%==10 goto :compatibility_warning
+
+:: Check if WiiLink server is up
+curl --silent --head --fail --insecure !WiiLinkPatcherURL!/wiinoma/WiinoMa_1_English.delta > NUL
+if %errorlevel% neq 0 goto :server_down
 
 :: Remove temporary folders if they exist
 if exist unpack rmdir /s /q unpack
 if exist unpack-patched rmdir /s /q unpack-patched
 if exist WiiLink_Patcher rmdir /s /q WiiLink_Patcher
 
-:: We'll start off by going to the main menu
+:: After all the checks are done, we'll go to the main screen
 goto main
 
-:: Github Announcement (Needs to be updated, repo is archived)
+
+:: Github Announcement
 :announcement
     if %prog_language%==en (
         echo [1;32m--- Announcement ---[0m
         echo If you have any issues with the patcher or services offered by WiiLink^, please report them here:
-        echo https://discord.gg/wiilink - Thank you.
+        echo [1mhttps://discord.gg/WiiLink[0m - Thank you.
         echo [1;32m--------------------[0m
     )
     echo.
@@ -46,12 +59,12 @@ goto :EOF
 
 
 :: Error screen
-:error
+:errorserver
     call :header
 
     :: Set error text based on language
     if %prog_language%==en (
-        echo [1;91mAn error has occurred![0m
+        echo [5;31mAn error has occurred![0m
         echo.
         echo ERROR DETAILS:
         echo.
@@ -69,6 +82,27 @@ goto :EOF
     echo.
 exit
 
+:: If the user is using an unsupported version of Windows, we'll show them this screen
+:compatibility_warning
+    call :header no_formatting
+
+    :: Set error text based on language
+    if %prog_language%==en (
+        echo ERROR: Unsupported version of Windows detected
+        echo.
+        echo WiiLink Patcher is only officially supported on Windows 10 and 11. If you're
+        echo using an older version of Windows, you will need to upgrade, or use the
+        echo Unix Patcher on a Linux or macOS machine/VM.
+        echo.
+        echo Please get it here: https://github.com/WiiLink24/WiiLink24-Patcher
+        echo.
+        echo Apologies for the inconvenience, but I couldn't find a way to make this work
+        echo correctly on older versions of Windows. Not without doing another major rewrite.
+        echo.
+        echo Press any key to exit...
+        pause > nul
+    )
+exit
 
 :: Server down screen
 :server_down
@@ -76,13 +110,16 @@ exit
 
     :: Set error text based on language
     if %prog_language%==en (
-        echo [1;91mThe WiiLink server is currently down^^![0m
+        echo [5;31mThe WiiLink server is currently down^^![0m
         echo.
-        echo It seems that the server is currently down. We're trying to get it back up as soon as possible^^!
+        echo It seems that our server is currently down. We're trying to get it back up as soon as possible^^!
         echo.
-        echo Please try again later.
+        echo Stay tuned on our Discord server for updates: 
+        echo [1;32mhttps://discord.gg/WiiLink[0m
     )
     echo.
+    echo Press any key to exit...
+    pause > nul
 exit
 
 
@@ -138,7 +175,7 @@ goto :EOF
     if %errorlevel% neq 0 goto :error
 
     :: Download patched TMD
-    set "cur_command=curl --create-dirs -s -o !unpack_folder!\!title_id!.tmd !FilesHostedOn!/!url_subdir!/%1.tmd"
+    set "cur_command=curl --create-dirs --insecure --insecure -s -o !unpack_folder!\!title_id!.tmd !WiiLinkPatcherURL!/!url_subdir!/%1.tmd"
     !cur_command! > NUL
     if %errorlevel% neq 0 goto :error
 
@@ -200,12 +237,12 @@ goto :EOF
     if not exist !unpack_folder! mkdir !unpack_folder!
 
     set "task=Downloading necessary files for !channel_name!"
-    set "cur_command=curl --create-dirs -s -f !FIlesHostedOnTemp!/WC24_Patcher/%1/cert/!title_id!.cert -o !unpack_folder!\!title_id!.cert"
+    set "cur_command=curl --create-dirs --insecure -s -f !PabloURL!/WC24_Patcher/%1/cert/!title_id!.cert -o !unpack_folder!\!title_id!.cert"
     !cur_command! > NUL
     if %errorlevel% neq 0 goto :error
 
     if "!title_id!"=="%nc_title_id%" (
-        set "cur_command=curl --create-dirs -s -f !FIlesHostedOnTemp!/WC24_Patcher/%1/tik/!title_id!.tik -o !unpack_folder!\cetk"
+        set "cur_command=curl --create-dirs --insecure -s -f !PabloURL!/WC24_Patcher/%1/tik/!title_id!.tik -o !unpack_folder!\cetk"
         !cur_command! > NUL
         if %errorlevel% neq 0 goto :error
     )
@@ -240,7 +277,7 @@ goto :EOF
     if %errorlevel% neq 0 goto :error
 goto :EOF
 
-:: Change language (English, Spanish, Japanese)
+:: Language selection menu
 @REM :change_prog_lang
 @REM     call :header
 
@@ -298,10 +335,10 @@ goto main
 
 :: Download patch
 :download_patch
-    set "patch_url=!FilesHostedOn!/%1/%2"
+    set "patch_url=!WiiLinkPatcherURL!/%1/%2"
     set "patch_destination_path=WiiLink_Patcher/%4/%3"
 
-    set "cur_command=curl --create-dirs -f -s %patch_url% -o %patch_destination_path%"
+    set "cur_command=curl --create-dirs --insecure -f -s %patch_url% -o %patch_destination_path%"
     !cur_command!
     if %errorlevel% neq 0 goto :error
 goto :EOF
@@ -310,12 +347,12 @@ goto :EOF
 :: Download the correct SPD WAD for the chosen platform
 :download_spd
     if %platform_type%==Wii (
-        set cur_command=curl --create-dirs -f -s !FilesHostedOn!/spd/SPD_Wii.wad -o "WAD/WiiLink_SPD (Wii).wad"
+        set cur_command=curl --create-dirs --insecure -f -s !WiiLinkPatcherURL!/spd/SPD_Wii.wad -o "WAD/WiiLink_SPD (Wii).wad"
         !cur_command!
         if %errorlevel% neq 0 goto :error
     )
     if %platform_type%==vWii (
-        set cur_command=curl --create-dirs -f -s !FilesHostedOn!/spd/SPD_vWii.wad -o "WAD/WiiLink_SPD (vWii).wad"
+        set cur_command=curl --create-dirs --insecure -f -s !WiiLinkPatcherURL!/spd/SPD_vWii.wad -o "WAD/WiiLink_SPD (vWii).wad"
         !cur_command!
         if %errorlevel% neq 0 goto :error
     )
@@ -325,18 +362,23 @@ goto :EOF
 :header
     cls
 
+    set header_no_format=%1
+
     :: Border character
     set "border_char=="
     set "border_line="
     
     :: Set header text based on language
-    if %prog_language%==en set header=[1mWiiLink Patcher v%version% - (c) %copyright_year% WiiLink[0m (Updated on %last_build_en% at %at_en% EST)
+    if !prog_language!==en (
+        set "header=[1mWiiLink Patcher v%version% - (c) %copyright_year% WiiLink[0m (Updated on %last_build_long% at %at_en% EST)"
+        if "!header_no_format!"=="no_formatting" set "header=WiiLink Patcher v%version% - (c) %copyright_year% WiiLink (Updated: !last_build_short!, !at_en! EST)"
+    )
 
     :: Print header
-    echo %header%
+    echo !header!
     for /f "tokens=2" %%i in ('mode con ^| findstr /R "Columns:"') do set columns=%%i
-    for /l %%i in (1,1,%columns%) do set "border_line=!border_line!!border_char!"
-    echo %border_line%
+    for /l %%i in (1,1,!columns!) do set "border_line=!border_line!!border_char!"
+    echo !border_line!
     echo.
 goto :EOF
 
@@ -624,33 +666,23 @@ goto :EOF
 :change_drive_letter
     call :header
 
-    set valid_drive_letters=DEFGHIJKLMNOPQRSTUVWXYZ
-
     if %prog_language%==en (
-        echo [1mChange SD Card Drive Letter[0m ^(Ex. E:^)
-        echo.
-        echo [1mCurrent Drive Letter:[0m [1;32m%sdcard%\[0m
+        echo [1mChange SD Card Drive Letter[0m ^(Ex. E^)
+        echo ^(Type EXIT to go back to the previous screen^)
     )
     echo.
     set /p sdcard_new=Enter the new drive letter: 
 
-    :: Make sure that new drive letter is valid
-    if not "%valid_drive_letters:~%sdcard_new%,1%"=="" (
+    :: Go back to the previous screen if the user types EXIT or exit
+    if %sdcard_new%==EXIT goto pre_patch
+    if %sdcard_new%==exit goto pre_patch
+
+    :: Setting it to your boot drive is not a good idea
+    if %sdcard_new%==C (
         if %prog_language%==en (
             echo.
-            echo [1;31mInvalid drive letter^^![0m
-            echo.
-            echo Press any key to try again...
-        )
-        pause >nul
-        goto change_drive_letter
-    )
-    
-    :: Make sure that the drive letter is only one character long
-    if %sdcard_new%==? (
-        if %prog_language%==en (
-            echo.
-            echo [1;31mYou cannot use more than one character^^![0m
+            echo [1;31mProbably not a good idea to use your boot drive...[0m
+            echo [1;31mPlease choose another drive letter^^![0m
             echo.
             echo Press any key to try again...
         )
@@ -658,6 +690,20 @@ goto :EOF
         goto change_drive_letter
     )
 
+
+    :: Make sure that the drive letter is not more than 1 character (Ex. E, not E: or E:\)
+    if not "%sdcard_new:~1%" EQU "" (
+        if %prog_language%==en (
+            echo.
+            echo [1;31mYou can only enter one character^^![0m
+            echo.
+            echo Press any key to try again...
+        )
+        pause >nul
+        goto change_drive_letter
+    )
+
+    
     :: Make sure that the new drive letter is not the same as the old drive letter
     if %sdcard_new%==%sdcard% (
         if %prog_language%==en (
@@ -670,11 +716,11 @@ goto :EOF
         goto change_drive_letter
     )
 
-    :: Make sure that the new drive letter is actually mounted
-    if not exist %sdcard_new%: (
+    :: Make sure that the new drive letter is actually mounted on the system
+    vol %sdcard_new%: > nul 2>&1 || (
         if %prog_language%==en (
             echo.
-            echo [1;31mThe drive letter you entered is not mounted^^![0m
+            echo [1;31mThe drive letter you entered is not mounted on your system^^![0m
             echo.
             echo Press any key to try again...
         )
@@ -682,12 +728,20 @@ goto :EOF
         goto change_drive_letter
     )
 
-    :: If "apps" folder does not exist, create it
+    :: Check if \apps folder exists in the new drive letter, if not, display an error message and try again
     if not exist %sdcard_new%:\apps (
-        mkdir %sdcard_new%:\apps
+        if %prog_language%==en (
+            echo.
+            echo [1;31mA drive has been detected, however, the \apps folder was not found.[0m
+            echo [1;31mPlease create it on the root of the SD Card and try again^^![0m
+            echo.
+            echo Press any key to try again...
+        )
+        pause >nul
+        goto change_drive_letter
     )
 
-    pause >nul
+    set sdcard=%sdcard_new%:
 goto pre_patch
 
 
@@ -806,19 +860,23 @@ goto :EOF
     if %counter_done%==9 set progress_bar=[[1;32m========= [0m]
     if %counter_done%==10 set progress_bar=[[1;32m==========[0m]
 
+    :: Calculate percentage
+    set /a percent_done=!counter_done!*100/11
+
     if %prog_language%==en (
         echo [1m[*] Patching... this can take some time depending on the processing speed ^(CPU^) of your computer.[0m
         echo.
-        echo     Progress: %progress_bar%
+        echo     Progress: !progress_bar! [1m!percent_done!%% completed[0m
     )
     
     echo.
-    if %prog_language%==en echo This will take some time...
+    if %prog_language%==en echo Please wait while the patching process is in progress...
     echo.
 
     :: Show progress of each channel
     set progress_loop_index=0
     call :progress_loop
+    echo.
 
     :: Call the next setup process by percent value
     call :!setup_labels[%percent%]!
@@ -839,12 +897,10 @@ goto :EOF
 
     for /f "tokens=2 delims=:" %%a in ("!patching_progress[%progress_loop_index%]!") do set "status=%%a"
 
-    if "%status%" == "not_started" set "symbol=!progress_symbols[0]!"
-    if "%status%" == "in_progress" set "symbol=!progress_symbols[1]!"
-    if "%status%" == "done" set "symbol=!progress_symbols[2]!"
-
     set "message=!progress_messages[%progress_loop_index%]!"
-    echo !symbol! !message!
+    if "%status%" == "not_started" echo !progress_symbols[0]! !message!
+    if "%status%" == "in_progress" echo [5m!progress_symbols[2]![0m !message!
+    if "%status%" == "done" echo [32m!progress_symbols[2]![0m !message!
 
     set /a progress_loop_index+=1
 goto progress_loop
@@ -855,12 +911,12 @@ goto progress_loop
     set "task=Downloading patches"
     
     :: Downloading Sharpii
-    set "cur_command=curl --create-dirs -f -s -o WiiLink_Patcher/Sharpii.exe !FIlesHostedOnTemp!/Sharpii/Sharpii.exe"
+    set "cur_command=curl --create-dirs --insecure -f -s -o WiiLink_Patcher/Sharpii.exe !PabloURL!/Sharpii/Sharpii.exe"
     !cur_command!
     if %errorlevel% neq 0 goto :error
 
     :: Downloading xdelta3
-    set "cur_command=curl --create-dirs -f -s -o WiiLink_Patcher/xdelta3.exe !FIlesHostedOnTemp!/xdelta/xdelta.exe"
+    set "cur_command=curl --create-dirs --insecure -f -s -o WiiLink_Patcher/xdelta3.exe !PabloURL!/xdelta/xdelta.exe"
     !cur_command!
     if %errorlevel% neq 0 goto :error
     
@@ -892,15 +948,15 @@ goto progress_loop
 
     :: Downloading Wii Mod Lite
     set "task=Downloading Wii Mod Lite"
-    set "cur_command=curl --create-dirs -f -s -o apps/WiiModLite/boot.dol https://hbb1.oscwii.org/unzipped_apps/WiiModLite/apps/WiiModLite/boot.dol"
+    set "cur_command=curl --create-dirs --insecure -f -s -o apps/WiiModLite/boot.dol https://hbb1.oscwii.org/unzipped_apps/WiiModLite/apps/WiiModLite/boot.dol"
     !cur_command!
     if %errorlevel% neq 0 goto :error
 
-    set "cur_command=curl --create-dirs -f -s -o apps/WiiModLite/meta.xml https://hbb1.oscwii.org/unzipped_apps/WiiModLite/apps/WiiModLite/meta.xml"
+    set "cur_command=curl --create-dirs --insecure -f -s -o apps/WiiModLite/meta.xml https://hbb1.oscwii.org/unzipped_apps/WiiModLite/apps/WiiModLite/meta.xml"
     !cur_command!
     if %errorlevel% neq 0 goto :error
 
-    set "cur_command=curl --create-dirs -f -s -o apps/WiiModLite/icon.png https://hbb1.oscwii.org/hbb/WiiModLite.png"
+    set "cur_command=curl --create-dirs --insecure -f -s -o apps/WiiModLite/icon.png https://hbb1.oscwii.org/hbb/WiiModLite.png"
     !cur_command!
     if %errorlevel% neq 0 goto :error
 
@@ -1099,6 +1155,7 @@ goto :EOF
 :: This is where it all starts
 :main
     call :header
+
     
     :: WiiLink Patcher main menu, based on language
     if %prog_language%==en (
@@ -1128,3 +1185,4 @@ goto :EOF
     if %errorlevel%==3 cls & exit
     if %errorlevel%==4 call :detect_sd_card & goto main
 goto :EOF
+endlocal
