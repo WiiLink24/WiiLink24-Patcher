@@ -16,7 +16,7 @@ set copyright_year=2023
 
 set "last_build_long=March 5, 2023"
 set "last_build_short=3/5/2023"
-set "at_en=3:40 AM"
+set "at_en=4:08 AM"
 
 title WiiLink Patcher v%version%
 :: ##############################
@@ -240,12 +240,12 @@ goto :EOF
     if not exist !unpack_folder! mkdir !unpack_folder!
 
     set "task=Downloading necessary files for !channel_name!"
-    set cur_command=curl --create-dirs --insecure -s -f !PabloURL!/WC24_Patcher/%1/cert/!title_id!.cert -o !unpack_folder!\!title_id!.cert
+    set cur_command=curl -f -L -s -S --insecure --create-dirs !PabloURL!/WC24_Patcher/%1/cert/!title_id!.cert -o !unpack_folder!\!title_id!.cert
     !cur_command! > NUL
     if %errorlevel% neq 0 goto :error
 
     if "!title_id!"=="%nc_title_id%" (
-        set cur_command=curl --create-dirs --insecure -s -f !PabloURL!/WC24_Patcher/%1/tik/!title_id!.tik -o !unpack_folder!\cetk
+        set cur_command=curl -f -L -s -S --insecure --create-dirs !PabloURL!/WC24_Patcher/%1/tik/!title_id!.tik -o !unpack_folder!\cetk
         !cur_command! > NUL
         if %errorlevel% neq 0 goto :error
     )
@@ -344,7 +344,7 @@ goto main
     set "patch_url=!WiiLinkPatcherURL!/%1/%2"
     set "patch_destination_path=WiiLink_Patcher/%4/%3"
 
-    set cur_command=curl --create-dirs --insecure -f -s %patch_url% -o %patch_destination_path%
+    set cur_command=curl -f -L -s -S --insecure --create-dirs  "!patch_url!" -o "!patch_destination_path!"
     !cur_command!
     if %errorlevel% neq 0 goto :error
 goto :EOF
@@ -353,12 +353,12 @@ goto :EOF
 :: Download the correct SPD WAD for the chosen platform
 :download_spd
     if %platform_type%==Wii (
-        set cur_command=curl --create-dirs --insecure -f -s !WiiLinkPatcherURL!/spd/SPD_Wii.wad -o "WAD/WiiLink_SPD (Wii).wad"
+        set cur_command=curl -f -L -s -S --insecure --create-dirs -f -s !WiiLinkPatcherURL!/spd/SPD_Wii.wad -o "WAD/WiiLink_SPD (Wii).wad"
         !cur_command!
         if %errorlevel% neq 0 goto :error
     )
     if %platform_type%==vWii (
-        set cur_command=curl --create-dirs --insecure -f -s !WiiLinkPatcherURL!/spd/SPD_vWii.wad -o "WAD/WiiLink_SPD (vWii).wad"
+        set cur_command=curl -f -L -s -S --insecure --create-dirs !WiiLinkPatcherURL!/spd/SPD_vWii.wad -o "WAD/WiiLink_SPD (vWii).wad"
         !cur_command!
         if %errorlevel% neq 0 goto :error
     )
@@ -917,12 +917,12 @@ goto progress_loop
     set "task=Downloading patches"
     
     :: Downloading Sharpii
-    set cur_command=curl --create-dirs --insecure -f -s -o WiiLink_Patcher/Sharpii.exe !PabloURL!/Sharpii/Sharpii.exe
+    set cur_command=curl -f -L -s -S --insecure --create-dirs -o WiiLink_Patcher/Sharpii.exe !PabloURL!/Sharpii/Sharpii.exe
     !cur_command!
     if %errorlevel% neq 0 goto :error
 
     :: Downloading xdelta3
-    set cur_command=curl --create-dirs --insecure -f -s -o WiiLink_Patcher/xdelta3.exe !PabloURL!/xdelta/xdelta.exe
+    set cur_command=curl -f -L -s -S --insecure --create-dirs -o WiiLink_Patcher/xdelta3.exe !PabloURL!/xdelta/xdelta.exe
     !cur_command!
     if %errorlevel% neq 0 goto :error
     
@@ -954,15 +954,15 @@ goto progress_loop
 
     :: Downloading Wii Mod Lite
     set "task=Downloading Wii Mod Lite"
-    set cur_command=curl --create-dirs --insecure -f -s -o apps/WiiModLite/boot.dol https://hbb1.oscwii.org/unzipped_apps/WiiModLite/apps/WiiModLite/boot.dol
+    set cur_command=curl -f -L -s -S --insecure --create-dirs -o apps/WiiModLite/boot.dol https://hbb1.oscwii.org/unzipped_apps/WiiModLite/apps/WiiModLite/boot.dol
     !cur_command!
     if %errorlevel% neq 0 goto :error
 
-    set cur_command=curl --create-dirs --insecure -f -s -o apps/WiiModLite/meta.xml https://hbb1.oscwii.org/unzipped_apps/WiiModLite/apps/WiiModLite/meta.xml
+    set cur_command=curl -f -L -s -S --insecure --create-dirs -o apps/WiiModLite/meta.xml https://hbb1.oscwii.org/unzipped_apps/WiiModLite/apps/WiiModLite/meta.xml
     !cur_command!
     if %errorlevel% neq 0 goto :error
 
-    set cur_command=curl --create-dirs --insecure -f -s -o apps/WiiModLite/icon.png https://hbb1.oscwii.org/hbb/WiiModLite.png
+    set cur_command=curl -f -L -s -S --insecure --create-dirs -o apps/WiiModLite/icon.png https://hbb1.oscwii.org/hbb/WiiModLite.png
     !cur_command!
     if %errorlevel% neq 0 goto :error
 
