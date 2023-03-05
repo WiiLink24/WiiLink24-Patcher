@@ -14,9 +14,9 @@ set prog_language=en
 set version=1.0.8.1n
 set copyright_year=2023
 
-set last_build_long=February 28, 2023
-set last_build_short=2/28/2023
-set at_en=5:19 PM
+set "last_build_long=March 5, 2023"
+set "last_build_short=3/5/2023"
+set "at_en=3:40 AM"
 
 title WiiLink Patcher v%version%
 :: ##############################
@@ -166,16 +166,16 @@ goto :EOF
     if not exist !unpack_folder! mkdir !unpack_folder!
 
     set "task=Downloading and Extracting stuff for !channel_name!"
-    set "cur_command=WiiLink_Patcher\Sharpii.exe nusd -id !title_id! -o !output_wad! -wad -q"
+    set cur_command=WiiLink_Patcher\Sharpii.exe nusd -id !title_id! -o !output_wad! -wad -q
     !cur_command! > NUL
     if %errorlevel% neq 0 goto :error
 
-    set "cur_command=WiiLink_Patcher\Sharpii.exe wad -u !output_wad! !unpack_folder! -q"
+    set cur_command=WiiLink_Patcher\Sharpii.exe wad -u !output_wad! !unpack_folder! -q
     !cur_command! > NUL
     if %errorlevel% neq 0 goto :error
 
     :: Download patched TMD
-    set "cur_command=curl --create-dirs --insecure --insecure -s -o !unpack_folder!\!title_id!.tmd !WiiLinkPatcherURL!/!url_subdir!/%1.tmd"
+    set cur_command=curl --create-dirs --insecure --insecure -s -o !unpack_folder!\!title_id!.tmd !WiiLinkPatcherURL!/!url_subdir!/%1.tmd
     !cur_command! > NUL
     if %errorlevel% neq 0 goto :error
 
@@ -185,14 +185,14 @@ goto :EOF
 
     :: First delta patch
     if defined match (
-        set "cur_command=WiiLink_Patcher\xdelta3.exe -q -f -d -s !unpack_folder!\%3.app !patch_folder!\%4.delta !temp_folder!\%3.app"
+        set cur_command=WiiLink_Patcher\xdelta3.exe -q -f -d -s !unpack_folder!\%3.app !patch_folder!\%4.delta !temp_folder!\%3.app
         !cur_command! > NUL
         if %errorlevel% neq 0 goto :error
     )
-    set "match=0"
+    set match=0
     
     :: Second delta patch
-    set "cur_command=WiiLink_Patcher\xdelta3.exe -q -f -d -s !unpack_folder!\%5.app !patch_folder!\%6.delta !temp_folder!\%5.app"
+    set cur_command=WiiLink_Patcher\xdelta3.exe -q -f -d -s !unpack_folder!\%5.app !patch_folder!\%6.delta !temp_folder!\%5.app
     !cur_command! > NUL
     if %errorlevel% neq 0 goto :error
     
@@ -202,19 +202,22 @@ goto :EOF
 
     :: Third delta patch
     if defined match (
-        set "cur_command=WiiLink_Patcher\xdelta3.exe -q -f -d -s !unpack_folder!\%7.app !patch_folder!\%8.delta !temp_folder!\%7.app"
+        set cur_command=WiiLink_Patcher\xdelta3.exe -q -f -d -s !unpack_folder!\%7.app !patch_folder!\%8.delta !temp_folder!\%7.app
         !cur_command! > NUL
         if %errorlevel% neq 0 goto :error
     )
-    set "match=0"
+    set match=0
 
     set "task=Moving patched files for !channel_name!"
-    set "cur_command=move /y !temp_folder!\*.* !unpack_folder!"
+    set cur_command=move /y !temp_folder!\*.* !unpack_folder!
     !cur_command! > NUL
     if %errorlevel% neq 0 goto :error
 
+    :: Output WAD name (that has spaces in it)
+    set "output_wad_name=WAD\!channel_name! (!lang!).wad"
+
     set "task=Repacking the title for !channel_name!"
-    set "cur_command=WiiLink_Patcher\Sharpii.exe wad -p !unpack_folder! "WAD\!channel_name! (!lang!).wad" -f"
+    set cur_command=WiiLink_Patcher\Sharpii.exe wad -p !unpack_folder! "!output_wad_name!" -f
     !cur_command! > NUL
     if %errorlevel% neq 0 goto :error
 goto :EOF
@@ -237,42 +240,45 @@ goto :EOF
     if not exist !unpack_folder! mkdir !unpack_folder!
 
     set "task=Downloading necessary files for !channel_name!"
-    set "cur_command=curl --create-dirs --insecure -s -f !PabloURL!/WC24_Patcher/%1/cert/!title_id!.cert -o !unpack_folder!\!title_id!.cert"
+    set cur_command=curl --create-dirs --insecure -s -f !PabloURL!/WC24_Patcher/%1/cert/!title_id!.cert -o !unpack_folder!\!title_id!.cert
     !cur_command! > NUL
     if %errorlevel% neq 0 goto :error
 
     if "!title_id!"=="%nc_title_id%" (
-        set "cur_command=curl --create-dirs --insecure -s -f !PabloURL!/WC24_Patcher/%1/tik/!title_id!.tik -o !unpack_folder!\cetk"
+        set cur_command=curl --create-dirs --insecure -s -f !PabloURL!/WC24_Patcher/%1/tik/!title_id!.tik -o !unpack_folder!\cetk
         !cur_command! > NUL
         if %errorlevel% neq 0 goto :error
     )
 
     set "task=Extracting files from !channel_name!"
-    set "cur_command=WiiLink_Patcher\Sharpii.exe nusd -id !title_id! -o !unpack_folder! -q -decrypt"
+    set cur_command=WiiLink_Patcher\Sharpii.exe nusd -id !title_id! -o !unpack_folder! -q -decrypt
     !cur_command! > NUL
     if %errorlevel% neq 0 goto :error
 
     set "task=Renaming stuff for !channel_name!"
-    set "cur_command=move !unpack_folder!\tmd.%channel_version% !unpack_folder!\!title_id!.tmd"
+    set cur_command=move !unpack_folder!\tmd.%channel_version% !unpack_folder!\!title_id!.tmd
     !cur_command! > NUL
     if %errorlevel% neq 0 goto :error
 
-    set "cur_command=move !unpack_folder!\cetk !unpack_folder!\!title_id!.tik"
+    set cur_command=move !unpack_folder!\cetk !unpack_folder!\!title_id!.tik
     !cur_command! > NUL
     if %errorlevel% neq 0 goto :error
 
     set "task=Applying !channel_name! patches"
-    set "cur_command=WiiLink_Patcher\xdelta3.exe -q -f -d -s !unpack_folder!\%3.app !patch_folder!\%4.delta !temp_folder!\%3.app"
+    set cur_command=WiiLink_Patcher\xdelta3.exe -q -f -d -s !unpack_folder!\%3.app !patch_folder!\%4.delta !temp_folder!\%3.app
     !cur_command! > NUL
     if %errorlevel% neq 0 goto :error
 
     set "task=Moving patched files for !channel_name!"
-    set "cur_command=move /y !temp_folder!\*.* !unpack_folder!"
+    set cur_command=move /y !temp_folder!\*.* !unpack_folder!
     !cur_command! > NUL
     if %errorlevel% neq 0 goto :error
 
+    :: Output WAD name (that has spaces in it)
+    set "output_patched_wad=WAD\!channel_name! (!channel_region!).wad"
+
     set "task=Repacking the title for !channel_name!"
-    set "cur_command=WiiLink_Patcher\Sharpii.exe wad -p !unpack_folder! "WAD\!channel_name! (%channel_region%) (WiiLink).wad" -f"
+    set cur_command=WiiLink_Patcher\Sharpii.exe wad -p !unpack_folder! "!output_patched_wad!" -f
     !cur_command! > NUL
     if %errorlevel% neq 0 goto :error
 goto :EOF
@@ -338,7 +344,7 @@ goto main
     set "patch_url=!WiiLinkPatcherURL!/%1/%2"
     set "patch_destination_path=WiiLink_Patcher/%4/%3"
 
-    set "cur_command=curl --create-dirs --insecure -f -s %patch_url% -o %patch_destination_path%"
+    set cur_command=curl --create-dirs --insecure -f -s %patch_url% -o %patch_destination_path%
     !cur_command!
     if %errorlevel% neq 0 goto :error
 goto :EOF
@@ -911,12 +917,12 @@ goto progress_loop
     set "task=Downloading patches"
     
     :: Downloading Sharpii
-    set "cur_command=curl --create-dirs --insecure -f -s -o WiiLink_Patcher/Sharpii.exe !PabloURL!/Sharpii/Sharpii.exe"
+    set cur_command=curl --create-dirs --insecure -f -s -o WiiLink_Patcher/Sharpii.exe !PabloURL!/Sharpii/Sharpii.exe
     !cur_command!
     if %errorlevel% neq 0 goto :error
 
     :: Downloading xdelta3
-    set "cur_command=curl --create-dirs --insecure -f -s -o WiiLink_Patcher/xdelta3.exe !PabloURL!/xdelta/xdelta.exe"
+    set cur_command=curl --create-dirs --insecure -f -s -o WiiLink_Patcher/xdelta3.exe !PabloURL!/xdelta/xdelta.exe
     !cur_command!
     if %errorlevel% neq 0 goto :error
     
@@ -948,15 +954,15 @@ goto progress_loop
 
     :: Downloading Wii Mod Lite
     set "task=Downloading Wii Mod Lite"
-    set "cur_command=curl --create-dirs --insecure -f -s -o apps/WiiModLite/boot.dol https://hbb1.oscwii.org/unzipped_apps/WiiModLite/apps/WiiModLite/boot.dol"
+    set cur_command=curl --create-dirs --insecure -f -s -o apps/WiiModLite/boot.dol https://hbb1.oscwii.org/unzipped_apps/WiiModLite/apps/WiiModLite/boot.dol
     !cur_command!
     if %errorlevel% neq 0 goto :error
 
-    set "cur_command=curl --create-dirs --insecure -f -s -o apps/WiiModLite/meta.xml https://hbb1.oscwii.org/unzipped_apps/WiiModLite/apps/WiiModLite/meta.xml"
+    set cur_command=curl --create-dirs --insecure -f -s -o apps/WiiModLite/meta.xml https://hbb1.oscwii.org/unzipped_apps/WiiModLite/apps/WiiModLite/meta.xml
     !cur_command!
     if %errorlevel% neq 0 goto :error
 
-    set "cur_command=curl --create-dirs --insecure -f -s -o apps/WiiModLite/icon.png https://hbb1.oscwii.org/hbb/WiiModLite.png"
+    set cur_command=curl --create-dirs --insecure -f -s -o apps/WiiModLite/icon.png https://hbb1.oscwii.org/hbb/WiiModLite.png
     !cur_command!
     if %errorlevel% neq 0 goto :error
 
@@ -1088,11 +1094,11 @@ goto :EOF
         echo.
 
         :: Move apps and WAD folders to SD Card
-        set "cur_command=xcopy apps\*.* !sdcard!\apps /s /e /y /i /q"
+        set cur_command=xcopy apps\*.* !sdcard!\apps /s /e /y /i /q
         !cur_command! > NUL
         if %errorlevel% neq 0 goto :error
 
-        set "cur_command=xcopy WAD\*.* !sdcard!\WAD /s /e /y /i /q"
+        set cur_command=xcopy WAD\*.* !sdcard!\WAD /s /e /y /i /q
         !cur_command! > NUL
         if %errorlevel% neq 0 goto :error
     )
