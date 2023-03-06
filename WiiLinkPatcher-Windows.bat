@@ -11,12 +11,12 @@ set "PabloURL=http://pabloscorner.akawah.net/WL24-Patcher"
 set prog_language=en
 
 :: ######### Build info #########
-set version=1.0.8.1n
+set version=1.0.8.2n
 set copyright_year=2023
 
-set "last_build_long=March 5, 2023"
-set "last_build_short=3/5/2023"
-set "at_en=4:08 AM"
+set "last_build_long=March 6, 2023"
+set "last_build_short=3/6/2023"
+set "at_en=2:12 PM"
 
 title WiiLink Patcher v%version%
 :: ##############################
@@ -217,8 +217,8 @@ goto :EOF
     set "output_wad_name=WAD\!channel_name! (!lang!).wad"
 
     set "task=Repacking the title for !channel_name!"
-    set cur_command=WiiLink_Patcher\Sharpii.exe wad -p !unpack_folder! "!output_wad_name!" -f
-    !cur_command! > NUL
+    set cur_command=WiiLink_Patcher\Sharpii.exe wad -p !unpack_folder! "!output_wad_name!"
+    call WiiLink_Patcher\Sharpii.exe wad -p !unpack_folder! "!output_wad_name!"> NUL
     if %errorlevel% neq 0 goto :error
 goto :EOF
 
@@ -275,11 +275,11 @@ goto :EOF
     if %errorlevel% neq 0 goto :error
 
     :: Output WAD name (that has spaces in it)
-    set "output_patched_wad=WAD\!channel_name! (!channel_region!).wad"
+    set "output_patched_wad=WAD\!channel_name! [!channel_region!] (WiiLink).wad"
 
     set "task=Repacking the title for !channel_name!"
-    set cur_command=WiiLink_Patcher\Sharpii.exe wad -p !unpack_folder! "!output_patched_wad!" -f
-    !cur_command! > NUL
+    set cur_command=WiiLink_Patcher\Sharpii.exe wad -p !unpack_folder! "!output_patched_wad!"
+    call WiiLink_Patcher\Sharpii.exe wad -p !unpack_folder! "!output_patched_wad!"> NUL
     if %errorlevel% neq 0 goto :error
 goto :EOF
 
