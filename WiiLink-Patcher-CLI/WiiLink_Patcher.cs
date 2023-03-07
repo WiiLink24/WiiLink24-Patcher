@@ -10,8 +10,8 @@ class WiiLink_Patcher
     /*###### Build Info ######*/
     static readonly string version = "1.1.0";
     static readonly string copyrightYear = "2023";
-    static readonly string lastBuild = "March 6th, 2023";
-    static readonly string at = "9:30 PM";
+    static readonly string lastBuild = "March 7th, 2023";
+    static readonly string at = "4:02 AM";
     static string? sdcard = DetectSDCard();
 
     static readonly string wiiLinkPatcherUrl = "https://patcher.wiilink24.com";
@@ -62,7 +62,7 @@ class WiiLink_Patcher
     // GitHub Announcement
     static void PrintAnnouncement()
     {
-        string markupTitle = "[bold green]  Announcement  [/]";
+        string markupTitle = "[bold green]( Announcement )[/]";
         var markupText = new Markup("[bold]If you have any issues with the patcher or services offered by WiiLink, please report them here:[/]\n[link bold green]https://discord.gg/WiiLink[/] - Thank you.");
 
         var panel = new Panel(markupText)
@@ -1144,7 +1144,7 @@ class WiiLink_Patcher
             PrintAnnouncement();
 
             // WiiLink Patcher main menu, based on language
-            AnsiConsole.MarkupLine("[bold]Welcome to the WiiLink Patcher![/] (Experimental C# Version)");
+            AnsiConsole.MarkupLine("[bold]Welcome to the WiiLink Patcher![/]\n(Experimental C# Version)");
             Console.WriteLine();
             Console.WriteLine("1. Start");
             Console.WriteLine("2. Credits");
