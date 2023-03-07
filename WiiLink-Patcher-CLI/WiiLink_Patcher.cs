@@ -47,7 +47,7 @@ class WiiLink_Patcher
         string borderChar = "=";
         string borderLine = "";
 
-        AnsiConsole.MarkupLine($"[bold]WiiLink Patcher v{version} - (c) {copyrightYear} WiiLink[/] (Updated on {lastBuild} at {at} EST)");
+        AnsiConsole.MarkupLine($"[bold]WiiLink Patcher v{version}[/] (build 2) [bold]- (c) {copyrightYear} WiiLink[/] (Updated on {lastBuild} at {at} EST)");
 
         int columns = Console.WindowWidth;
         for (int i = 0; i < columns; i++)
@@ -144,7 +144,7 @@ class WiiLink_Patcher
             else
             {
                 int statusCode = (int)response.StatusCode;
-                ErrorScreen(statusCode);
+                ErrorScreen(statusCode, $"Failed to download {name} from {URL} to {dest}");
             }
         }
     }
@@ -204,13 +204,17 @@ class WiiLink_Patcher
         Directory.CreateDirectory(titleFolder);
         Directory.CreateDirectory(tempFolder);
 
-#if WINDOWS
-        sharpiiPath = Path.Join("WiiLink_Patcher", "Sharpii.exe");
-        xdeltaPath = Path.Join("WiiLink_Patcher", "xdelta3.exe");
-#else
-        sharpiiPath = Path.Join("WiiLink_Patcher", "Sharpii");
-        xdeltaPath = "xdelta3";
-#endif
+        // Set path to Sharpii and Xdelta3 depending on platform
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            sharpiiPath = Path.Join("WiiLink_Patcher", "Sharpii.exe");
+            xdeltaPath = Path.Join("WiiLink_Patcher", "xdelta3.exe");
+        }
+        else
+        {
+            sharpiiPath = Path.Join("WiiLink_Patcher", "Sharpii");
+            xdeltaPath = "xdelta3";
+        }
 
         task = $"Downloading and extracting stuff for {channelTitle}";
         ExecuteProcess(sharpiiPath, "nusd", "-id", titleID, "-o", outputWad, "-wad", "-q");
@@ -231,6 +235,10 @@ class WiiLink_Patcher
         // Third delta patch
         if (reg == "EN" || channelName == "Dominos" || channelName == "WiinoMa")
             ExecuteProcess(xdeltaPath, "-q", "-f", "-d", "-s", Path.Join(titleFolder, appFiles[2] + ".app"), Path.Join(patchFolder, patchFiles[2] + ".delta"), Path.Join(tempFolder, appFiles[2] + ".app"));
+
+        // Copy patched files to unpack folder
+        task = $"Copying patched files for {channelTitle}";
+        CopyFolder(tempFolder, titleFolder);
 
         task = $"Repacking the title for {channelTitle}";
         ExecuteProcess(sharpiiPath, "wad", "-p", titleFolder, $"\"{outputChannel}\"", "-f", "-q");
@@ -290,6 +298,10 @@ class WiiLink_Patcher
 
         task = $"Applying delta patch for {channelTitle}";
         ExecuteProcess(xdeltaPath, "-q", "-f", "-d", "-s", Path.Join(titleFolder, $"{appFile}.app"), Path.Join(patchFolder, $"{patchFile}.delta"), Path.Join(tempFolder, $"{appFile}.app"));
+
+        // Copy patched files to unpack folder
+        task = $"Copying patched files for {channelTitle}";
+        CopyFolder(tempFolder, titleFolder);
 
         task = $"Repacking the title for {channelTitle}";
         ExecuteProcess(sharpiiPath, "wad", "-p", titleFolder, $"\"{outputWad}\"", "-f", "-q");
@@ -604,19 +616,19 @@ class WiiLink_Patcher
                 demae_prog_msg = "(Standard)";
                 break;
             case "dominos":
-                demae_prog_msg = "(Dominos)";
+                demae_prog_msg = "(Domino's)";
                 break;
         }
 
         // Progress messages
         string[] progress_messages = new string[]
         {
-            "Downloading files\n\n[bold]Core Channels:[/]",
-            "Patching Wii Room",
-            "Patching Digicam Print Channel",
-            $"Patching Food Channel {demae_prog_msg}\n\n[bold]WiiConnect24 Channels:[/]",
-            "Patching Nintendo Channel",
-            "Patching Forecast Channel\n\n[bold]Post-Patching:[/]",
+            "Downloading files\n\n[bold]Patching Core Channels:[/]",
+            "Wii Room",
+            "Digicam Print Channel",
+            $"Food Channel {demae_prog_msg}\n\n[bold]Patching WiiConnect24 Channels:[/]",
+            "Nintendo Channel",
+            "Forecast Channel\n\n[bold]Post-Patching:[/]",
             "Finishing up!"
         };
 
@@ -701,7 +713,7 @@ class WiiLink_Patcher
             AnsiConsole.Markup($" [bold]{percent_done}% completed[/]\n\n");
             Console.WriteLine("Please wait while the patching process is in progress...\n");
 
-            Console.WriteLine("\u001b[1mSetting up files and folders:\u001b[0m");
+            Console.WriteLine("\u001b[1mPre-Patching:\u001b[0m");
             // Show progress of each channel
             for (int i = 0; i < patching_progress.Length; i++)
             {
@@ -951,9 +963,9 @@ class WiiLink_Patcher
         {
             AnsiConsole.Markup(" [bold][[*]] Copying files to SD card, which may time a while.[/]\n");
 
-            // Copy WAD and apps folder to SD card
-            CopyFolder("WAD", Path.Combine(sdcard, "WAD"));
+            // Copy apps and WAD folder to SD card
             CopyFolder("apps", Path.Combine(sdcard, "apps"));
+            CopyFolder("WAD", Path.Combine(sdcard, "WAD"));
 
             // Delete the WAD and apps folder if they exist
             if (Directory.Exists("WAD"))
@@ -974,7 +986,7 @@ class WiiLink_Patcher
         while (true)
         {
             PrintHeader();
-            Console.WriteLine("\u001b[1;5;32mPatching Completed!\u001b[0m\n");
+            AnsiConsole.MarkupLine("[bold slowblink green]Patching Completed![/]\n");
 
             if (sdcard != null)
             {
@@ -982,11 +994,11 @@ class WiiLink_Patcher
             }
             else
             {
-                Console.WriteLine("Please connect your Wii SD card and copy the \u001b[1mWAD\u001b[0m and \u001b[1mapps\u001b[0m folders to the root (main folder) of your SD card.");
+                Console.WriteLine("\nPlease connect your Wii SD card and copy the \u001b[1mWAD\u001b[0m and \u001b[1mapps\u001b[0m folders to the root (main folder) of your SD card.");
                 Console.WriteLine($"You can find these folders in the \u001b[1m{curDir}\u001b[0m folder of your computer.\n");
             }
 
-            Console.WriteLine("Please proceed with the tutorial that you can find on \u001b[1mhttps://wii.guide/WiiLink\u001b[0m\n");
+            AnsiConsole.Markup("Please proceed with the tutorial that you can find on [bold green link]https://wii.guide/wiilink[/]\n");
 
             Console.WriteLine("What would you like to do now?\n");
             if (sdcard != null)
@@ -1212,6 +1224,7 @@ class WiiLink_Patcher
         {
             isServerUp = false;
             Console.WriteLine("\u001b[1;31mServer is down!\u001b[0m");
+            System.Threading.Thread.Sleep(1000);
         }
 
         return isServerUp;
@@ -1232,7 +1245,7 @@ class WiiLink_Patcher
     }
 
     // Error detected!
-    static void ErrorScreen(int exitCode)
+    static void ErrorScreen(int exitCode, string? msg)
     {
         PrintHeader();
 
@@ -1240,7 +1253,10 @@ class WiiLink_Patcher
 
         Console.WriteLine("\u001b[1mERROR DETAILS:\u001b[0m");
         Console.WriteLine($" * \u001b[1mTask:\u001b[0m {task}");
-        Console.WriteLine($" * \u001b[1mCommand:\u001b[0m {curCmd}");
+        if (msg == null)
+            Console.WriteLine($" * \u001b[1mCommand:\u001b[0m {curCmd}");
+        else
+            Console.WriteLine($" * \u001b[1mMessage:\u001b[0m {msg}");
         Console.WriteLine($" * \u001b[1mExit code:\u001b[0m {exitCode}\n");
 
         AnsiConsole.MarkupLine("Please open an issue on our GitHub page ([link bold green]https://github.com/WiiLink24/WiiLink24-Patcher/issues[/]) and describe the");
@@ -1256,13 +1272,8 @@ class WiiLink_Patcher
 
     public static void ExecuteProcess(string programName, params string[] args)
     {
-        // Construct the command array using the programName and args
-        string[] cmd = new string[args.Length + 1];
-        cmd[0] = programName;
-        Array.Copy(args, 0, cmd, 1, args.Length);
 
-        // Concatenate the command to the existing command string
-        curCmd = string.Join(" ", cmd);
+        curCmd = $"{programName} {string.Join(" ", args)}";
 
         Process process = new Process();
         process.StartInfo.FileName = programName;
@@ -1277,7 +1288,7 @@ class WiiLink_Patcher
 
         // If the exit code is not 0, then an error has occurred
         if (exitCode != 0)
-            ErrorScreen(exitCode);
+            ErrorScreen(exitCode, null);
     }
 
     private static void CopyFolder(string sourceFolder, string destinationFolder)

@@ -420,3 +420,4 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+*.bat
