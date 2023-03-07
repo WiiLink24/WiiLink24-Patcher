@@ -4,6 +4,8 @@ WiiLink Patcher is a program made for easier installation of WiiLink. With it, y
 
 >As this patcher is experimental, it may contain bugs. If you spot any or are just having problems with the patcher in general, report them on our [Issues Page](https://github.com/WiiLink24/WiiLink24-Patcher/issues), or ask us for help on our [Discord server](https://discord.gg/wiilink)!
 
+>If you wish to compile this yourself, clone or download the repository, and open the solution file in Visual Studio. You will need to make sure it's set up to use .NET 6.0 (at least) for it to compile!
+
 ### Download
 * [v1.1.0 - Initial alpha release](https://cdn.discordapp.com/attachments/1014621847242940507/1082488774187024495/WiiLink_Patcher_v1.1.0.exe)
 >When enough feedback comes in, we will eventually move to replace the .bat version with this one.
@@ -18,6 +20,3 @@ WiiLink Patcher is a program made for easier installation of WiiLink. With it, y
 
 ## Screenshot
 ![C# Version](https://imgur.com/s9D6Xhm.png)
-
-## Notes
-If you wish to compile this yourself, clone or download the repository, and open the solution file in Visual Studio. You will need to make sure it's set up to use .NET 6.0 (at least) for it to compile!
