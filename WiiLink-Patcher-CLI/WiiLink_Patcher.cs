@@ -10,9 +10,9 @@ class WiiLink_Patcher
     /*###### Build Info ######*/
     static readonly string version = "1.1.0";
     static readonly string copyrightYear = "2023";
-    static readonly string lastBuildLong = "March 7th, 2023";
-    static readonly string lastBuildShort = "3/7/2023";
-    static readonly string at = "4:02 AM";
+    static readonly string lastBuildLong = "March 8th, 2023";
+    static readonly string lastBuildShort = "3/8/2023";
+    static readonly string at = "6:14 PM";
     static string? sdcard = DetectSDCard();
 
     static readonly string wiiLinkPatcherUrl = "https://patcher.wiilink24.com";
@@ -53,7 +53,7 @@ class WiiLink_Patcher
         string borderLine = "";
         int columns = Console.WindowWidth;
 
-        AnsiConsole.MarkupLine($"[bold]WiiLink Patcher v{version}[/] (build 2) [bold]- (c) {copyrightYear} WiiLink[/] (Updated on {lastBuildLong} at {at} EST)");
+        AnsiConsole.MarkupLine($"[bold]WiiLink Patcher v{version}[/] (build 3) [bold]- (c) {copyrightYear} WiiLink[/] (Updated on {lastBuildLong} at {at} EST)");
 
         for (int i = 0; i < columns; i++)
         {
@@ -96,7 +96,19 @@ class WiiLink_Patcher
             }
             return null;
         }
-        else
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            string[] mountedDrives = Directory.GetDirectories($"/media/{Environment.UserName}");
+            foreach (string drive in mountedDrives)
+            {
+                if (Directory.Exists(Path.Combine(drive, "apps")))
+                {
+                    return drive;
+                }
+            }
+            return null;
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
             string[] mountedDrives = Directory.GetDirectories("/Volumes");
             foreach (string drive in mountedDrives)
@@ -106,6 +118,10 @@ class WiiLink_Patcher
                     return drive;
                 }
             }
+            return null;
+        }
+        else
+        {
             return null;
         }
     }
@@ -144,6 +160,66 @@ class WiiLink_Patcher
             Console.WriteLine("\u001b[1;32mWiiLink\u001b[0m \u001b[1;32mwebsite:\u001b[0m https://wiilink24.com\n");
             Console.WriteLine("\u001b[1mPress any key to go back to the main menu\u001b[0m");
             Console.ReadKey();
+        }
+    }
+
+    // If on macOS or Linux, check if the user has the required dependencies installed (xdelta3). Use AnsiConsole for better formatting.
+    static void CheckDependency(string commandName, string? packageName = null)
+    {
+        if (string.IsNullOrEmpty(packageName))
+        {
+            // Expect that the package name is the same as the command being searched for.
+            packageName = commandName;
+        }
+
+        // Use "which" to check if the command exists.
+
+        ProcessStartInfo startInfo = new ProcessStartInfo();
+        startInfo.FileName = "which";
+        startInfo.Arguments = commandName;
+        startInfo.RedirectStandardOutput = true;
+        startInfo.UseShellExecute = false;
+        startInfo.CreateNoWindow = true;
+
+        Process process = new Process();
+        process.StartInfo = startInfo;
+        process.Start();
+
+        string output = process.StandardOutput.ReadToEnd();
+        process.WaitForExit();
+
+        if (string.IsNullOrEmpty(output))
+        {
+            PrintHeader();
+
+            AnsiConsole.MarkupLine("[bold red]Dependency Error:[/]\n");
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                AnsiConsole.MarkupLine($"Cannot find the command [bold]{commandName}[/]. You can use [bold]brew install {packageName}[/] to get this required package.");
+                AnsiConsole.MarkupLine("If you don't have Homebrew installed, please install at [link bold green]https://brew.sh/[/]");
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                AnsiConsole.MarkupLine($"Cannot find the command [bold]{commandName}[/]. Please install [bold]{packageName}[/] using your package manager.");
+            }
+            Console.WriteLine();
+
+            Console.Write("Press any key to exit...");
+            Console.ReadKey();
+            Console.Clear();
+            ExitApp();
+        }
+    }
+
+    public static void CheckDependencies()
+    {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            CheckDependency("xdelta3", "xdelta");
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            CheckDependency("xdelta3");
         }
     }
 
@@ -856,7 +932,6 @@ class WiiLink_Patcher
             SharpiiToDL = "sharpii(macOS-x64)";
             SharpiiFile = "Sharpii";
         }
-        // Linux ARM
 
         // Downloading Sharpii
         DownloadFile($"{PabloURL}/Sharpii/{SharpiiToDL}", Path.Join("WiiLink_Patcher", SharpiiFile), "Sharpii");
@@ -1065,11 +1140,21 @@ class WiiLink_Patcher
 
         if (sdcard != null)
         {
-            AnsiConsole.Markup(" [bold][[*]] Copying files to SD card, which may time a while.[/]\n");
+            AnsiConsole.Markup(" [bold][[*]] Copying files to SD card, which may take a while.[/]\n");
 
-            // Copy apps and WAD folder to SD card
-            CopyFolder("apps", Path.Combine(sdcard, "apps"));
-            CopyFolder("WAD", Path.Combine(sdcard, "WAD"));
+            try
+            {
+                // Copy apps and WAD folder to SD card
+                CopyFolder("apps", Path.Combine(sdcard, "apps"));
+                CopyFolder("WAD", Path.Combine(sdcard, "WAD"));
+            }
+            catch (Exception e)
+            {
+                AnsiConsole.MarkupLine($"[bold red]ERROR:[/] {e.Message}");
+                Console.WriteLine("Press any key to try again...");
+                Console.ReadKey();
+                FinishSDCopy();
+            }
 
             // Delete the WAD and apps folder if they exist
             if (Directory.Exists("WAD"))
@@ -1079,7 +1164,8 @@ class WiiLink_Patcher
         }
 
         // Delete WiiLink_Patcher folder
-        Directory.Delete("WiiLink_Patcher", true);
+        if (Directory.Exists("WiiLink_Patcher"))
+            Directory.Delete("WiiLink_Patcher", true);
 
         // Finished patching
         patching_progress[6] = "finishing:done";
@@ -1098,7 +1184,7 @@ class WiiLink_Patcher
             }
             else
             {
-                Console.WriteLine("\nPlease connect your Wii SD card and copy the \u001b[1mWAD\u001b[0m and \u001b[1mapps\u001b[0m folders to the root (main folder) of your SD card.");
+                Console.WriteLine("Please connect your Wii SD card and copy the \u001b[1mWAD\u001b[0m and \u001b[1mapps\u001b[0m folders to the root (main folder) of your SD card.");
                 Console.WriteLine($"You can find these folders in the \u001b[1m{curDir}\u001b[0m folder of your computer.\n");
             }
 
@@ -1143,12 +1229,7 @@ class WiiLink_Patcher
                     break;
                 case 3:
                     Console.Clear();
-
-                    // Restore original console size if not Windows
-                    if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                        Console.Write($"\u001b[8;{console_height};{console_width}t");
-
-                    Environment.Exit(0);
+                    ExitApp();
                     break;
                 default:
                     break;
@@ -1171,8 +1252,11 @@ class WiiLink_Patcher
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 Console.WriteLine("Please enter the drive letter of your SD card (e.g. E)");
-            else
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                Console.WriteLine("Please enter the mount name of your SD card (e.g. /media/username/Wii)");
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 Console.WriteLine("Please enter the volume name of your SD card (e.g. /Volumes/Wii)");
+
             Console.WriteLine("(Type \u001b[1mEXIT\u001b[0m to go back to the previous menu)\n");
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -1315,12 +1399,7 @@ class WiiLink_Patcher
                 case 3:
                     // Clear console and Exit app (3)
                     Console.Clear();
-
-                    // Restore original console size if not Windows
-                    if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                        Console.Write($"\u001b[8;{console_height};{console_width}t");
-
-                    Environment.Exit(0);
+                    ExitApp();
                     break;
                 case 4:
                     // Manually select SD Card path (O)
@@ -1376,12 +1455,7 @@ class WiiLink_Patcher
 
         Console.Write("Press any key to exit...");
         Console.ReadKey();
-
-        // Restore original console size if not Windows
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            Console.Write($"\u001b[8;{console_height};{console_width}t");
-
-        Environment.Exit(0);
+        ExitApp();
     }
 
     // Error detected!
@@ -1451,6 +1525,16 @@ class WiiLink_Patcher
             CopyFolder(subfolder, Path.Combine(destinationFolder, Path.GetFileName(subfolder)));
     }
 
+    // Exit console app
+    static void ExitApp()
+    {
+        // Restore original console size if not Windows
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            Console.Write($"\u001b[8;{console_height};{console_width}t");
+
+        Environment.Exit(0);
+    }
+
     static async System.Threading.Tasks.Task Main(string[] args)
     {
         // Set console encoding to UTF-8
@@ -1459,13 +1543,21 @@ class WiiLink_Patcher
         // Cache current console size to console_width and console_height
         console_width = Console.WindowWidth;
         console_height = Console.WindowHeight;
-        
+
         // Set console window size to 120x30 on macOS and Linux
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             Console.Write("\u001b[8;30;120t");
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            // If console size is less than 100x25, then resize it
+            if (console_width < 100 || console_height < 25)
+                Console.Write("\u001b[8;30;120t");
 
         // Change Windows console title
         Console.Title = $"WiiLink Patcher v{version}";
+
+        // Check dependencies (if not on Windows)
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            CheckDependencies();
 
         // Check if the server is up
         if (!await CheckServerAsync(wiiLinkPatcherUrl))

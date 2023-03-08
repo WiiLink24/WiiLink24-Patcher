@@ -6,14 +6,14 @@ It utilizes [Sharpii-NetCore](https://github.com/TheShadowEevee/Sharpii-NetCore)
 
 >As this patcher is experimental, it may contain bugs. If you spot any or are just having problems with the patcher in general, report them on our [Issues Page](https://github.com/WiiLink24/WiiLink24-Patcher/issues), or ask us for help on our [Discord server](https://discord.gg/wiilink)!
 
->If you wish to compile this yourself, clone or download the repository, and open the solution file in Visual Studio. You will need to make sure it's set up to use .NET 6.0 (at least) for it to compile!
+>If you wish to compile this yourself, clone or download the repository, and open the solution file in Visual Studio. You will need to make sure you have .NET 6.0 set up to compile it.
 
 ### Download
-* [**[Windows]** v1.1.0 (build 2) - Bug fix](https://cdn.discordapp.com/attachments/253286648291393536/1082821169704607824/WiiLink_Patcher_v1.1.0.exe)
-* [**[macOS]** v1.1.0 (build 2) - Initial macOS build](https://cdn.discordapp.com/attachments/253286648291393536/1082821235693584505/WiiLink_Patcher_v1.1.0_macOS)
-* [**[Linux]** v1.1.0 (build 2) - Initial Linux build](https://cdn.discordapp.com/attachments/253286648291393536/1082821298029330582/WiiLink_Patcher_v1.1.0_Linux)
+* [**[Windows]** v1.1.0 (build 3)](https://cdn.discordapp.com/attachments/253286648291393536/1083170769783226368/WiiLink_Patcher_Windows_v1.1.0.exe)
+* [**[macOS]** v1.1.0 (build 3)](https://cdn.discordapp.com/attachments/253286648291393536/1083170770198466602/WiiLink_Patcher_Linux_v1.1.0)
+* [**[Linux]** v1.1.0 (build 3)](https://cdn.discordapp.com/attachments/253286648291393536/1083170770596937859/WiiLink_Patcher_macOS_v1.1.0)
 
->In **macOS** and **Linux**, you'll need to give the app execution permissions, either by setting it in the file info settings, or doing:<br>`chmod +x WiiLink_Patcher_v1.1.0_macOS` or `chmod +x WiiLink_Patcher_v1.1.0_Linux`<br> in the terminal.
+>In **macOS** and **Linux**, you'll need to give the app execution permissions, either by setting it in the file permission settings, or doing:<br>`chmod +x WiiLink_Patcher_v1.1.0_macOS` or `chmod +x WiiLink_Patcher_v1.1.0_Linux`<br> in the terminal.
 
 >**NOTE:** In **Windows**, your antivirus may flag the **patcher**, **Sharpii**, or **xdelta3** as a virus. These are a false positive, and you can safely ignore it. If you are still unsure, you can inspect the source code, and/or compile it yourself to make sure it's safe. You can also temporarily disable your antivirus to download the patcher, or add an exception for it if you put it in a dedicated folder.
 
@@ -23,7 +23,9 @@ It utilizes [Sharpii-NetCore](https://github.com/TheShadowEevee/Sharpii-NetCore)
 * Copying patched files to an SD Card that is already connected to the PC.
 * Downloads **Wii Mod Lite** and putting it on SD Card along with the WADs.
 * You can get **Demae Domino's**, along with the **Get Console ID** homebrew app for easy console ID registration on our [Discord server](https://discord.gg/wiilink), for ***free***!
-* Compatible with Windows **10** and **11**! (early macOS and Linux support is now available to test!)
+>(Demae Domino's is only available in the US and Canada!)
+
+Compatible with Windows (**10** and **11**), macOS, and Linux!
 
 ## Screenshot
-![C# Version](https://imgur.com/s9D6Xhm.png)
+![C# Version](https://imgur.com/SIR3QUk.png)
