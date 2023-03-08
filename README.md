@@ -12,7 +12,10 @@ It utilizes [Sharpii-NetCore](https://github.com/TheShadowEevee/Sharpii-NetCore)
 * [**[Windows]** v1.1.0 (build 2) - Bug fix](https://cdn.discordapp.com/attachments/253286648291393536/1082821169704607824/WiiLink_Patcher_v1.1.0.exe)
 * [**[macOS]** v1.1.0 (build 2) - Initial macOS build](https://cdn.discordapp.com/attachments/253286648291393536/1082821235693584505/WiiLink_Patcher_v1.1.0_macOS)
 * [**[Linux]** v1.1.0 (build 2) - Initial Linux build](https://cdn.discordapp.com/attachments/253286648291393536/1082821298029330582/WiiLink_Patcher_v1.1.0_Linux)
->NOTE: Your antivirus may flag the Windows version as a virus. This is a false positive, and you can safely ignore it. If you are still unsure, you can compile the program yourself, or inspect the source code to make sure it's safe. You can temporarily disable your antivirus to download the patcher, or add an exception for it if you put it in a dedicated folder.
+
+>In **macOS** and **Linux**, you'll need to give the app execution permissions, either by setting it in the file info settings, or doing:<br>`chmod +x WiiLink_Patcher_v1.1.0_macOS` or `chmod +x WiiLink_Patcher_v1.1.0_Linux`<br> in the terminal.
+
+>**NOTE:** In **Windows**, your antivirus may flag the **patcher**, **Sharpii**, or **xdelta3** as a virus. These are a false positive, and you can safely ignore it. If you are still unsure, you can inspect the source code, and/or compile it yourself to make sure it's safe. You can also temporarily disable your antivirus to download the patcher, or add an exception for it if you put it in a dedicated folder.
 
 ### Features
 * Works with **Wii Room**, **Digicam Print Channel**, **Food Channel**, and more!
