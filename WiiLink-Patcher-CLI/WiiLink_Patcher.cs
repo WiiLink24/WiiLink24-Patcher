@@ -10,7 +10,8 @@ class WiiLink_Patcher
     /*###### Build Info ######*/
     static readonly string version = "1.1.0";
     static readonly string copyrightYear = "2023";
-    static readonly string lastBuild = "March 7th, 2023";
+    static readonly string lastBuildLong = "March 7th, 2023";
+    static readonly string lastBuildShort = "3/7/2023";
     static readonly string at = "4:02 AM";
     static string? sdcard = DetectSDCard();
 
@@ -39,6 +40,10 @@ class WiiLink_Patcher
     static readonly string curDir = Directory.GetCurrentDirectory();
     static string[] patching_progress = new string[7];
 
+    // Get current console window size
+    static int console_width = 0;
+    static int console_height = 0;
+
     static void PrintHeader()
     {
         // Clear console
@@ -46,10 +51,10 @@ class WiiLink_Patcher
 
         string borderChar = "=";
         string borderLine = "";
-
-        AnsiConsole.MarkupLine($"[bold]WiiLink Patcher v{version}[/] (build 2) [bold]- (c) {copyrightYear} WiiLink[/] (Updated on {lastBuild} at {at} EST)");
-
         int columns = Console.WindowWidth;
+
+        AnsiConsole.MarkupLine($"[bold]WiiLink Patcher v{version}[/] (build 2) [bold]- (c) {copyrightYear} WiiLink[/] (Updated on {lastBuildLong} at {at} EST)");
+
         for (int i = 0; i < columns; i++)
         {
             borderLine += borderChar;
@@ -78,15 +83,31 @@ class WiiLink_Patcher
 
     static string? DetectSDCard()
     {
-        DriveInfo[] drives = DriveInfo.GetDrives();
-        foreach (DriveInfo drive in drives)
+        // Check for drive on Windows, and check mounted drives on Linux/MacOS
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            if (drive.DriveType == DriveType.Removable && Directory.Exists(Path.Combine(drive.RootDirectory.FullName, "apps")))
+            DriveInfo[] drives = DriveInfo.GetDrives();
+            foreach (DriveInfo drive in drives)
             {
-                return drive.RootDirectory.FullName;
+                if (drive.DriveType == DriveType.Removable && Directory.Exists(Path.Combine(drive.RootDirectory.FullName, "apps")))
+                {
+                    return drive.RootDirectory.FullName;
+                }
             }
+            return null;
         }
-        return null;
+        else
+        {
+            string[] mountedDrives = Directory.GetDirectories("/Volumes");
+            foreach (string drive in mountedDrives)
+            {
+                if (Directory.Exists(Path.Combine(drive, "apps")))
+                {
+                    return drive;
+                }
+            }
+            return null;
+        }
     }
 
     // User choice
@@ -262,13 +283,18 @@ class WiiLink_Patcher
         Directory.CreateDirectory(titleFolder);
         Directory.CreateDirectory(tempFolder);
 
-#if WINDOWS
-        sharpiiPath = Path.Join("WiiLink_Patcher", "Sharpii.exe");
-        xdeltaPath = Path.Join("WiiLink_Patcher", "xdelta3.exe");
-#else
-        sharpiiPath = Path.Join("WiiLink_Patcher", "Sharpii");
-        xdeltaPath = "xdelta3";
-#endif
+        // Set path to Sharpii and Xdelta3 depending on platform
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            sharpiiPath = Path.Join("WiiLink_Patcher", "Sharpii.exe");
+            xdeltaPath = Path.Join("WiiLink_Patcher", "xdelta3.exe");
+        }
+        else
+        {
+            sharpiiPath = Path.Join("WiiLink_Patcher", "Sharpii");
+            xdeltaPath = "xdelta3";
+        }
+
 
         string urlSubdir = "";
 
@@ -568,7 +594,7 @@ class WiiLink_Patcher
             {
                 case 1:
                     // Start
-                    PatchingProgress();
+                    WADFolderCheck();
                     break;
                 case 2:
                     // Manually select SD card
@@ -583,6 +609,57 @@ class WiiLink_Patcher
                     break;
             }
         }
+    }
+
+
+    // WAD folder check
+    static void WADFolderCheck()
+    {
+        // If WAD folder doesn't exist, go to PatchingProgress(), otherwise, ask user if they want to delete it (use AnsiConsole.MarkupLine for formatting)
+        if (!Directory.Exists("WAD"))
+        {
+            PatchingProgress();
+        }
+        else
+        {
+            while (true)
+            {
+                PrintHeader();
+
+                AnsiConsole.MarkupLine("[bold green]Express Install[/]");
+                Console.WriteLine();
+                AnsiConsole.MarkupLine("[bold]Step 6: WAD folder detected[/]");
+                Console.WriteLine();
+                AnsiConsole.MarkupLine("A [bold]WAD[/] folder has been detected in the current directory. This folder is used to store the WAD files that are downloaded during the patching process. If you choose to delete this folder, it will be recreated when you start the patching process again.");
+                Console.WriteLine();
+                AnsiConsole.MarkupLine("1. [bold]Delete[/] WAD folder");
+                AnsiConsole.MarkupLine("2. [bold]Keep[/] WAD folder");
+                Console.WriteLine();
+                AnsiConsole.MarkupLine("3. [bold]Go Back to Main Menu[/]");
+                Console.WriteLine();
+
+                int choice = UserChoose("123");
+                switch (choice)
+                {
+                    case 1:
+                        // Delete WAD folder
+                        Directory.Delete("WAD", true);
+                        PatchingProgress();
+                        break;
+                    case 2:
+                        // Keep WAD folder
+                        PatchingProgress();
+                        break;
+                    case 3:
+                        // Go back to main menu
+                        MainMenu();
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
     }
 
 
@@ -755,24 +832,51 @@ class WiiLink_Patcher
         string SharpiiFile = "";
 
         // Set Sharpii variables by Windows, Linux and macOS (Sharpii.exe, Sharpii(linux-x64), Sharpii(macOS-x64)
-#if WINDOWS
-        SharpiiToDL = "Sharpii.exe";
-        SharpiiFile = "Sharpii.exe";
-#elif LINUX
-        SharpiiToDL = "Sharpii(linux-x64)";
-        SharpiiFile = "Sharpii";
-#elif MACOS
-        SharpiiToDL = "Sharpii(macOS-x64)";
-        SharpiiFile = "Sharpii";
-#endif
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            SharpiiToDL = "Sharpii.exe";
+            SharpiiFile = "Sharpii.exe";
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            // Check if Linux x64 or ARM64
+            if (RuntimeInformation.OSArchitecture == Architecture.X64)
+            {
+                SharpiiToDL = "sharpii(linux-x64)";
+                SharpiiFile = "Sharpii";
+            }
+            else if (RuntimeInformation.OSArchitecture == Architecture.Arm64)
+            {
+                SharpiiToDL = "sharpii(linux-arm64)";
+                SharpiiFile = "Sharpii";
+            }
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            SharpiiToDL = "sharpii(macOS-x64)";
+            SharpiiFile = "Sharpii";
+        }
+        // Linux ARM
 
         // Downloading Sharpii
         DownloadFile($"{PabloURL}/Sharpii/{SharpiiToDL}", Path.Join("WiiLink_Patcher", SharpiiFile), "Sharpii");
 
-#if WINDOWS
         // Downloading Xdelta3
-        DownloadFile($"{PabloURL}/xdelta/xdelta.exe", Path.Join("WiiLink_Patcher", "xdelta3.exe"), "Xdelta3");
-#endif
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            DownloadFile($"{PabloURL}/xdelta/xdelta.exe", Path.Join("WiiLink_Patcher", "xdelta3.exe"), "Xdelta3");
+
+        // If on Linux or macOS, give Sharpii executable permissions
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            // Give Sharpii executable permissions
+            ProcessStartInfo startInfo = new ProcessStartInfo
+            {
+                FileName = "chmod",
+                Arguments = $"+x {SharpiiFile}",
+                WorkingDirectory = Path.Join("WiiLink_Patcher")
+            };
+            Process.Start(startInfo)?.WaitForExit();
+        }
 
         // Download SPD if English is selected
         if (reg == "EN")
@@ -1012,22 +1116,38 @@ class WiiLink_Patcher
             switch (choice)
             {
                 case 1:
-#if WINDOWS
-                    if (sdcard != null)
-                        Process.Start(@"explorer.exe", sdcard);
-                    else
-                        Process.Start(@"explorer.exe", curDir);
-#else
-                    if (sdcard != null)
-                        Process.Start("open", sdcard);
-                    else
-                        Process.Start("open", curDir);
-#endif
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    {
+                        if (sdcard != null)
+                            Process.Start(@"explorer.exe", sdcard);
+                        else
+                            Process.Start(@"explorer.exe", curDir);
+                    }
+                    else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                    {
+                        if (sdcard != null)
+                            Process.Start("xdg-open", sdcard);
+                        else
+                            Process.Start("xdg-open", curDir);
+                    }
+                    else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                    {
+                        if (sdcard != null)
+                            Process.Start("open", sdcard);
+                        else
+                            Process.Start("open", curDir);
+                    }
                     break;
                 case 2:
                     MainMenu();
                     break;
                 case 3:
+                    Console.Clear();
+
+                    // Restore original console size if not Windows
+                    if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                        Console.Write($"\u001b[8;{console_height};{console_width}t");
+
                     Environment.Exit(0);
                     break;
                 default:
@@ -1041,69 +1161,78 @@ class WiiLink_Patcher
     static void SDCardSelect()
     {
         string? sdcard_new = "";
+        string? inputUpper = "";
 
         while (true)
         {
             PrintHeader();
 
-            Console.WriteLine("\u001b[1;32mManually Select SD Card\u001b[0m");
-            Console.WriteLine();
-#if WINDOWS
-            Console.WriteLine("\u001b[1mPlease enter the drive letter of your SD card\u001b[0m(e.g.E)");
-#else
-            Console.WriteLine("Please enter the volume name of your SD card (e.g. /Volumes/Wii)");
-#endif
+            Console.WriteLine("\u001b[1;32mManually Select SD Card\u001b[0m\n");
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                Console.WriteLine("Please enter the drive letter of your SD card (e.g. E)");
+            else
+                Console.WriteLine("Please enter the volume name of your SD card (e.g. /Volumes/Wii)");
             Console.WriteLine("(Type \u001b[1mEXIT\u001b[0m to go back to the previous menu)\n");
-#if WINDOWS
-            Console.Write("New SD card drive: ");
-#else
-            Console.Write("New SD card volume: ");
-#endif
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                Console.Write("New SD card drive: ");
+            else
+                Console.Write("New SD card volume: ");
 
             // Get user input, if user presses ESC (without needing to press ENTER), go back to previous menu
             sdcard_new = Console.ReadLine();
-            sdcard_new = sdcard_new?.ToUpper();
+            inputUpper = sdcard_new?.ToUpper();
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                sdcard_new = inputUpper;
 
             // Restart SDCardSelect if user input is empty
-            if (sdcard_new == "")
+            if (inputUpper == "")
                 SDCardSelect();
-            else if (sdcard_new == "EXIT")
+            else if (inputUpper == "EXIT")
                 return;
 
-#if WINDOWS
-            // Error if drive letter is more than 1 character
-            if (sdcard_new?.Length > 1)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                Console.WriteLine("\u001b[1;31mDrive letter must be 1 character!\u001b[0m");
-                System.Threading.Thread.Sleep(2000);
-                continue;
+                // Error if drive letter is more than 1 character
+                if (sdcard_new?.Length > 1)
+                {
+                    Console.WriteLine("\u001b[1;31mDrive letter must be 1 character!\u001b[0m");
+                    System.Threading.Thread.Sleep(2000);
+                    continue;
+                }
             }
-#endif
 
-
-            // Format SD card path depending on OS (E -> E:\, /Volumes/Wii -> /Volumes/Wii/)
-#if WINDOWS
-            sdcard_new = sdcard_new + ":\\";
-#else
-            sdcard_new = sdcard_new + "/";
-#endif
+            // Format SD card path depending on OS
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                sdcard_new = sdcard_new + ":\\";
+            else
+            {
+                // If / is already at the end of the path, remove it
+                if (sdcard_new?.EndsWith("/") == true)
+                    sdcard_new = sdcard_new.Remove(sdcard_new.Length - 1);
+            }
 
             // Prevent user from selecting boot drive
-#if WINDOWS
-            if (sdcard_new == "C:\\")
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                Console.WriteLine("\u001b[1;31mYou cannot select your boot drive!\u001b[0m");
-                System.Threading.Thread.Sleep(2000);
-                continue;
+                if (sdcard_new == "C:\\")
+                {
+                    Console.WriteLine("\u001b[1;31mYou cannot select your boot drive!\u001b[0m");
+                    System.Threading.Thread.Sleep(2000);
+                    continue;
+                }
             }
-#else
-            if (sdcard_new == "/")
+            else
             {
-                Console.WriteLine("\u001b[1;31mYou cannot select your boot drive!\u001b[0m");
-                System.Threading.Thread.Sleep(2000);
-                continue;
+                if (sdcard_new == "/")
+                {
+                    Console.WriteLine("\u001b[1;31mYou cannot select your boot drive!\u001b[0m");
+                    System.Threading.Thread.Sleep(2000);
+                    continue;
+                }
             }
-#endif
 
             // Check if new SD card path is the same as the old one
             if (sdcard_new == sdcard)
@@ -1116,11 +1245,11 @@ class WiiLink_Patcher
             // Check if drive/volume exists
             if (!Directory.Exists(sdcard_new))
             {
-#if WINDOWS
-                Console.WriteLine("\u001b[1;31mDrive does not exist!\u001b[0m");
-#else
-                Console.WriteLine("\u001b[1;31mVolume does not exist!\u001b[0m");
-#endif
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    Console.WriteLine("\u001b[1;31mDrive does not exist!\u001b[0m");
+                else
+                    Console.WriteLine("\u001b[1;31mVolume does not exist!\u001b[0m");
+
                 System.Threading.Thread.Sleep(2000);
                 continue;
             }
@@ -1155,7 +1284,6 @@ class WiiLink_Patcher
             PrintHeader();
             PrintAnnouncement();
 
-            // WiiLink Patcher main menu, based on language
             AnsiConsole.MarkupLine("[bold]Welcome to the WiiLink Patcher![/]\n(Experimental C# Version)");
             Console.WriteLine();
             Console.WriteLine("1. Start");
@@ -1185,8 +1313,15 @@ class WiiLink_Patcher
                     Credits();
                     break;
                 case 3:
-                    // Exit (3)
-                    return;
+                    // Clear console and Exit app (3)
+                    Console.Clear();
+
+                    // Restore original console size if not Windows
+                    if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                        Console.Write($"\u001b[8;{console_height};{console_width}t");
+
+                    Environment.Exit(0);
+                    break;
                 case 4:
                     // Manually select SD Card path (O)
                     SDCardSelect();
@@ -1241,6 +1376,11 @@ class WiiLink_Patcher
 
         Console.Write("Press any key to exit...");
         Console.ReadKey();
+
+        // Restore original console size if not Windows
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            Console.Write($"\u001b[8;{console_height};{console_width}t");
+
         Environment.Exit(0);
     }
 
@@ -1315,6 +1455,14 @@ class WiiLink_Patcher
     {
         // Set console encoding to UTF-8
         Console.OutputEncoding = Encoding.UTF8;
+
+        // Cache current console size to console_width and console_height
+        console_width = Console.WindowWidth;
+        console_height = Console.WindowHeight;
+        
+        // Set console window size to 120x30 on macOS and Linux
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            Console.Write("\u001b[8;30;120t");
 
         // Change Windows console title
         Console.Title = $"WiiLink Patcher v{version}";
