@@ -10,8 +10,8 @@ It utilizes [Sharpii-NetCore](https://github.com/TheShadowEevee/Sharpii-NetCore)
 
 ### Download
 * [**[Windows]** v1.1.0 (build 3)](https://cdn.discordapp.com/attachments/253286648291393536/1083170769783226368/WiiLink_Patcher_Windows_v1.1.0.exe)
-* [**[macOS]** v1.1.0 (build 3)](https://cdn.discordapp.com/attachments/253286648291393536/1083170770198466602/WiiLink_Patcher_Linux_v1.1.0)
-* [**[Linux]** v1.1.0 (build 3)](https://cdn.discordapp.com/attachments/253286648291393536/1083170770596937859/WiiLink_Patcher_macOS_v1.1.0)
+* [**[macOS]** v1.1.0 (build 3)](https://cdn.discordapp.com/attachments/253286648291393536/1083170770596937859/WiiLink_Patcher_macOS_v1.1.0)
+* [**[Linux]** v1.1.0 (build 3)](https://cdn.discordapp.com/attachments/253286648291393536/1083170770198466602/WiiLink_Patcher_Linux_v1.1.0)
 
 >In **macOS** and **Linux**, you'll need to give the app execution permissions, either by setting it in the file permission settings, or doing:<br>`chmod +x WiiLink_Patcher_v1.1.0_macOS` or `chmod +x WiiLink_Patcher_v1.1.0_Linux`<br> in the terminal.
 
