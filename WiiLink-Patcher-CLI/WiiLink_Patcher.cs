@@ -1,7 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Text;
-using System;
-using System.IO;
 using System.Runtime.InteropServices;
 using Spectre.Console;
 
@@ -10,9 +8,8 @@ class WiiLink_Patcher
     /*###### Build Info ######*/
     static readonly string version = "1.1.0";
     static readonly string copyrightYear = "2023";
-    static readonly string lastBuildLong = "March 8th, 2023";
-    static readonly string lastBuildShort = "3/8/2023";
-    static readonly string at = "6:14 PM";
+    static readonly string lastBuild = "March 20th, 2023";
+    static readonly string at = "2:12 PM";
     static string? sdcard = DetectSDCard();
 
     static readonly string wiiLinkPatcherUrl = "https://patcher.wiilink24.com";
@@ -53,7 +50,7 @@ class WiiLink_Patcher
         string borderLine = "";
         int columns = Console.WindowWidth;
 
-        AnsiConsole.MarkupLine($"[bold]WiiLink Patcher v{version}[/] (build 3) [bold]- (c) {copyrightYear} WiiLink[/] (Updated on {lastBuildLong} at {at} EST)");
+        AnsiConsole.MarkupLine($"[bold]WiiLink Patcher v{version} - (c) {copyrightYear} WiiLink[/] (Updated on {lastBuild} at {at} EST)");
 
         for (int i = 0; i < columns; i++)
         {
@@ -718,8 +715,19 @@ class WiiLink_Patcher
                 switch (choice)
                 {
                     case 1:
-                        // Delete WAD folder
-                        Directory.Delete("WAD", true);
+                        // Delete WAD folder in a try catch block
+                        try
+                        {
+                            Directory.Delete("WAD", true);
+                        }
+                        catch (Exception e)
+                        {
+                            AnsiConsole.MarkupLine($"[bold red]ERROR:[/] {e.Message}");
+                            Console.WriteLine();
+                            Console.WriteLine("Press any key to try again...");
+                            Console.ReadKey();
+                            WADFolderCheck();
+                        }
                         PatchingProgress();
                         break;
                     case 2:
@@ -1059,6 +1067,7 @@ class WiiLink_Patcher
     {
         task = "Patching Demae Channel";
         string demae_folder = "Demae";
+        string demae_ver = "Standard";
 
         string[] demae_patches = new string[3];
         if (demae_version == "standard")
@@ -1067,11 +1076,12 @@ class WiiLink_Patcher
         {
             demae_patches = new string[] { "Dominos_0", "Dominos_1", "Dominos_2" };
             demae_folder = "Dominos";
+            demae_ver = "Dominos";
         }
 
         string[] demae_apps = { "00000000", "00000001", "00000002" };
 
-        PatchCoreChannel(demae_folder, "Demae Channel", "000100014843484a", demae_patches, demae_apps);
+        PatchCoreChannel(demae_folder, $"Food Channel ({demae_ver})", "000100014843484a", demae_patches, demae_apps);
 
         // Finished patching Demae Channel
         patching_progress[3] = "demae:done";
@@ -1368,7 +1378,7 @@ class WiiLink_Patcher
             PrintHeader();
             PrintAnnouncement();
 
-            AnsiConsole.MarkupLine("[bold]Welcome to the WiiLink Patcher![/]\n(Experimental C# Version)");
+            AnsiConsole.MarkupLine("[bold]Welcome to the WiiLink Patcher![/]");
             Console.WriteLine();
             Console.WriteLine("1. Start");
             Console.WriteLine("2. Credits");
