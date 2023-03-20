@@ -222,23 +222,34 @@ class WiiLink_Patcher
 
     static void DownloadFile(string URL, string dest, string name)
     {
-        task = $"Downloading {name}";
-        curCmd = $"DownloadFile({URL}, {dest}, {name})";
-        using (var client = new HttpClient())
+        while (true)
         {
-            var response = client.GetAsync(URL).Result;
-            if (response.IsSuccessStatusCode)
+            task = $"Downloading {name}";
+            curCmd = $"DownloadFile({URL}, {dest}, {name})";
+            try
             {
-                using (var stream = response.Content.ReadAsStream())
-                using (var fileStream = File.Create(dest))
+                using (var client = new HttpClient())
                 {
-                    stream.CopyTo(fileStream);
+                    var response = client.GetAsync(URL).Result;
+                    if (response.IsSuccessStatusCode)
+                    {
+                        using (var stream = response.Content.ReadAsStream())
+                        using (var fileStream = File.Create(dest))
+                        {
+                            stream.CopyTo(fileStream);
+                        }
+                        break;
+                    }
+                    else
+                    {
+                        int statusCode = (int)response.StatusCode;
+                        ErrorScreen(statusCode, $"Failed to download {name} from {URL} to {dest}");
+                    }
                 }
             }
-            else
+            catch (Exception e)
             {
-                int statusCode = (int)response.StatusCode;
-                ErrorScreen(statusCode, $"Failed to download {name} from {URL} to {dest}");
+                AnsiConsole.MarkupLine($"[bold red]ERROR:[/] {e.Message}");
             }
         }
     }
