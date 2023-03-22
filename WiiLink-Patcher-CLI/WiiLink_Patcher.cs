@@ -9,8 +9,8 @@ class WiiLink_Patcher
     /*###### Build Info ######*/
     static readonly string version = "1.1.0";
     static readonly string copyrightYear = "2023";
-    static readonly string lastBuild = "March 20th, 2023";
-    static readonly string at = "2:12 PM";
+    static readonly string lastBuild = "March 22th, 2023";
+    static readonly string at = "4:46 PM";
     static string? sdcard = DetectSDCard();
 
     static readonly string wiiLinkPatcherUrl = "https://patcher.wiilink24.com";
@@ -1610,12 +1610,10 @@ class WiiLink_Patcher
         // Change Windows console title
         Console.Title = $"WiiLink Patcher v{version}";
 
-        // Check dependencies (if not on Windows)
+        // Check dependencies (if not on Windows) or regional format (if on Windows)
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             CheckDependencies();
-
-        // Check if Regional Format (on Windows) is set to English (United States), if not, warn the user to switch to it for the patcher to work properly
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        else
             CheckRegionalFormat();
 
         // Check if the server is up
