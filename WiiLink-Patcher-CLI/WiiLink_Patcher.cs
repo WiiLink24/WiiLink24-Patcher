@@ -2,6 +2,7 @@
 using System.Text;
 using System.Runtime.InteropServices;
 using Spectre.Console;
+using System.Globalization;
 
 class WiiLink_Patcher
 {
@@ -1513,6 +1514,7 @@ class WiiLink_Patcher
         Process process = new Process();
         process.StartInfo.FileName = programName;
         process.StartInfo.Arguments = string.Join(" ", args);
+        process.StartInfo.RedirectStandardError = true;
         process.Start();
 
         // Wait for the process to exit before accessing its information
@@ -1520,10 +1522,11 @@ class WiiLink_Patcher
 
         // Get the exit code after the process has exited
         exitCode = process.ExitCode;
+        string exitMessage = process.StandardError.ReadToEnd();
 
         // If the exit code is not 0, then an error has occurred
         if (exitCode != 0)
-            ErrorScreen(exitCode, null);
+            ErrorScreen(exitCode, exitMessage);
     }
 
     private static void CopyFolder(string sourceFolder, string destinationFolder)
@@ -1556,6 +1559,37 @@ class WiiLink_Patcher
         Environment.Exit(0);
     }
 
+    // Regional Format check
+    static void CheckRegionalFormat()
+    {
+        // If the regional format is not en-US, then warn the user to switch "Regional format" to "English (United States)" on Windows Settings -> Time & Language -> Language & region
+        CultureInfo culture = CultureInfo.CurrentCulture;
+        Version osVersion = Environment.OSVersion.Version;
+        string regSettingName = "";
+
+        if (culture.Name != "en-US")
+        {
+            PrintHeader();
+
+            // Change the name of the "Language & region" setting depending on the Windows version
+            if (osVersion.Major == 10 && osVersion.Build >= 22000)
+                regSettingName = "Language & region";
+            else
+                regSettingName = "Region";
+
+            AnsiConsole.MarkupLine("[bold red]ERROR:[/] In order for WiiLink Patcher to work properly, you must set your [bold]Regional format[/] to [bold]English (United States)[/].\n");
+            AnsiConsole.MarkupLine("[bold green]How to change your Regional format:[/]\n");
+            AnsiConsole.MarkupLine($"[bold]Windows Settings[/] -> [bold]Time & Language[/] -> [bold]{regSettingName}[/] -> [bold]Regional format[/]");
+            AnsiConsole.MarkupLine("and set it to [bold]English (United States)[/].\n");
+
+            AnsiConsole.MarkupLine("When you're done, relaunch WiiLink Patcher.\n");
+
+            Console.Write("Press any key to exit... ");
+            Console.ReadKey();
+            ExitApp();
+        }
+    }
+
     static async System.Threading.Tasks.Task Main(string[] args)
     {
         // Set console encoding to UTF-8
@@ -1579,6 +1613,10 @@ class WiiLink_Patcher
         // Check dependencies (if not on Windows)
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             CheckDependencies();
+
+        // Check if Regional Format (on Windows) is set to English (United States), if not, warn the user to switch to it for the patcher to work properly
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            CheckRegionalFormat();
 
         // Check if the server is up
         if (!await CheckServerAsync(wiiLinkPatcherUrl))
