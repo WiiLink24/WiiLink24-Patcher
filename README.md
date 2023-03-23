@@ -7,9 +7,9 @@ It utilizes [Sharpii-NetCore](https://github.com/TheShadowEevee/Sharpii-NetCore)
 >This patcher may contain bugs. If you spot any or are just having problems with the patcher in general, report them on our [Issues Page](https://github.com/WiiLink24/WiiLink24-Patcher/issues), or ask us for help on our [Discord server](https://discord.gg/wiilink)!
 
 ### Download
-* [**[Windows]** v1.1.0 (RC1)](https://cdn.discordapp.com/attachments/253286648291393536/1088203561910947880/WiiLink_Patcher_Windows_v1.1.0.exe)
-* [**[macOS]** v1.1.0 (RC1)](https://cdn.discordapp.com/attachments/253286648291393536/1088203562321977424/WiiLink_Patcher_macOS_v1.1.0)
-* [**[Linux]** v1.1.0 (RC1)](https://cdn.discordapp.com/attachments/253286648291393536/1088203562762391702/WiiLink_Patcher_Linux_v1.1.0)
+* [**[Windows]** v1.1.0 (RC2)](https://cdn.discordapp.com/attachments/253286648291393536/1088539858026373180/WiiLink_Patcher_Windows_v1.1.0.exe)
+* [**[macOS]** v1.1.0 (RC2)](https://cdn.discordapp.com/attachments/253286648291393536/1088539858454184036/WiiLink_Patcher_macOS_v1.1.0)
+* [**[Linux]** v1.1.0 (RC2)](https://cdn.discordapp.com/attachments/253286648291393536/1088539859033006200/WiiLink_Patcher_Linux_v1.1.0)
 
 
 >In **macOS** and **Linux**, you'll need to give the app execution permissions, either by setting it in the file permission settings, or doing:<br>`chmod +x WiiLink_Patcher_macOS_v1.1.0` or `chmod +x WiiLink_Patcher_Linux_v1.1.0`<br> in the terminal in the same directory as the app.
@@ -21,8 +21,9 @@ It utilizes [Sharpii-NetCore](https://github.com/TheShadowEevee/Sharpii-NetCore)
 * The patcher will automatically download the required files.
 * Copying patched files to an SD Card that is already connected to the PC.
 * Downloads **Wii Mod Lite** and putting it on SD Card along with the WADs.
-* You can get **Demae Domino's**, along with the **Get Console ID** homebrew app for easy console ID registration on our [Discord server](https://discord.gg/wiilink), for ***free***!
->(Demae Domino's is only available in the US and Canada!)
+* You can get **Food Channel (Domino's)**, along with the **Get Console ID** homebrew app for easy console ID registration on our [Discord server](https://discord.gg/wiilink), for ***free***!
+
+>(**Food Channel (Domino's)** is only available in the US and Canada!)
 
 Compatible with Windows (**10** and **11**), macOS, and Linux!
 
