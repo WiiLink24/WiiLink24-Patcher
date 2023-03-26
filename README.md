@@ -7,12 +7,7 @@ It utilizes [Sharpii-NetCore](https://github.com/TheShadowEevee/Sharpii-NetCore)
 >This patcher may contain bugs. If you spot any or are just having problems with the patcher in general, report them on our [Issues Page](https://github.com/WiiLink24/WiiLink24-Patcher/issues), or ask us for help on our [Discord server](https://discord.gg/wiilink)!
 
 ### Download
-* [**[Windows]** v1.1.0 (RC2)](https://cdn.discordapp.com/attachments/253286648291393536/1088539858026373180/WiiLink_Patcher_Windows_v1.1.0.exe)
-* [**[macOS]** v1.1.0 (RC2)](https://cdn.discordapp.com/attachments/253286648291393536/1088539858454184036/WiiLink_Patcher_macOS_v1.1.0)
-* [**[Linux]** v1.1.0 (RC2)](https://cdn.discordapp.com/attachments/253286648291393536/1088539859033006200/WiiLink_Patcher_Linux_v1.1.0)
-
-
->In **macOS** and **Linux**, you'll need to give the app execution permissions, either by setting it in the file permission settings, or doing:<br>`chmod +x WiiLink_Patcher_macOS_v1.1.0` or `chmod +x WiiLink_Patcher_Linux_v1.1.0`<br> in the terminal in the same directory as the app.
+You can download the latest version of the patcher from the [Releases Page](https://github.com/WiiLink24/WiiLink24-Patcher/releases).
 
 >**NOTE:** In **Windows**, your antivirus may flag the **patcher**, **Sharpii**, or **xdelta3** as a virus. These are a false positive, and you can safely ignore it. If you are still unsure, you can inspect the source code, and/or compile it yourself to make sure it's safe. You can also temporarily disable your antivirus to download the patcher, or add an exception for it if you put it in a dedicated folder.
 
