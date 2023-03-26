@@ -7,10 +7,10 @@ using System.Globalization;
 class WiiLink_Patcher
 {
     /*###### Build Info ######*/
-    static readonly string version = "1.1.0 RC2";
+    static readonly string version = "1.1.0";
     static readonly string copyrightYear = "2023";
-    static readonly string lastBuild = "March 23th, 2023";
-    static readonly string at = "3:06 PM";
+    static readonly string lastBuild = "March 26th, 2023";
+    static readonly string at = "1:46 PM";
     static string? sdcard = DetectSDCard();
 
     static readonly string wiiLinkPatcherUrl = "https://patcher.wiilink24.com";
