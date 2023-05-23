@@ -3,22 +3,23 @@ using System.Text;
 using System.Runtime.InteropServices;
 using Spectre.Console;
 using System.Globalization;
+using libWiiSharp;
+using VCDiff;
 
 class WiiLink_Patcher
 {
     /*###### Build Info ######*/
-    static readonly string version = "1.1.0";
+    static readonly string version = "1.1.2";
     static readonly string copyrightYear = "2023";
-    static readonly string lastBuild = "March 26th, 2023";
-    static readonly string at = "1:46 PM";
+    static readonly string lastBuild = "May 23nd, 2023";
+    static readonly string at = "5:19 PM";
     static string? sdcard = DetectSDCard();
 
     static readonly string wiiLinkPatcherUrl = "https://patcher.wiilink24.com";
     static readonly string PabloURL = "http://pabloscorner.akawah.net/WL24-Patcher";
     /*########################*/
-
+    
     /*###### Setup Info ######*/
-
     // Core Channel variables
     static public string reg = "";
     static public string lang = "";
@@ -42,6 +43,9 @@ class WiiLink_Patcher
     static int console_width = 0;
     static int console_height = 0;
 
+    static bool DEBUG_MODE = false;
+    /*########################*/
+
     static void PrintHeader()
     {
         // Clear console
@@ -62,11 +66,11 @@ class WiiLink_Patcher
         AnsiConsole.WriteLine();
     }
 
-    // GitHub Announcement
+    // Discord Announcement
     static void PrintAnnouncement()
     {
-        string markupTitle = "[bold green]( Announcement )[/]";
-        var markupText = new Markup("[bold]If you have any issues with the patcher or services offered by WiiLink, please report them here:[/]\n[link bold green]https://discord.gg/WiiLink[/] - Thank you.");
+        string markupTitle = "[bold lime]( Announcement )[/]";
+        var markupText = new Markup("[bold]If you have any issues with the patcher or services offered by WiiLink, please report them here:[/]\n[link bold lime]https://discord.gg/WiiLink[/] - Thank you.");
 
         var panel = new Panel(markupText)
         {
@@ -81,47 +85,41 @@ class WiiLink_Patcher
 
     static string? DetectSDCard()
     {
-        // Check for drive on Windows, and check mounted drives on Linux/MacOS
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            DriveInfo[] drives = DriveInfo.GetDrives();
-            foreach (DriveInfo drive in drives)
+            // Check for drive on Windows
+            foreach (DriveInfo drive in DriveInfo.GetDrives())
             {
                 if (drive.DriveType == DriveType.Removable && Directory.Exists(Path.Combine(drive.RootDirectory.FullName, "apps")))
                 {
                     return drive.RootDirectory.FullName;
                 }
             }
-            return null;
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
-            string[] mountedDrives = Directory.GetDirectories($"/media/{Environment.UserName}");
-            foreach (string drive in mountedDrives)
+            // Check mounted drives on Linux
+            foreach (string drive in Directory.GetDirectories($"/media/{Environment.UserName}"))
             {
                 if (Directory.Exists(Path.Combine(drive, "apps")))
                 {
                     return drive;
                 }
             }
-            return null;
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
-            string[] mountedDrives = Directory.GetDirectories("/Volumes");
-            foreach (string drive in mountedDrives)
+            // Check mounted drives on MacOS
+            foreach (string drive in Directory.GetDirectories("/Volumes"))
             {
                 if (Directory.Exists(Path.Combine(drive, "apps")))
                 {
                     return drive;
                 }
             }
-            return null;
         }
-        else
-        {
-            return null;
-        }
+
+        return null;
     }
 
     // User choice
@@ -149,91 +147,36 @@ class WiiLink_Patcher
     {
         {
             PrintHeader();
-            Console.WriteLine("\u001b[1;32mCredits\u001b[0m:\n");
-            Console.WriteLine("  - \u001b[1mSketch:\u001b[0m WiiLink Founder\n");
-            Console.WriteLine("  - \u001b[1mPablosCorner:\u001b[0m WiiLink Patcher Maintainer\n");
-            Console.WriteLine("  - \u001b[1mTheShadowEevee:\u001b[0m Sharpii-NetCore\n");
-            Console.WriteLine("  - \u001b[1mJoshua MacDonald:\u001b[0m Xdelta3\n");
-            Console.WriteLine("  - \u001b[1mperson66, and leathl:\u001b[0m Original Sharpii, and libWiiSharp developers\n");
-            Console.WriteLine("\u001b[1;32mWiiLink\u001b[0m \u001b[1;32mwebsite:\u001b[0m https://wiilink24.com\n");
-            Console.WriteLine("\u001b[1mPress any key to go back to the main menu\u001b[0m");
+            AnsiConsole.MarkupLine("[bold lime]Credits[/]:\n");
+            AnsiConsole.MarkupLine("  - [bold]Sketch:[/] WiiLink Founder\n");
+            AnsiConsole.MarkupLine("  - [bold]PablosCorner:[/] WiiLink Patcher Maintainer\n");
+            AnsiConsole.MarkupLine("  - [bold]TheShadowEevee:[/] Sharpii-NetCore Developer\n");
+            AnsiConsole.MarkupLine("  - [bold]Joshua MacDonald:[/] Xdelta3\n");
+            AnsiConsole.MarkupLine("  - [bold]leathl and WiiDatabase:[/] libWiiSharp developers\n");
+            AnsiConsole.MarkupLine("  - [bold]SnowflakePowered:[/] VCDiff\n");
+            AnsiConsole.MarkupLine("[bold lime]WiiLink[/] [bold lime]website:[/] https://wiilink24.com\n");
+            AnsiConsole.MarkupLine("[bold]Press any key to go back to the main menu[/]");
             Console.ReadKey();
-        }
-    }
-
-    // If on macOS or Linux, check if the user has the required dependencies installed (xdelta3). Use AnsiConsole for better formatting.
-    static void CheckDependency(string commandName, string? packageName = null)
-    {
-        if (string.IsNullOrEmpty(packageName))
-        {
-            // Expect that the package name is the same as the command being searched for.
-            packageName = commandName;
-        }
-
-        // Use "which" to check if the command exists.
-
-        ProcessStartInfo startInfo = new ProcessStartInfo();
-        startInfo.FileName = "which";
-        startInfo.Arguments = commandName;
-        startInfo.RedirectStandardOutput = true;
-        startInfo.UseShellExecute = false;
-        startInfo.CreateNoWindow = true;
-
-        Process process = new Process();
-        process.StartInfo = startInfo;
-        process.Start();
-
-        string output = process.StandardOutput.ReadToEnd();
-        process.WaitForExit();
-
-        if (string.IsNullOrEmpty(output))
-        {
-            PrintHeader();
-
-            AnsiConsole.MarkupLine("[bold red]Dependency Error:[/]\n");
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                AnsiConsole.MarkupLine($"Cannot find the command [bold]{commandName}[/]. You can use [bold]brew install {packageName}[/] to get this required package.");
-                AnsiConsole.MarkupLine("If you don't have Homebrew installed, please install at [link bold green]https://brew.sh/[/]");
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                AnsiConsole.MarkupLine($"Cannot find the command [bold]{commandName}[/]. Please install [bold]{packageName}[/] using your package manager.");
-            }
-            Console.WriteLine();
-
-            Console.Write("Press any key to exit...");
-            Console.ReadKey();
-            Console.Clear();
-            ExitApp();
-        }
-    }
-
-    public static void CheckDependencies()
-    {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-            CheckDependency("xdelta3", "xdelta");
-        }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-        {
-            CheckDependency("xdelta3");
         }
     }
 
     static void DownloadFile(string URL, string dest, string name)
     {
+        // Loop until the file is successfully downloaded.
         while (true)
         {
             task = $"Downloading {name}";
             curCmd = $"DownloadFile({URL}, {dest}, {name})";
             try
             {
+                // Create a new HttpClient instance to handle the download.
                 using (var client = new HttpClient())
                 {
+                    // Send a GET request to the specified URL.
                     var response = client.GetAsync(URL).Result;
                     if (response.IsSuccessStatusCode)
                     {
+                        // If the response is successful, create a new file at the specified destination and save the response stream to it.
                         using (var stream = response.Content.ReadAsStream())
                         using (var fileStream = File.Create(dest))
                         {
@@ -255,18 +198,120 @@ class WiiLink_Patcher
         }
     }
 
+    static string DownloadNUS(string titleID, string outputDir, string? appVer = null, bool isWC24 = false)
+    {
+        string task = $"Downloading {titleID}";
+
+        // Create a new NusClient instance to handle the download.
+        NusClient nus = new NusClient();
+
+        // Create a list of store types to download.
+        List<StoreType> store = new List<StoreType> { isWC24 ? StoreType.DecryptedContent : StoreType.WAD };
+
+        // Check that the title ID is the correct length.
+        if (titleID.Length != 16)
+        {
+            ErrorScreen(-1, "Title ID must be 16 characters long");
+            return "";
+        }
+
+        try
+        {
+            // If the appVer parameter is not specified, download the latest version of the title's TMD to determine the latest version.
+            if (appVer == null)
+            {
+                TMD tmd = nus.DownloadTMD(titleID, "");
+                appVer = tmd.TitleVersion.ToString();
+            }
+
+            // Download the title with the specified title ID, version, and store types to the specified output directory.
+            nus.DownloadTitle(titleID, appVer, outputDir, store.ToArray());
+
+            // Return the version of the title that was downloaded.
+            return appVer;
+        }
+        catch (Exception e)
+        {
+            ErrorScreen(e.HResult, e.Message);
+            return "";
+        }
+    }
+
+
+    static void UnpackWAD(string wadFilePath, string outputDir)
+    {
+        task = $"Unpacking WAD";
+        WAD wad = new WAD();
+
+        try
+        {
+            wad.LoadFile(wadFilePath);
+            wad.Unpack(outputDir);
+        }
+        catch (Exception e)
+        {
+            ErrorScreen(e.HResult, e.Message);
+        }
+    }
+
+    static void PackWAD(string unpackPath, string outputWADDir)
+    {
+        task = $"Packing WAD";
+        WAD wad = new WAD();
+
+        try
+        {
+            wad.CreateNew(unpackPath);
+            wad.Save(outputWADDir);
+        }
+        catch (Exception e)
+        {
+            ErrorScreen(e.HResult, e.Message);
+        }
+    }
+
     static void DownloadPatch(string folderName, string patchInput, string patchOutput, string channelName)
     {
         string patchUrl = $"{wiiLinkPatcherUrl}/{folderName.ToLower()}/{patchInput}";
         string patchDestinationPath = Path.Join("WiiLink_Patcher", folderName, patchOutput);
+        
+        if (DEBUG_MODE)
+        {
+            AnsiConsole.MarkupLine($"[bold yellow]URL:[/] {patchUrl}");
+            AnsiConsole.MarkupLine($"[bold yellow]Destination:[/] {patchDestinationPath}");
+            AnsiConsole.MarkupLine("------- Press any key to continue -------");
+            Console.ReadKey(true);
+        }
 
         // If WiiLink_Patcher/{folderName} doesn't exist, make it
         if (!Directory.Exists(Path.Join("WiiLink_Patcher", folderName)))
-        {
             Directory.CreateDirectory(Path.Join("WiiLink_Patcher", folderName));
-        }
 
         DownloadFile(patchUrl, patchDestinationPath, channelName);
+    }
+
+    static void ApplyPatch(FileStream original, FileStream patch, FileStream output)
+    {
+        try
+        {
+            // Create a new VCDiff decoder with the original, patch, and output files.
+            using (var decoder = new VCDiff.Decoders.VcDecoder(original, patch, output))
+            {
+                // Decode the patch and write the result to the output file.
+                decoder.Decode(out _);
+            }
+        }
+        catch (Exception e)
+        {
+            ErrorScreen(e.HResult, e.Message);
+        }
+        finally
+        {
+            // Close all file streams.
+            original.Close();
+            patch.Close();
+            output.Close();
+        }
     }
 
     static void DownloadSPD()
@@ -294,95 +339,71 @@ class WiiLink_Patcher
     }
 
 
-    static void PatchCoreChannel(string channelName, string channelTitle, string titleID, string[] patchFiles, string[] appFiles)
+    // Patches the Japanese-exclusive channels
+    static void PatchCoreChannel(string channelName, string channelTitle, string titleID, string[] patchFiles, string[] appFiles, string? appVer = null)
     {
+        // Set up folder paths and file names
         string titleFolder = Path.Join("unpack");
         string tempFolder = Path.Join("unpack-patched");
         string patchFolder = Path.Join("WiiLink_Patcher", channelName);
-        string outputWad = Path.Join(titleFolder, $"{titleID}.wad");
         string outputChannel = Path.Join("WAD", $"{channelTitle} ({lang}).wad");
         string urlSubdir = channelName.ToLower();
-
-        string sharpiiPath = "";
-        string xdeltaPath = "";
 
         // Create unpack and unpack-patched folders
         Directory.CreateDirectory(titleFolder);
         Directory.CreateDirectory(tempFolder);
 
-        // Set path to Sharpii and Xdelta3 depending on platform
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            sharpiiPath = Path.Join("WiiLink_Patcher", "Sharpii.exe");
-            xdeltaPath = Path.Join("WiiLink_Patcher", "xdelta3.exe");
-        }
-        else
-        {
-            sharpiiPath = Path.Join("WiiLink_Patcher", "Sharpii");
-            xdeltaPath = "xdelta3";
-        }
+        // Download and extract the Wii channel files
+        task = $"Downloading and extracting files for {channelTitle}";
+        appVer = DownloadNUS(titleID, titleFolder, appVer);
+        string outputWad = Path.Join(titleFolder, $"{titleID}v{appVer}.wad");
+        UnpackWAD(outputWad, titleFolder);
 
-        task = $"Downloading and extracting stuff for {channelTitle}";
-        ExecuteProcess(sharpiiPath, "nusd", "-id", titleID, "-o", outputWad, "-wad", "-q");
-        ExecuteProcess(sharpiiPath, "wad", "-u", outputWad, titleFolder, "-q");
-
-        // Download patched TMD file and rename to title_id.tmd using HttpClient
+        // Download the patched TMD file and rename it to title_id.tmd
         task = $"Downloading patched TMD file for {channelTitle}";
         DownloadFile($"{wiiLinkPatcherUrl}/{urlSubdir}/{channelName}.tmd", Path.Join(titleFolder, $"{titleID}.tmd"), channelTitle);
 
+        // Apply delta patches to the app files
         task = $"Applying delta patches for {channelTitle}";
         // First delta patch
         if (reg == "EN" || channelName == "Dominos")
-            ExecuteProcess(xdeltaPath, "-q", "-f", "-d", "-s", Path.Join(titleFolder, appFiles[0] + ".app"), Path.Join(patchFolder, patchFiles[0] + ".delta"), Path.Join(tempFolder, appFiles[0] + ".app"));
+            ApplyPatch(File.OpenRead(Path.Join(titleFolder, appFiles[0] + ".app")), File.OpenRead(Path.Join(patchFolder, patchFiles[0] + ".delta")), File.OpenWrite(Path.Join(tempFolder, appFiles[0] + ".app")));
 
         // Second delta patch
-        ExecuteProcess(xdeltaPath, "-q", "-f", "-d", "-s", Path.Join(titleFolder, appFiles[1] + ".app"), Path.Join(patchFolder, patchFiles[1] + ".delta"), Path.Join(tempFolder, appFiles[1] + ".app"));
+        ApplyPatch(File.OpenRead(Path.Join(titleFolder, appFiles[1] + ".app")), File.OpenRead(Path.Join(patchFolder, patchFiles[1] + ".delta")), File.OpenWrite(Path.Join(tempFolder, appFiles[1] + ".app")));
 
         // Third delta patch
         if (reg == "EN" || channelName == "Dominos" || channelName == "WiinoMa")
-            ExecuteProcess(xdeltaPath, "-q", "-f", "-d", "-s", Path.Join(titleFolder, appFiles[2] + ".app"), Path.Join(patchFolder, patchFiles[2] + ".delta"), Path.Join(tempFolder, appFiles[2] + ".app"));
+            ApplyPatch(File.OpenRead(Path.Join(titleFolder, appFiles[2] + ".app")), File.OpenRead(Path.Join(patchFolder, patchFiles[2] + ".delta")), File.OpenWrite(Path.Join(tempFolder, appFiles[2] + ".app")));
 
         // Copy patched files to unpack folder
         task = $"Copying patched files for {channelTitle}";
         CopyFolder(tempFolder, titleFolder);
 
+        // Repack the title with the patched files
         task = $"Repacking the title for {channelTitle}";
-        ExecuteProcess(sharpiiPath, "wad", "-p", titleFolder, $"\"{outputChannel}\"", "-f", "-q");
+        PackWAD(titleFolder, outputChannel);
 
         // Delete unpack and unpack-patched folders
         Directory.Delete(titleFolder, true);
         Directory.Delete(tempFolder, true);
     }
 
+    // This function patches the WiiConnect24 channels
     static void PatchWC24Channel(string channelName, string channelTitle, int channelVersion, string channelRegion, string titleID, string patchFile, string appFile)
     {
+        // Define the necessary paths and filenames
         string titleFolder = Path.Join("unpack");
         string tempFolder = Path.Join("unpack-patched");
         string patchFolder = Path.Join("WiiLink_Patcher", channelName);
         string outputWad = Path.Join("WAD", $"{channelTitle} [{channelRegion}] (WiiLink).wad");
 
-        string sharpiiPath = "";
-        string xdeltaPath = "";
-
         // Create unpack and unpack-patched folders
         Directory.CreateDirectory(titleFolder);
         Directory.CreateDirectory(tempFolder);
 
-        // Set path to Sharpii and Xdelta3 depending on platform
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            sharpiiPath = Path.Join("WiiLink_Patcher", "Sharpii.exe");
-            xdeltaPath = Path.Join("WiiLink_Patcher", "xdelta3.exe");
-        }
-        else
-        {
-            sharpiiPath = Path.Join("WiiLink_Patcher", "Sharpii");
-            xdeltaPath = "xdelta3";
-        }
-
-
+        // Determine the URL subdirectory based on the channel name
         string urlSubdir = "";
-
         switch (channelName)
         {
             case "nc":
@@ -393,31 +414,39 @@ class WiiLink_Patcher
                 break;
         }
 
+        //// Download the necessary files for the channel
         task = $"Downloading necessary files for {channelTitle}";
         DownloadFile($"{PabloURL}/WC24_Patcher/{urlSubdir}/cert/{titleID}.cert", Path.Join(titleFolder, $"{titleID}.cert"), $"{channelTitle} cert");
-
-        // Download tik file just for Nintendo Channel
+        // Download the tik file just for the Nintendo Channel
         if (titleID == "0001000148415450" || titleID == "0001000148415445" || titleID == "000100014841544a")
             DownloadFile($"{PabloURL}/WC24_Patcher/{urlSubdir}/tik/{titleID}.tik", Path.Join(titleFolder, "cetk"), $"{channelTitle} tik");
 
+        // Extract the necessary files for the channel
         task = $"Extracting stuff for {channelTitle}";
-        ExecuteProcess(sharpiiPath, "nusd", "-id", titleID, "-o", titleFolder, "-q", "-decrypt");
+        DownloadNUS(titleID, titleFolder, channelVersion.ToString(), true);
 
+        // Rename the extracted files
         task = $"Renaming files for {channelTitle}";
         File.Move(Path.Join(titleFolder, $"tmd.{channelVersion}"), Path.Join(titleFolder, $"{titleID}.tmd"));
         File.Move(Path.Join(titleFolder, "cetk"), Path.Join(titleFolder, $"{titleID}.tik"));
 
+        // Apply the delta patch to the app file
         task = $"Applying delta patch for {channelTitle}";
-        ExecuteProcess(xdeltaPath, "-q", "-f", "-d", "-s", Path.Join(titleFolder, $"{appFile}.app"), Path.Join(patchFolder, $"{patchFile}.delta"), Path.Join(tempFolder, $"{appFile}.app"));
+        ApplyPatch(File.OpenRead(Path.Join(titleFolder, $"{appFile}.app")), File.OpenRead(Path.Join(patchFolder, $"{patchFile}.delta")), File.OpenWrite(Path.Join(tempFolder, $"{appFile}.app")));
 
-        // Copy patched files to unpack folder
+        // Copy the patched files to the unpack folder
         task = $"Copying patched files for {channelTitle}";
-        CopyFolder(tempFolder, titleFolder);
+        try {
+            CopyFolder(tempFolder, titleFolder);
+        } catch (Exception e) {
+            ErrorScreen(e.HResult, e.Message);
+        }
 
+        // Repack the title into a WAD file
         task = $"Repacking the title for {channelTitle}";
-        ExecuteProcess(sharpiiPath, "wad", "-p", titleFolder, $"\"{outputWad}\"", "-f", "-q");
+        PackWAD(titleFolder, outputWad);
 
-        // Delete unpack and unpack-patched folders
+        // Delete the unpack and unpack-patched folders
         Directory.Delete(titleFolder, true);
         Directory.Delete(tempFolder, true);
     }
@@ -476,19 +505,20 @@ class WiiLink_Patcher
         {
             PrintHeader();
 
-            Console.WriteLine("\u001b[1;32mExpress Install\u001b[0m");
+            AnsiConsole.MarkupLine("[bold lime]Express Install[/]");
             Console.WriteLine();
-            Console.WriteLine("\u001b[1mStep 1B: Choose Food Channel version\u001b[0m");
+            AnsiConsole.MarkupLine("[bold]Step 1B: Choose Food Channel version[/]");
             Console.WriteLine();
-            Console.WriteLine("For \u001b[1mFood Channel\u001b[0m, which version would you like to install?");
+            AnsiConsole.MarkupLine("For [bold]Food Channel[/], which version would you like to install?");
             Console.WriteLine();
-            Console.WriteLine("1. Standard \u001b[1m(Fake Ordering)\u001b[0m");
-            Console.WriteLine("2. Domino's \u001b[1m(US and Canada only)\u001b[0m");
+            AnsiConsole.MarkupLine("1. Standard [bold](Fake Ordering)[/]");
+            AnsiConsole.MarkupLine("2. Domino's [bold](US and Canada only)[/]");
+            AnsiConsole.MarkupLine("3. Deliveroo [bold](Select EU countries only)[/]");
             Console.WriteLine();
-            Console.WriteLine("3. Go Back to Main Menu");
+            Console.WriteLine("4. Go Back to Main Menu");
             Console.WriteLine();
 
-            int choice = UserChoose("123");
+            int choice = UserChoose("1234");
             switch (choice)
             {
                 case 1:
@@ -500,6 +530,10 @@ class WiiLink_Patcher
                     NCSetup();
                     break;
                 case 3:
+                    demae_version = "deliveroo";
+                    NCSetup();
+                    break;
+                case 4:
                     // Go back to main menu
                     MainMenu();
                     break;
@@ -516,11 +550,11 @@ class WiiLink_Patcher
         {
             PrintHeader();
 
-            Console.WriteLine("\u001b[1;32mExpress Install\u001b[0m");
+            AnsiConsole.MarkupLine("[bold lime]Express Install[/]");
             Console.WriteLine();
-            Console.WriteLine("\u001b[1mStep 2: Choose Nintendo Channel region\u001b[0m");
+            AnsiConsole.MarkupLine("[bold]Step 2: Choose Nintendo Channel region[/]");
             Console.WriteLine();
-            Console.WriteLine("For \u001b[1mNintendo Channel\u001b[0m, which region would you like to install?");
+            AnsiConsole.MarkupLine("For [bold]Nintendo Channel[/], which region would you like to install?");
             Console.WriteLine();
             Console.WriteLine("1. North America");
             Console.WriteLine("2. PAL");
@@ -562,11 +596,11 @@ class WiiLink_Patcher
         {
             PrintHeader();
 
-            Console.WriteLine("\u001b[1;32mExpress Install\u001b[0m");
+            AnsiConsole.MarkupLine("[bold lime]Express Install[/]");
             Console.WriteLine();
-            Console.WriteLine("\u001b[1mStep 3: Choose Forecast Channel region\u001b[0m");
+            AnsiConsole.MarkupLine("[bold]Step 3: Choose Forecast Channel region[/]");
             Console.WriteLine();
-            Console.WriteLine("For \u001b[1mForecast Channel\u001b[0m, which region would you like to install?");
+            AnsiConsole.MarkupLine("For [bold]Forecast Channel[/], which region would you like to install?");
             Console.WriteLine();
             Console.WriteLine("1. North America");
             Console.WriteLine("2. PAL");
@@ -608,14 +642,14 @@ class WiiLink_Patcher
         {
             PrintHeader();
 
-            Console.WriteLine("\u001b[1;32mExpress Install\u001b[0m");
+            AnsiConsole.MarkupLine("[bold lime]Express Install[/]");
             Console.WriteLine();
-            Console.WriteLine("\u001b[1mStep 4: Choose console platform\u001b[0m");
+            AnsiConsole.MarkupLine("[bold]Step 4: Choose console platform[/]");
             Console.WriteLine();
             Console.WriteLine("Which Wii version are you installing to?");
             Console.WriteLine();
-            Console.WriteLine("1. Wii \u001b[1m(or Dolphin Emulator)\u001b[0m");
-            Console.WriteLine("2. vWii \u001b[1m(Wii U)\u001b[0m");
+            AnsiConsole.MarkupLine("1. Wii [bold](or Dolphin Emulator)[/]");
+            AnsiConsole.MarkupLine("2. vWii [bold](Wii U)[/]");
             Console.WriteLine();
             Console.WriteLine("3. Go Back to Main Menu");
             Console.WriteLine();
@@ -648,27 +682,27 @@ class WiiLink_Patcher
         string start_btn = "Start without SD card";
 
         if (sdcard != null)
-            start_btn = "\u001b[1mStart\u001b[0m";
+            start_btn = "[bold]Start[/]";
         while (true)
         {
             PrintHeader();
 
-            Console.WriteLine("\u001b[1;32mExpress Install\u001b[0m");
+            AnsiConsole.MarkupLine("[bold lime]Express Install[/]");
             Console.WriteLine();
-            Console.WriteLine("\u001b[1mStep 5: Insert SD Card (if applicable)\u001b[0m");
+            AnsiConsole.MarkupLine("[bold]Step 5: Insert SD Card (if applicable)[/]");
             Console.WriteLine();
             Console.WriteLine("After passing this step, any user interaction won't be needed, so sit back and relax!");
             Console.WriteLine();
             Console.WriteLine("If you have your Wii SD card inserted, everything can download straight to it, but if not, everything will be downloaded to where this patcher is located on your computer.");
             Console.WriteLine();
-            Console.WriteLine("1. " + start_btn);
+            AnsiConsole.MarkupLine($"1. {start_btn}");
             Console.WriteLine("2. Manually Select SD card");
 
             Console.WriteLine();
 
             if (sdcard != null)
             {
-                Console.WriteLine("[SD card detected: \u001b[1;32m" + sdcard + "\u001b[0m]");
+                AnsiConsole.MarkupLine($"[[SD card detected: [bold lime]{sdcard}[/]]]");
                 Console.WriteLine();
             }
 
@@ -711,7 +745,7 @@ class WiiLink_Patcher
             {
                 PrintHeader();
 
-                AnsiConsole.MarkupLine("[bold green]Express Install[/]");
+                AnsiConsole.MarkupLine("[bold lime]Express Install[/]");
                 Console.WriteLine();
                 AnsiConsole.MarkupLine("[bold]Step 6: WAD folder detected[/]");
                 Console.WriteLine();
@@ -769,9 +803,7 @@ class WiiLink_Patcher
 
         // Make WiiLink_Patcher folder in current directory if it doesn't exist
         if (!Directory.Exists("WiiLink_Patcher"))
-        {
             Directory.CreateDirectory("WiiLink_Patcher");
-        }
 
         // Set patching progress
         patching_progress[0] = "downloading:in_progress";
@@ -791,16 +823,46 @@ class WiiLink_Patcher
             case "dominos":
                 demae_prog_msg = "(Domino's)";
                 break;
+            case "deliveroo":
+                demae_prog_msg = "(Deliveroo)";
+                break;
+        }
+
+        // Set channel titles based on region
+        string demae_title;
+        string wiiroom_title;
+        switch (reg)
+        {
+            case "EN":
+                demae_title = "Food Channel";
+                wiiroom_title = "Wii Room";
+                break;
+            default:
+                demae_title = "Demae Channel";
+                wiiroom_title = "Wii no Ma";
+                break;
+        }
+
+        // Set Nintendo Channel title based on region
+        string nc_title;
+        switch (nc_reg)
+        {
+            case "Japan":
+                nc_title = "Minna no Nintendo Channel";
+                break;
+            default:
+                nc_title = "Nintendo Channel";
+                break;
         }
 
         // Progress messages
         string[] progress_messages = new string[]
         {
             "Downloading files\n\n[bold]Patching Core Channels:[/]",
-            "Wii Room",
+            $"{wiiroom_title}",
             "Digicam Print Channel",
-            $"Food Channel {demae_prog_msg}\n\n[bold]Patching WiiConnect24 Channels:[/]",
-            "Nintendo Channel",
+            $"{demae_title} {demae_prog_msg}\n\n[bold]Patching WiiConnect24 Channels:[/]",
+            $"{nc_title}",
             "Forecast Channel\n\n[bold]Post-Patching:[/]",
             "Finishing up!"
         };
@@ -855,25 +917,25 @@ class WiiLink_Patcher
             switch (counter_done)
             {
                 case 1:
-                    AnsiConsole.Markup("[[[bold green]■         [/]]]");
+                    AnsiConsole.Markup("[[[bold lime]■         [/]]]");
                     break;
                 case 2:
-                    AnsiConsole.Markup("[[[bold green]■■        [/]]]");
+                    AnsiConsole.Markup("[[[bold lime]■■        [/]]]");
                     break;
                 case 4:
-                    AnsiConsole.Markup("[[[bold green]■■■■      [/]]]");
+                    AnsiConsole.Markup("[[[bold lime]■■■■      [/]]]");
                     break;
                 case 6:
-                    AnsiConsole.Markup("[[[bold green]■■■■■■    [/]]]");
+                    AnsiConsole.Markup("[[[bold lime]■■■■■■    [/]]]");
                     break;
                 case 8:
-                    AnsiConsole.Markup("[[[bold green]■■■■■■■■  [/]]]");
+                    AnsiConsole.Markup("[[[bold lime]■■■■■■■■  [/]]]");
                     break;
                 case 9:
-                    AnsiConsole.Markup("[[[bold green]■■■■■■■■■ [/]]]");
+                    AnsiConsole.Markup("[[[bold lime]■■■■■■■■■ [/]]]");
                     break;
                 case 10:
-                    AnsiConsole.Markup("[[[bold green]■■■■■■■■■■[/]]]");
+                    AnsiConsole.Markup("[[[bold lime]■■■■■■■■■■[/]]]");
                     break;
                 default:
                     AnsiConsole.Write("[          ]");
@@ -902,7 +964,7 @@ class WiiLink_Patcher
                         AnsiConsole.MarkupLine($"[slowblink yellow]●[/] {progress_messages[i]}");
                         break;
                     case "done":
-                        AnsiConsole.MarkupLine($"[green]●[/] {progress_messages[i]}");
+                        AnsiConsole.MarkupLine($"[lime]●[/] {progress_messages[i]}");
                         break;
                 }
             }
@@ -923,55 +985,6 @@ class WiiLink_Patcher
     static void DownloadAllPatches()
     {
         task = "Downloading patches";
-
-        string SharpiiToDL = "";
-        string SharpiiFile = "";
-
-        // Set Sharpii variables by Windows, Linux and macOS (Sharpii.exe, Sharpii(linux-x64), Sharpii(macOS-x64)
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            SharpiiToDL = "Sharpii.exe";
-            SharpiiFile = "Sharpii.exe";
-        }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-        {
-            // Check if Linux x64 or ARM64
-            if (RuntimeInformation.OSArchitecture == Architecture.X64)
-            {
-                SharpiiToDL = "sharpii(linux-x64)";
-                SharpiiFile = "Sharpii";
-            }
-            else if (RuntimeInformation.OSArchitecture == Architecture.Arm64)
-            {
-                SharpiiToDL = "sharpii(linux-arm64)";
-                SharpiiFile = "Sharpii";
-            }
-        }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-            SharpiiToDL = "sharpii(macOS-x64)";
-            SharpiiFile = "Sharpii";
-        }
-
-        // Downloading Sharpii
-        DownloadFile($"{PabloURL}/Sharpii/{SharpiiToDL}", Path.Join("WiiLink_Patcher", SharpiiFile), "Sharpii");
-
-        // Downloading Xdelta3
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            DownloadFile($"{PabloURL}/xdelta/xdelta.exe", Path.Join("WiiLink_Patcher", "xdelta3.exe"), "Xdelta3");
-
-        // If on Linux or macOS, give Sharpii executable permissions
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            // Give Sharpii executable permissions
-            ProcessStartInfo startInfo = new ProcessStartInfo
-            {
-                FileName = "chmod",
-                Arguments = $"+x {SharpiiFile}",
-                WorkingDirectory = Path.Join("WiiLink_Patcher")
-            };
-            Process.Start(startInfo)?.WaitForExit();
-        }
 
         // Download SPD if English is selected
         if (reg == "EN")
@@ -1008,6 +1021,12 @@ class WiiLink_Patcher
             DownloadPatch("Dominos", $"Dominos_1.delta", "Dominos_1.delta", "Demae Channel (Dominos)");
             DownloadPatch("Dominos", $"Dominos_2.delta", "Dominos_2.delta", "Demae Channel (Dominos)");
         }
+        else if (demae_version == "deliveroo")
+        {
+            DownloadPatch("Deliveroo", $"Deliveroo_0.delta", "Deliveroo_0.delta", "Demae Channel (Deliveroo)");
+            DownloadPatch("Deliveroo", $"Deliveroo_1.delta", "Deliveroo_1.delta", "Demae Channel (Deliveroo)");
+            DownloadPatch("Deliveroo", $"Deliveroo_2.delta", "Deliveroo_2.delta", "Demae Channel (Deliveroo)");
+        }
 
         // If /apps/WiiModLite folder doesn't exist, create it
         if (!Directory.Exists(Path.Join("apps", "WiiModLite")))
@@ -1021,7 +1040,7 @@ class WiiLink_Patcher
         DownloadFile($"https://hbb1.oscwii.org/hbb/WiiModLite.png", Path.Join("apps", "WiiModLite", "icon.png"), "Wii Mod Lite");
 
         // Downloading Get Console ID (for Dominos Demae Channel)
-        if (demae_version == "dominos")
+        if (demae_version == "dominos" || demae_version == "deliveroo")
         {
             task = "Downloading Get Console ID";
 
@@ -1052,7 +1071,12 @@ class WiiLink_Patcher
         string[] wiiroom_patches = { "WiinoMa_0", "WiinoMa_1", "WiinoMa_2" };
         string[] wiiroom_apps = { "00000000", "00000001", "00000002" };
 
-        PatchCoreChannel("WiinoMa", "Wii no Ma", "000100014843494a", wiiroom_patches, wiiroom_apps);
+        // If English, change channel title to "Wii Room"
+        string wiiroom_title = "Wii no Ma";
+        if (reg == "EN")
+            wiiroom_title = "Wii Room";
+
+        PatchCoreChannel("WiinoMa", wiiroom_title, "000100014843494a", wiiroom_patches, wiiroom_apps);
 
         // Finished patching Wii no Ma
         patching_progress[1] = "wiinoma:done";
@@ -1078,22 +1102,38 @@ class WiiLink_Patcher
     static void Demae_Patch()
     {
         task = "Patching Demae Channel";
-        string demae_folder = "Demae";
-        string demae_ver = "Standard";
+        string demae_folder = "";
+        string demae_ver = "";
 
         string[] demae_patches = new string[3];
-        if (demae_version == "standard")
-            demae_patches = new string[] { "Demae_0", "Demae_1", "Demae_2" };
-        else if (demae_version == "dominos")
+
+        // If reg is EN, change channel title to "Food Channel", else "Demae Channel"
+        string demae_title = "Demae Channel";
+        if (reg == "EN")
+            demae_title = "Food Channel";
+        
+        switch (demae_version)
         {
-            demae_patches = new string[] { "Dominos_0", "Dominos_1", "Dominos_2" };
-            demae_folder = "Dominos";
-            demae_ver = "Dominos";
+            case "dominos":
+                demae_patches = new string[] { "Dominos_0", "Dominos_1", "Dominos_2" };
+                demae_folder = "Dominos";
+                demae_ver = "Dominos";
+                break;
+            case "deliveroo":
+                demae_patches = new string[] { "Deliveroo_0", "Deliveroo_1", "Deliveroo_2" };
+                demae_folder = "Deliveroo";
+                demae_ver = "Deliveroo";
+                break;
+            default:
+                demae_patches = new string[] { "Demae_0", "Demae_1", "Demae_2" };
+                demae_folder = "Demae";
+                demae_ver = "Standard";
+                break;
         }
 
         string[] demae_apps = { "00000000", "00000001", "00000002" };
 
-        PatchCoreChannel(demae_folder, $"Food Channel ({demae_ver})", "000100014843484a", demae_patches, demae_apps);
+        PatchCoreChannel(demae_folder, $"{demae_title} ({demae_ver})", "000100014843484a", demae_patches, demae_apps);
 
         // Finished patching Demae Channel
         patching_progress[3] = "demae:done";
@@ -1106,6 +1146,7 @@ class WiiLink_Patcher
         task = "Patching Nintendo Channel";
         string NC_titleID = "";
         string appNum = "";
+        string channel_title = "Nintendo Channel";
         switch (nc_reg)
         {
             case "USA":
@@ -1119,10 +1160,11 @@ class WiiLink_Patcher
             case "Japan":
                 NC_titleID = "000100014841544a";
                 appNum = "0000003e";
+                channel_title = "Minna no Nintendo Channel";
                 break;
         }
 
-        PatchWC24Channel("nc", "Nintendo Channel", 1792, nc_reg, NC_titleID, "NC_1", appNum);
+        PatchWC24Channel("nc", $"{channel_title}", 1792, nc_reg, NC_titleID, "NC_1", appNum);
 
         // Finished patching Nintendo Channel
         patching_progress[4] = "nc:done";
@@ -1198,7 +1240,7 @@ class WiiLink_Patcher
         while (true)
         {
             PrintHeader();
-            AnsiConsole.MarkupLine("[bold slowblink green]Patching Completed![/]\n");
+            AnsiConsole.MarkupLine("[bold slowblink lime]Patching Completed![/]\n");
 
             if (sdcard != null)
             {
@@ -1210,7 +1252,7 @@ class WiiLink_Patcher
                 Console.WriteLine($"You can find these folders in the \u001b[1m{curDir}\u001b[0m folder of your computer.\n");
             }
 
-            AnsiConsole.Markup("Please proceed with the tutorial that you can find on [bold green link]https://wii.guide/wiilink[/]\n");
+            AnsiConsole.Markup("Please proceed with the tutorial that you can find on [bold lime link]https://wii.guide/wiilink[/]\n");
 
             Console.WriteLine("What would you like to do now?\n");
             if (sdcard != null)
@@ -1384,6 +1426,14 @@ class WiiLink_Patcher
     // Main Menu function
     static void MainMenu()
     {
+        // Delete temp folder if it exists
+        if (Directory.Exists(Path.Combine(curDir, "WiiLink_Patcher")))
+            Directory.Delete(Path.Combine(curDir, "WiiLink_Patcher"), true);
+        if (Directory.Exists(Path.Combine(curDir, "unpack")))
+            Directory.Delete(Path.Combine(curDir, "unpack"), true);
+        if (Directory.Exists(Path.Combine(curDir, "unpack-patched")))
+            Directory.Delete(Path.Combine(curDir, "unpack-patched"), true);
+        
         while (true)
         {
             // Call the PrintHeader() method
@@ -1399,7 +1449,7 @@ class WiiLink_Patcher
             Console.WriteLine();
 
             if (sdcard != null)
-                AnsiConsole.MarkupLine("[bold green]Detected SD Card:[/] " + sdcard);
+                AnsiConsole.MarkupLine("[bold lime]Detected SD Card:[/] " + sdcard);
             else
                 AnsiConsole.MarkupLine("[bold red]Could not detect your SD Card.[/]");
 
@@ -1473,7 +1523,7 @@ class WiiLink_Patcher
         Console.WriteLine("The WiiLink server is currently down!\n");
         Console.WriteLine("It seems that our server is currently down. We're trying to get it back up as soon as possible.\n");
         Console.WriteLine("Stay tuned on our Discord server for updates:");
-        AnsiConsole.MarkupLine("[link bold green]https://discord.gg/WiiLink\u001b[/]\n");
+        AnsiConsole.MarkupLine("[link bold lime]https://discord.gg/WiiLink\u001b[/]\n");
 
         Console.Write("Press any key to exit...");
         Console.ReadKey();
@@ -1495,7 +1545,7 @@ class WiiLink_Patcher
             Console.WriteLine($" * \u001b[1mMessage:\u001b[0m {msg}");
         Console.WriteLine($" * \u001b[1mExit code:\u001b[0m {exitCode}\n");
 
-        AnsiConsole.MarkupLine("Please open an issue on our GitHub page ([link bold green]https://github.com/WiiLink24/WiiLink24-Patcher/issues[/]) and describe the");
+        AnsiConsole.MarkupLine("Please open an issue on our GitHub page ([link bold lime]https://github.com/WiiLink24/WiiLink24-Patcher/issues[/]) and describe the");
         Console.WriteLine("issue you're having.");
 
         // Press any key to go back to the main menu
@@ -1540,7 +1590,14 @@ class WiiLink_Patcher
         {
             string fileName = Path.GetFileName(file);
             string destFile = Path.Combine(destinationFolder, fileName);
-            File.Copy(file, destFile, true);
+
+            using (FileStream sourceStream = new FileStream(file, FileMode.Open, FileAccess.Read))
+            {
+                using (FileStream destinationStream = new FileStream(destFile, FileMode.Create, FileAccess.Write))
+                {
+                    sourceStream.CopyTo(destinationStream);
+                }
+            }
         }
 
         string[] subFolders = Directory.GetDirectories(sourceFolder);
@@ -1557,38 +1614,6 @@ class WiiLink_Patcher
             Console.Write($"\u001b[8;{console_height};{console_width}t");
 
         Environment.Exit(0);
-    }
-
-    // Regional Format check
-    static void CheckRegionalFormat()
-    {
-        // If the regional format is not en-US, then warn the user to switch "Regional format" to "English (United States)" on Windows Settings -> Time & Language -> Language & region
-        CultureInfo culture = CultureInfo.CurrentCulture;
-        Version osVersion = Environment.OSVersion.Version;
-        string regSettingName = "";
-
-        // Check if regional format has "en" in it, regardless of the country
-        if (!culture.Name.Contains("en"))
-        {
-            PrintHeader();
-
-            // Change the name of the "Language & region" setting depending on the Windows version
-            if (osVersion.Major == 10 && osVersion.Build >= 22000)
-                regSettingName = "Language & region";
-            else
-                regSettingName = "Region";
-
-            AnsiConsole.MarkupLine("[bold red]ERROR:[/] In order for WiiLink Patcher to work properly, you must set your [bold]Regional format[/] to [bold]English (United States)[/].\n");
-            AnsiConsole.MarkupLine("[bold green]How to change your Regional format:[/]\n");
-            AnsiConsole.MarkupLine($"[bold]Windows Settings[/] -> [bold]Time & Language[/] -> [bold]{regSettingName}[/] -> [bold]Regional format[/]");
-            AnsiConsole.MarkupLine("and set it to [bold]English (United States)[/].\n");
-
-            AnsiConsole.MarkupLine("When you're done, relaunch WiiLink Patcher.\n");
-
-            Console.Write("Press any key to exit... ");
-            Console.ReadKey();
-            ExitApp();
-        }
     }
 
     static async System.Threading.Tasks.Task Main(string[] args)
@@ -1610,12 +1635,6 @@ class WiiLink_Patcher
 
         // Change Windows console title
         Console.Title = $"WiiLink Patcher v{version}";
-
-        // Check dependencies (if not on Windows) or regional format (if on Windows)
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            CheckDependencies();
-        else
-            CheckRegionalFormat();
 
         // Check if the server is up
         if (!await CheckServerAsync(wiiLinkPatcherUrl))
