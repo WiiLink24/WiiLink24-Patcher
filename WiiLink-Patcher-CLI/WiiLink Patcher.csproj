@@ -19,7 +19,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="WIiLink Icon.ico" />
+    <Content Include="WiiLink Icon.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Spectre.Console" Version="0.46.0" />
+    <PackageReference Include="Spectre.Console" Version="0.47.0" />
     <PackageReference Include="VCDiff" Version="4.0.1" />
   </ItemGroup>
 

@@ -2,21 +2,18 @@
 using System.Text;
 using System.Runtime.InteropServices;
 using Spectre.Console;
-using System.Globalization;
 using libWiiSharp;
-using VCDiff;
 
 class WiiLink_Patcher
 {
     /*###### Build Info ######*/
-    static readonly string version = "1.1.2";
-    static readonly string copyrightYear = "2023";
-    static readonly string lastBuild = "May 23nd, 2023";
-    static readonly string at = "5:19 PM";
+    static readonly string version = "v1.1.2h1";
+    static readonly string copyrightYear = DateTime.Now.Year.ToString();
+    static readonly string lastBuild = "June 28nd, 2023";
+    static readonly string at = "5:01 PM";
     static string? sdcard = DetectSDCard();
 
     static readonly string wiiLinkPatcherUrl = "https://patcher.wiilink24.com";
-    static readonly string PabloURL = "http://pabloscorner.akawah.net/WL24-Patcher";
     /*########################*/
     
     /*###### Setup Info ######*/
@@ -55,7 +52,7 @@ class WiiLink_Patcher
         string borderLine = "";
         int columns = Console.WindowWidth;
 
-        AnsiConsole.MarkupLine($"[bold]WiiLink Patcher v{version} - (c) {copyrightYear} WiiLink[/] (Updated on {lastBuild} at {at} EST)");
+        AnsiConsole.MarkupLine($"[bold]WiiLink Patcher {version} - (c) {copyrightYear} WiiLink[/] (Updated on {lastBuild} at {at} EST)");
 
         for (int i = 0; i < columns; i++)
         {
@@ -85,40 +82,12 @@ class WiiLink_Patcher
 
     static string? DetectSDCard()
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        // Check for drive with apps folder
+        foreach (DriveInfo drive in DriveInfo.GetDrives())
         {
-            // Check for drive on Windows
-            foreach (DriveInfo drive in DriveInfo.GetDrives())
-            {
-                if (drive.DriveType == DriveType.Removable && Directory.Exists(Path.Combine(drive.RootDirectory.FullName, "apps")))
-                {
-                    return drive.RootDirectory.FullName;
-                }
-            }
+            if (drive.DriveType == DriveType.Removable && Directory.Exists(Path.Join(drive.RootDirectory.FullName, "apps")))
+                return drive.RootDirectory.FullName;
         }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-        {
-            // Check mounted drives on Linux
-            foreach (string drive in Directory.GetDirectories($"/media/{Environment.UserName}"))
-            {
-                if (Directory.Exists(Path.Combine(drive, "apps")))
-                {
-                    return drive;
-                }
-            }
-        }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-            // Check mounted drives on MacOS
-            foreach (string drive in Directory.GetDirectories("/Volumes"))
-            {
-                if (Directory.Exists(Path.Combine(drive, "apps")))
-                {
-                    return drive;
-                }
-            }
-        }
-
         return null;
     }
 
@@ -327,11 +296,11 @@ class WiiLink_Patcher
         {
             case "Wii":
                 spdUrl = $"{wiiLinkPatcherUrl}/spd/SPD_Wii.wad";
-                spdDestinationPath = Path.Join("WAD", "WiiLink_SPD (Wii).wad");
+                spdDestinationPath = Path.Join("WAD", "WiiLink SPD (Wii).wad");
                 break;
             case "vWii":
                 spdUrl = $"{wiiLinkPatcherUrl}/spd/SPD_vWii.wad";
-                spdDestinationPath = Path.Join("WAD", "WiiLink_SPD (vWii).wad");
+                spdDestinationPath = Path.Join("WAD", "WiiLink SPD (vWii).wad");
                 break;
         }
 
@@ -402,24 +371,42 @@ class WiiLink_Patcher
         Directory.CreateDirectory(titleFolder);
         Directory.CreateDirectory(tempFolder);
 
-        // Determine the URL subdirectory based on the channel name
-        string urlSubdir = "";
-        switch (channelName)
-        {
-            case "nc":
-                urlSubdir = "Nintendo_Channel";
-                break;
-            case "forecast":
-                urlSubdir = "Forecast_Channel";
-                break;
-        }
+        // Using Discord links to temporarily host the Certs and Tiks till I can find a more permanent host
+        var tempLinks = new Dictionary<string, Dictionary<string, string>>{
+            // Nintendo Channel Certs and Tiks
+            {"000100014841544a", new Dictionary<string, string> {
+                {"cert", "https://cdn.discordapp.com/attachments/253286648291393536/1123709388641800263/000100014841544a.cert"},
+                {"tik", "https://cdn.discordapp.com/attachments/253286648291393536/1123709425149038612/000100014841544a.tik"}
+            }},
+            {"0001000148415445", new Dictionary<string, string> {
+                {"cert", "https://cdn.discordapp.com/attachments/253286648291393536/1123709388998324235/0001000148415445.cert"},
+                {"tik", "https://cdn.discordapp.com/attachments/253286648291393536/1123709425518129173/0001000148415445.tik"}
+            }},
+            {"0001000148415450", new Dictionary<string, string> {
+                {"cert", "https://cdn.discordapp.com/attachments/253286648291393536/1123709389329678417/0001000148415450.cert"},
+                {"tik", "https://cdn.discordapp.com/attachments/253286648291393536/1123709425950130236/0001000148415450.tik"}
+            }},
+            // Forecast Channel Certs
+            {"000100024841464a", new Dictionary<string, string> {
+                {"cert", "https://cdn.discordapp.com/attachments/253286648291393536/1123709479372980326/000100024841464a.cert"},
+                {"tik", ""}
+            }},
+            {"0001000248414645", new Dictionary<string, string> {
+                {"cert", "https://cdn.discordapp.com/attachments/253286648291393536/1123709478697709638/0001000248414645.cert"},
+                {"tik", ""}
+            }},
+            {"0001000248414650", new Dictionary<string, string> {
+                {"cert", "https://cdn.discordapp.com/attachments/253286648291393536/1123709479016484967/0001000248414650.cert"},
+                {"tik", ""}
+            }},
+        };
 
         //// Download the necessary files for the channel
         task = $"Downloading necessary files for {channelTitle}";
-        DownloadFile($"{PabloURL}/WC24_Patcher/{urlSubdir}/cert/{titleID}.cert", Path.Join(titleFolder, $"{titleID}.cert"), $"{channelTitle} cert");
-        // Download the tik file just for the Nintendo Channel
-        if (titleID == "0001000148415450" || titleID == "0001000148415445" || titleID == "000100014841544a")
-            DownloadFile($"{PabloURL}/WC24_Patcher/{urlSubdir}/tik/{titleID}.tik", Path.Join(titleFolder, "cetk"), $"{channelTitle} tik");
+        DownloadFile(tempLinks[titleID]["cert"], Path.Join(titleFolder, $"{titleID}.cert"), $"{channelTitle} cert");
+        // Download the tik file if it exists
+        if (tempLinks[titleID]["tik"] != "")
+            DownloadFile(tempLinks[titleID]["tik"], Path.Join(titleFolder, "cetk"), $"{channelTitle} tik");
 
         // Extract the necessary files for the channel
         task = $"Extracting stuff for {channelTitle}";
@@ -1530,6 +1517,134 @@ class WiiLink_Patcher
         ExitApp();
     }
 
+        public static async Task CheckForUpdates(string currentVersion)
+    {
+        PrintHeader();
+        Console.WriteLine("Checking for updates...");
+
+        // URL of the text file containing the latest version number
+        string updateUrl = "https://raw.githubusercontent.com/PablosCorner/wiilink-patcher-version/main/version.txt";
+
+        // Download the latest version number from the server
+        HttpClient client = new HttpClient();
+        string updateInfo = "";
+        try
+        {
+            updateInfo = await client.GetStringAsync(updateUrl);
+        }
+        catch (HttpRequestException ex)
+        {
+            AnsiConsole.MarkupLine($"Error retrieving update information: [bold red]{ex.Message}[/]\n");
+
+            AnsiConsole.MarkupLine("[bold]Skipping update check...[/]");
+            Thread.Sleep(5000);
+            return;
+        }
+
+        // Get the latest version number from the text file
+        string latestVersion = updateInfo.Split('\n')[0].Trim();
+
+        // Map operating system names to executable names
+        Dictionary<string, string> executables = new Dictionary<string, string>
+        {
+            { "Windows", $"WiiLink_Patcher_Windows_{latestVersion}.exe" },
+            { "Linux", RuntimeInformation.ProcessArchitecture == Architecture.Arm64 ? $"WiiLink_Patcher_Linux-arm64_{latestVersion}" : $"WiiLink_Patcher_Linux-x64_{latestVersion}" },
+            { "OSX", $"WiiLink_Patcher_macOS_{latestVersion}" }
+        };
+
+        // Get the download URL for the latest version
+        string downloadUrl = $"https://github.com/WiiLink24/WiiLink24-Patcher/releases/download/{version}/";
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && executables.ContainsKey("Windows"))
+            downloadUrl += executables["Windows"];
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && executables.ContainsKey("Linux"))
+            downloadUrl += executables["Linux"];
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && executables.ContainsKey("OSX"))
+            downloadUrl += executables["OSX"];
+
+        // Check if the latest version is newer than the current version
+        if (latestVersion != currentVersion)
+        {
+            do
+            {
+                // Print header
+                PrintHeader();
+
+                // Prompt user to download the latest version
+                AnsiConsole.MarkupLine("[bold]A new version is available! Would you like to download it now?[/]\n");
+                AnsiConsole.MarkupLine($"Current version: {currentVersion}");
+                AnsiConsole.MarkupLine($"Latest version: [bold lime]{latestVersion}[/]\n");
+
+                // Show changelog via Github link
+                AnsiConsole.MarkupLine($"[bold]Changelog:[/] [link lime]https://github.com/WiiLink24/WiiLink24-Patcher/releases/tag/{latestVersion}[/]\n");
+
+                AnsiConsole.MarkupLine("1. Yes");
+                AnsiConsole.MarkupLine("2. No\n");
+
+                // Get user's choice
+                int choice = UserChoose("12");
+
+                switch (choice)
+                {
+                    case 1:
+                        // Determine the operating system name
+                        string? osName = System.Runtime.InteropServices.RuntimeInformation
+                            .IsOSPlatform(OSPlatform.Windows) ? "Windows" :
+                            System.Runtime.InteropServices.RuntimeInformation
+                            .IsOSPlatform(OSPlatform.OSX) ? "macOS" :
+                            System.Runtime.InteropServices.RuntimeInformation
+                            .IsOSPlatform(OSPlatform.Linux) ? "Linux" : "Unknown";
+
+                        // Log message
+                        AnsiConsole.MarkupLine($"\n[bold]Downloading [lime]{latestVersion}[/] for [lime]{osName}[/]...[/]");
+                        Console.Out.Flush();
+
+                        // Download the latest version and save it to a file
+                        HttpResponseMessage response;
+                        response = await client.GetAsync(downloadUrl);
+                        if (!response.IsSuccessStatusCode) // Ideally shouldn't happen if version.txt is set up correctly
+                        {
+                            AnsiConsole.MarkupLine($"[red]An error occurred while downloading the latest version:[/] {response.StatusCode}");
+                            AnsiConsole.MarkupLine("[red]Press any key to exit...[/]");
+                            Console.ReadKey();
+                            ExitApp();
+                            return;
+                        }
+
+                        // Save the downloaded file to disk
+                        byte[] content = await response.Content.ReadAsByteArrayAsync();
+                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && executables.ContainsKey("Windows"))
+                            File.WriteAllBytes(executables["Windows"], content);
+                        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && executables.ContainsKey("Linux"))
+                            File.WriteAllBytes(executables["Linux"], content);
+                        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && executables.ContainsKey("OSX"))
+                            File.WriteAllBytes(executables["OSX"], content);
+
+                        // Tell user that program will exit in 5 seconds with a countdown in a loop
+                        for (int i = 5; i > 0; i--)
+                        {
+                            PrintHeader();
+                            AnsiConsole.MarkupLine($"[bold lime]Download complete![/] Exiting in [bold lime]{i}[/] seconds...");
+                            Thread.Sleep(1000);
+                        }
+
+                        // Exit the program
+                        ExitApp();
+                        return;
+                    case 2:
+                        return;
+                    default:
+                        break;
+                }
+            } while (true);
+        }
+        else // On the latest version
+        {
+            // Log message
+            AnsiConsole.MarkupLine("[bold lime]You are running the latest version![/]");
+            Thread.Sleep(1000);
+        }
+    }
+
     // Error detected!
     static void ErrorScreen(int exitCode, string? msg)
     {
@@ -1634,7 +1749,7 @@ class WiiLink_Patcher
                 Console.Write("\u001b[8;30;120t");
 
         // Change Windows console title
-        Console.Title = $"WiiLink Patcher v{version}";
+        Console.Title = $"WiiLink Patcher {version}";
 
         // Check if the server is up
         if (!await CheckServerAsync(wiiLinkPatcherUrl))
@@ -1647,6 +1762,10 @@ class WiiLink_Patcher
             Directory.Delete(Path.Join("unpack"), true);
         if (Directory.Exists("unpack-patched"))
             Directory.Delete(Path.Join("unpack-patched"), true);
+
+        // Check latest version if not on a test build
+        if (!version.Contains("T"))
+            await CheckForUpdates(version);
 
         // Go to the main menu
         MainMenu();

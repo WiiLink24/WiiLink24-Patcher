@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32929.385
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WiiLink Patcher v1.1.0", "WiiLink-Patcher-CLI\WiiLink Patcher v1.1.0.csproj", "{E07D228F-5655-411D-9658-7CBC84562B89}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WiiLink Patcher", "WiiLink-Patcher-CLI\WiiLink Patcher.csproj", "{E07D228F-5655-411D-9658-7CBC84562B89}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
