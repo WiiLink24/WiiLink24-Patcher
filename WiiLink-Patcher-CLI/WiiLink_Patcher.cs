@@ -7,10 +7,10 @@ using libWiiSharp;
 class WiiLink_Patcher
 {
     /*###### Build Info ######*/
-    static readonly string version = "v1.1.2h1";
+    static readonly string version = "v1.1.2h2";
     static readonly string copyrightYear = DateTime.Now.Year.ToString();
-    static readonly string lastBuild = "June 28nd, 2023";
-    static readonly string at = "5:01 PM";
+    static readonly string lastBuild = "June 29nd, 2023";
+    static readonly string at = "1:37 PM";
     static string? sdcard = DetectSDCard();
 
     static readonly string wiiLinkPatcherUrl = "https://patcher.wiilink24.com";
@@ -1517,7 +1517,7 @@ class WiiLink_Patcher
         ExitApp();
     }
 
-        public static async Task CheckForUpdates(string currentVersion)
+    public static async Task CheckForUpdates(string currentVersion)
     {
         PrintHeader();
         Console.WriteLine("Checking for updates...");
@@ -1553,7 +1553,7 @@ class WiiLink_Patcher
         };
 
         // Get the download URL for the latest version
-        string downloadUrl = $"https://github.com/WiiLink24/WiiLink24-Patcher/releases/download/{version}/";
+        string downloadUrl = $"https://github.com/WiiLink24/WiiLink24-Patcher/releases/download/{latestVersion}/";
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && executables.ContainsKey("Windows"))
             downloadUrl += executables["Windows"];
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && executables.ContainsKey("Linux"))
@@ -1603,7 +1603,7 @@ class WiiLink_Patcher
                         response = await client.GetAsync(downloadUrl);
                         if (!response.IsSuccessStatusCode) // Ideally shouldn't happen if version.txt is set up correctly
                         {
-                            AnsiConsole.MarkupLine($"[red]An error occurred while downloading the latest version:[/] {response.StatusCode}");
+                            AnsiConsole.MarkupLine($"\n[red]An error occurred while downloading the latest version:[/] {response.StatusCode}");
                             AnsiConsole.MarkupLine("[red]Press any key to exit...[/]");
                             Console.ReadKey();
                             ExitApp();
