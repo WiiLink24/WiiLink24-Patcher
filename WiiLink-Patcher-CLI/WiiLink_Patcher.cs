@@ -374,7 +374,7 @@ class WiiLink_Patcher
 
 
     // Patches the Japanese-exclusive channels
-    static void PatchCoreChannel(string channelName, string channelTitle, string titleID, List<KeyValuePair<string, string>> patchFilesDict, string? appVer = null, string? lang = null)
+    static void PatchCoreChannel(string channelName, string channelTitle, string titleID, List<KeyValuePair<string, string>> patchFilesDict, string? appVer = null, string? reg = null, string? lang = null)
     {
         // Set up folder paths and file names
         string titleFolder = Path.Join(tempDir, "Unpack");
@@ -521,7 +521,7 @@ class WiiLink_Patcher
 
             // Since the patch doesn't seem to work correctly, I'm using this as a workaround 
             DownloadFile("https://cdn.discordapp.com/attachments/1061653146872582204/1127695471666810950/banner_rso.arc", Path.Join(tempFolder, "banner_rso.arc"), "Forecast Channel Fix");
-             
+
             File.Move(Path.Join(tempFolder, "banner_rso.arc"), Path.Join(titleFolder, "0000000f.app"));
         }
 
@@ -1003,49 +1003,47 @@ class WiiLink_Patcher
         string demae_title = corechannel_titles_dict[reg]["demae"];
         string wiiroom_title = corechannel_titles_dict[reg]["wiiroom"];
         string digicam_title = corechannel_titles_dict[reg]["digicam"];
+        string NC_title = "";
+        string forecast_title = "";
 
-        // Define a dictionary to store the different titles
-        Dictionary<string, string> NCTitles_dict = new Dictionary<string, string>()
+        if (installWC24)
         {
-            {"Japan", "Minna no Nintendo Channel [bold](Japan)[/]"},
-            {"USA", "Nintendo Channel [bold](USA)[/]"},
-            {"PAL", "Nintendo Channel [bold](PAL)[/]"},
-        };
-
-        // Set the Nintendo Channel title based on the region
-        string NCTitle = NCTitles_dict[nc_reg];
-
-        // Define a dictionary to store the different titles for the Forecast Channel
-        Dictionary<string, Dictionary<string, string>> forecastTitles_dict = new Dictionary<string, Dictionary<string, string>>()
-        {
-            {"Wii", new Dictionary<string, string>()
+            // Define a dictionary to store the different WC24 channel titles
+            var WC24titles_dict = new Dictionary<string, Dictionary<string, string>>()
+            {
                 {
-                    {"USA", "Forecast Channel [bold](USA)[/] [bold grey][[Wii]][/]"},
-                    {"PAL", "Forecast Channel [bold](PAL)[/] [bold grey][[Wii]][/]"},
-                    {"Japan", "Forecast Channel [bold](Japan)[/] [bold grey][[Wii]][/]"},
-                }
-            },
-            {"vWii", new Dictionary<string, string>()
+                    "Nintendo Channel", new Dictionary<string, string>()
+                    {
+                        {"Japan", "Minna no Nintendo Channel [bold](Japan)[/]"},
+                        {"USA", "Nintendo Channel [bold](USA)[/]"},
+                        {"PAL", "Nintendo Channel [bold](PAL)[/]"},
+                    }
+                },
                 {
-                    {"USA", "Forecast Channel [bold](USA)[/] [bold deepskyblue1][[vWii]][/]"},
-                    {"PAL", "Forecast Channel [bold](PAL)[/] [bold deepskyblue1][[vWii]][/]"},
-                    {"Japan", "Forecast Channel [bold](Japan)[/] [bold deepskyblue1][[vWii]][/]"},
+                    "Forecast Channel", new Dictionary<string, string>()
+                    {
+                        {"USA", "Forecast Channel [bold](USA)[/]"},
+                        {"PAL", "Forecast Channel [bold](PAL)[/]"},
+                        {"Japan", "Forecast Channel [bold](Japan)[/]"},
+                    }
                 }
-            }
-        };
+            };
 
-        // Set the forecast channel title based on the platform type and region
-        string forecastTitle = forecastTitles_dict[platformType][forecast_reg];
+            // Set the Nintendo Channel and Forecast Channel titles based on the region
+            NC_title = WC24titles_dict["Nintendo Channel"][nc_reg];
+            forecast_title = WC24titles_dict["Forecast Channel"][forecast_reg];
+        }
 
         // Define the channel_messages dictionary
-        Dictionary<string, string> channelMessages = new Dictionary<string, string>()
+        var channelMessages = new Dictionary<string, string>();
+        channelMessages.Add("wiiroom", wiiroom_title);
+        channelMessages.Add("digicam", digicam_title);
+        channelMessages.Add("demae", demae_title);
+        if (installWC24) // Add WC24 channel titles if applicable
         {
-            { "wiiroom", wiiroom_title },
-            { "digicam", digicam_title },
-            { "demae", demae_title },
-            { "nc", NCTitle },
-            { "forecast", forecastTitle }
-        };
+            channelMessages.Add("nc", NC_title);
+            channelMessages.Add("forecast", forecast_title);
+        }
 
         //// Setup patching process list ////
         List<Action> patching_functions = new List<Action>();
@@ -1285,7 +1283,7 @@ class WiiLink_Patcher
             { "forecast_us", () => Forecast_Patch("USA") },
             { "forecast_eu", () => Forecast_Patch("PAL") },
             { "forecast_jp", () => Forecast_Patch("Japan") }
-            
+
         };
 
         // Create a list of patching functions to execute
@@ -1524,11 +1522,15 @@ class WiiLink_Patcher
             DownloadFile($"https://hbb1.oscwii.org/hbb/GetConsoleID.png", Path.Join("apps", "GetConsoleID", "icon.png"), "Get Console ID");
         }
 
-        // Nintendo Channel
-        DownloadPatch("nc", $"NC_1_{nc_reg}.delta", "NC_1.delta", "Nintendo Channel");
+        // Download WC24 patches if applicable
+        if (installWC24)
+        {
+            // Nintendo Channel
+            DownloadPatch("nc", $"NC_1_{nc_reg}.delta", "NC_1.delta", "Nintendo Channel");
 
-        // Forecast Channel
-        DownloadPatch("forecast", $"Forecast_1.delta", "Forecast_1.delta", "Forecast Channel");
+            // Forecast Channel
+            DownloadPatch("forecast", $"Forecast_1.delta", "Forecast_1.delta", "Forecast Channel");
+        }
 
         // Kirby TV Channel (only if user chose to install it)
         if (installKirbyTV)
@@ -2051,7 +2053,7 @@ class WiiLink_Patcher
         // If English, change channel title to "Wii Room"
         string wiiroom_title = reg == "EN" ? "Wii Room" : "Wii no Ma";
 
-        PatchCoreChannel("WiinoMa", wiiroom_title, "000100014843494a", wiiroom_patch_list, lang: lang);
+        PatchCoreChannel("WiinoMa", wiiroom_title, "000100014843494a", wiiroom_patch_list, reg: reg, lang: lang);
 
         // Finished patching Wii no Ma
         patchingProgress_express["wiiroom"] = "done";
@@ -2071,7 +2073,7 @@ class WiiLink_Patcher
             new KeyValuePair<string, string>("Digicam_2", "00000002")
         };
 
-        PatchCoreChannel("Digicam", "Digicam Print Channel", "000100014843444a", digicam_patch_list, lang: lang);
+        PatchCoreChannel("Digicam", "Digicam Print Channel", "000100014843444a", digicam_patch_list, reg: reg, lang: lang);
 
         // Finished patching Digicam Print Channel
         patchingProgress_express["digicam"] = "done";
@@ -2125,7 +2127,7 @@ class WiiLink_Patcher
         if (demaeNameVer_dict.TryGetValue(demae_version, out var demaeInfo))
         {
             var (demaeFolder, demaeVer) = demaeInfo;
-            PatchCoreChannel(demaeFolder, $"{demae_title} ({demaeVer})", "000100014843484a", demae_patch_list, lang: lang);
+            PatchCoreChannel(demaeFolder, $"{demae_title} ({demaeVer})", "000100014843484a", demae_patch_list, reg: reg, lang: lang);
         }
 
         // Finished patching Demae Channel
