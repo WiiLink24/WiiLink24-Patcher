@@ -107,17 +107,10 @@ class WiiLink_Patcher
     // User choice
     static int UserChoose(string choices)
     {
-        var choose_localizedText = new Dictionary<string, string> {
-                {"en", "Choose: "},
-                {"es", "Elija: "},
-                {"fr", "Choisir: "},
-                {"jp", "選択: "}
-            };
-
         ConsoleKeyInfo keyPressed;
         do
         {
-            Console.Write($"{choose_localizedText[localizeLang]}");
+            Console.Write($"Choose: ");
             keyPressed = Console.ReadKey(intercept: true);
 
             switch (keyPressed.Key)
@@ -136,7 +129,7 @@ class WiiLink_Patcher
                         Console.Write(new string(' ', Console.WindowWidth));
                         Console.SetCursorPosition(0, Console.CursorTop - 1);
                     }
-                    break;
+                    return -2;
                 default:
                     if (choices.Contains(keyPressed.KeyChar))
                     {
@@ -586,7 +579,7 @@ class WiiLink_Patcher
                     reg = "JP";
                     lang = "Japan";
                     demae_version = "standard";
-                    NCSetup();
+                    WiiConnect24Setup();
                     break;
                 case 3:
                     MainMenu(); // Go back to main menu
