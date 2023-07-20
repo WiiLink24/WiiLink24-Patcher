@@ -15,7 +15,7 @@ You can download the latest version of the patcher from the [Releases Page](http
 * Works with **Wii Room**, **Digicam Print Channel**, **Food Channel**, and more!
 * The patcher will automatically download the required files.
 * Copying patched files to an SD Card that is already connected to the PC.
-* Downloads **Wii Mod Lite** and putting it on SD Card along with the WADs.
+* Downloads **YAWM ModMii Edition** and puts it on SD Card along with the WADs.
 * You can get **Food Channel (Domino's)**, along with the **Get Console ID** homebrew app for easy console ID registration on our [Discord server](https://discord.gg/wiilink), for ***free***!
 
 >(**Food Channel (Domino's)** is only available in the US and Canada!)

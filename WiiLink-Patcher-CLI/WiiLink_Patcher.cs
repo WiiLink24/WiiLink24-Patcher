@@ -1500,15 +1500,15 @@ class WiiLink_Patcher
                 break;
         }
 
-        // If /apps/WiiModLite folder doesn't exist, create it
-        if (!Directory.Exists(Path.Join("apps", "WiiModLite")))
-            Directory.CreateDirectory(Path.Join("apps", "WiiModLite"));
+        // If /apps/yawmME folder doesn't exist, create it
+        if (!Directory.Exists(Path.Join("apps", "yawmME")))
+            Directory.CreateDirectory(Path.Join("apps", "yawmME"));
 
-        // Downloading Wii Mod Lite
-        task = "Downloading Wii Mod Lite";
-        DownloadFile($"https://hbb1.oscwii.org/unzipped_apps/WiiModLite/apps/WiiModLite/boot.dol", Path.Join("apps", "WiiModLite", "boot.dol"), "Wii Mod Lite");
-        DownloadFile($"https://hbb1.oscwii.org/unzipped_apps/WiiModLite/apps/WiiModLite/meta.xml", Path.Join("apps", "WiiModLite", "meta.xml"), "Wii Mod Lite");
-        DownloadFile($"https://hbb1.oscwii.org/hbb/WiiModLite.png", Path.Join("apps", "WiiModLite", "icon.png"), "Wii Mod Lite");
+        // Downloading YAWM ModMii Edition
+        task = "Downloading YAWM ModMii Edition";
+        DownloadFile($"https://hbb1.oscwii.org/unzipped_apps/yawmME/apps/yawmME/boot.dol", Path.Join("apps", "yawmME", "boot.dol"), "YAWM ModMii Edition");
+        DownloadFile($"https://hbb1.oscwii.org/unzipped_apps/yawmME/apps/yawmME/meta.xml", Path.Join("apps", "yawmME", "meta.xml"), "YAWM ModMii Edition");
+        DownloadFile($"https://hbb1.oscwii.org/hbb/yawmME.png", Path.Join("apps", "yawmME", "icon.png"), "YAWM ModMii Edition");
 
         // Downloading Get Console ID (for Dominos Demae Channel)
         if (demae_version == "dominos" || demae_version == "deliveroo")
@@ -2026,13 +2026,13 @@ class WiiLink_Patcher
             }
         }
 
-        // Downloading Wii Mod Lite
-        task = "Downloading Wii Mod Lite";
-        if (!Directory.Exists(Path.Join("apps", "WiiModLite")))
-            Directory.CreateDirectory(Path.Join("apps", "WiiModLite"));
-        DownloadFile($"https://hbb1.oscwii.org/unzipped_apps/WiiModLite/apps/WiiModLite/boot.dol", Path.Join("apps", "WiiModLite", "boot.dol"), "Wii Mod Lite");
-        DownloadFile($"https://hbb1.oscwii.org/unzipped_apps/WiiModLite/apps/WiiModLite/meta.xml", Path.Join("apps", "WiiModLite", "meta.xml"), "Wii Mod Lite");
-        DownloadFile($"https://hbb1.oscwii.org/hbb/WiiModLite.png", Path.Join("apps", "WiiModLite", "icon.png"), "Wii Mod Lite");
+        // Downloading YAWM ModMii Edition
+        task = "Downloading YAWM ModMii Edition";
+        if (!Directory.Exists(Path.Join("apps", "yawmME")))
+            Directory.CreateDirectory(Path.Join("apps", "yawmME"));
+        DownloadFile($"https://hbb1.oscwii.org/unzipped_apps/yawmME/apps/yawmME/boot.dol", Path.Join("apps", "yawmME", "boot.dol"), "YAWM ModMii Edition");
+        DownloadFile($"https://hbb1.oscwii.org/unzipped_apps/yawmME/apps/yawmME/meta.xml", Path.Join("apps", "yawmME", "meta.xml"), "YAWM ModMii Edition");
+        DownloadFile($"https://hbb1.oscwii.org/hbb/yawmME.png", Path.Join("apps", "yawmME", "icon.png"), "YAWM ModMii Edition");
     }
 
     // Patching Wii no Ma
