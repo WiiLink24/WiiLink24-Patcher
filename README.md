@@ -1,4 +1,4 @@
-# WiiLink Patcher (.NET Version)
+# WiiLink Patcher
 
 WiiLink Patcher is a program made for easier installation of WiiLink. With it, you can just sit back and relax while the patcher does everything for you.
 
