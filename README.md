@@ -11,7 +11,7 @@ You can download the latest version of the patcher from the [Releases Page](http
 
 >**NOTE:** In **Windows**, your antivirus may flag the **patcher**, as malware. This is a **false positive**, and you can safely ignore it. If you are still unsure, you can inspect the source code, and/or compile it yourself for extra verification. You can also temporarily disable your antivirus to download the patcher, or add an exception for it if you put it in a dedicated folder.
 
->**NOTE:** For **OSX/MacOS**, you need Rosetta installed on your system if your Mac is using an **M1/M2** chip. Rosetta can be installed with:
+>**NOTE:** For **OSX/MacOS**, you need Rosetta installed on your system if your Mac is using an **M1 or newer** chip. Rosetta can be installed with:
 >`/usr/sbin/softwareupdate --install-rosetta --agree-to-license`
 
 ### Features
