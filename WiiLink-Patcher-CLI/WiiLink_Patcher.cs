@@ -13,79 +13,84 @@ using Newtonsoft.Json.Linq;
 class WiiLink_Patcher
 {
     //// Build Info ////
-    static readonly string version = "v1.2.1";
+    static readonly string version = "v1.2.2";
     static readonly string copyrightYear = DateTime.Now.Year.ToString();
-    static readonly string buildDate = "September 4th, 2023";
-    static readonly string buildTime = "12:06 PM";
-    static string? sdcard = DetectSDCard();
+    static readonly string buildDate = "October 12th, 2023";
+    static readonly string buildTime = "10:30 AM";
+    static string? sdcard = DetectSDCard;
     static readonly string wiiLinkPatcherUrl = "https://patcher.wiilink24.com";
     ////////////////////
 
     //// Setup Info ////
     // Express Install variables
-    static public Language lang;
-    static public DemaeVersion demaeVersion;
-    static public bool installWC24 = false;
-    static public Region nc_reg;
-    static public Region forecast_reg;
-    static public Region evc_reg;
-    static public Platform platformType;
-    static public bool installKirbyTV = false;
-    private static Dictionary<string, string> patchingProgress_express = new();
+    static Language lang;
+    static DemaeVersion demaeVersion;
+    static bool installWC24 = false;
+    static Region nc_reg, forecast_reg, evc_reg;
+    static Platform platformType;
+    static bool installKirbyTV = false;
+    static Dictionary<string, string> patchingProgress_express = new();
 
     // Custom Install variables
-    private static List<string> japaneseChannels_selection = new();
-    private static List<string> wiiConnect24Channels_selection = new();
-    static Platform spdVersion_custom;
+    static List<string> wiiLinkChannels_selection = new();
+    static List<string> wiiConnect24Channels_selection = new();
+    static List<string> combinedChannels_selection = new();
+    static Platform platformType_custom;
     static bool inCompatabilityMode = false;
-    private static Dictionary<string, string> patchingProgress_custom = new();
+    static Dictionary<string, string> patchingProgress_custom = new();
 
     // Misc. variables
-    static public string task = "";
-    static public string curCmd = "";
+    static string task = "";
+    static string curCmd = "";
     static readonly string curDir = Directory.GetCurrentDirectory();
     static readonly string tempDir = Path.Join(Path.GetTempPath(), "WiiLink_Patcher");
-    static bool DEBUG_MODE = false;
-    static public string patcherLang = "en"; // English by default
+    static readonly bool DEBUG_MODE = false;
+    static PatcherLanguage patcherLang = PatcherLanguage.en;
     static JObject? localizedText = null;
 
     // Enums
-    public enum Region : int { USA, PAL, Japan }
-    public enum Language : int { English, Japan, Russian, Catalan, Portuguese }
-    public enum DemaeVersion : int { Standard, Dominos, Deliveroo }
-    public enum Platform : int { Wii, vWii }
+    enum Region : int { USA, PAL, Japan }
+    enum Language : int { English, Japan, Russian, Catalan, Portuguese }
+    enum PatcherLanguage : int { en }
+    enum DemaeVersion : int { Standard, Dominos }
+    enum Platform : int { Wii, vWii }
 
     // Get current console window size
     static int console_width = 0;
     static int console_height = 0;
+
+    // HttpClient
+    static readonly HttpClient httpClient = new() { Timeout = TimeSpan.FromSeconds(10) };
     ////////////////////
 
     static void PrintHeader()
     {
         Console.Clear();
 
-        string headerText = $"WiiLink Patcher {version} - (c) {copyrightYear} WiiLink";
-        if (patcherLang != "en")
-        {
-            headerText = $"{localizedText?["Header"]}"
+        string headerText = patcherLang == PatcherLanguage.en
+            ? $"WiiLink Patcher {version} - (c) {copyrightYear} WiiLink"
+            : $"{localizedText?["Header"]}"
                 .Replace("{version}", version)
-                .Replace("{copyrightYear}", copyrightYear);
-        }
+                .Replace("{year}", copyrightYear);
 
-        AnsiConsole.MarkupLine(headerText);
+        AnsiConsole.MarkupLine($"{(inCompatabilityMode
+            ? headerText
+            : $"[bold]{headerText}[/]")}");
 
         char borderChar = '=';
         string borderLine = new(borderChar, Console.WindowWidth);
 
-        AnsiConsole.MarkupLine($"{borderLine}\n");
+        AnsiConsole.MarkupLine($"{(inCompatabilityMode
+            ? borderLine
+            : $"[bold]{borderLine}[/]")}\n");
     }
 
     static void PrintNotice()
     {
-        string title = patcherLang == "en"
+        string title = patcherLang == PatcherLanguage.en
             ? "Notice"
             : $"{localizedText?["Notice"]?["noticeTitle"]}";
-        string text = patcherLang == "en"
+        string text = patcherLang == PatcherLanguage.en
             ? "If you have any issues with the patcher or services offered by WiiLink, please report them on our [lime link=https://discord.gg/WiiLink]Discord Server[/]!"
             : $"{localizedText?["Notice"]?["noticeMsg"]}";
 
@@ -101,44 +106,57 @@ class WiiLink_Patcher
         AnsiConsole.WriteLine();
     }
 
-    static string? DetectSDCard()
+    static string? DetectSDCard
     {
-        // Define the base paths to check for each platform
-        var basePaths = new List<string>();
-
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        get
         {
-            foreach (var drive in DriveInfo.GetDrives())
+            // Define the base paths to check for each platform
+            var basePaths = new List<string>();
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                if (Directory.Exists(Path.Join(drive.Name, "apps")))
-                    return drive.Name;
+                foreach (var drive in DriveInfo.GetDrives())
+                {
+                    if (Directory.Exists(Path.Join(drive.Name, "apps")))
+                        return drive.Name;
+                }
             }
+            else
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                    basePaths.Add("/Volumes");
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    basePaths.Add("/media");
+                    basePaths.Add("/run/media");
+                }
+
+                foreach (var basePath in basePaths)
+                {
+                    var drive = DriveInfo.GetDrives()
+                        .FirstOrDefault(d => d.Name.StartsWith(Path.Join(basePath, Environment.UserName)) &&
+                                             Directory.Exists(Path.Join(d.RootDirectory.FullName, "apps")));
+
+                    if (drive != null)
+                        return drive.RootDirectory.FullName;
+                }
+            }
+
+            return null;
         }
-        else
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                basePaths.Add("/Volumes");
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                basePaths.Add("/media");
-                basePaths.Add("/run/media");
-            }
-
-            foreach (var basePath in basePaths)
-            {
-                var drive = DriveInfo.GetDrives()
-                    .FirstOrDefault(d => d.Name.StartsWith(Path.Join(basePath, Environment.UserName)) && 
-                                         Directory.Exists(Path.Join(d.RootDirectory.FullName, "apps")));
-
-                if (drive != null)
-                    return drive.RootDirectory.FullName;
-            }
-        }
-
-        return null;
     }
 
-    // User choice
+    /// <summary>
+    /// This method allows the user to make a selection from a list of choices.
+    /// </summary>
+    /// <param name="choices">A string containing the valid choices for the user.</param>
+    /// <returns>
+    /// Returns an integer representing the user's choice. 
+    /// If the user presses a special key (like Escape, Enter, Backspace, Arrow keys), 
+    /// it returns a specific negative integer associated with that key.
+    /// If the user enters a valid choice, it returns the index of the choice in the string (1-indexed).
+    /// If the user enters an invalid choice, it returns -24.
+    /// </returns>
     static int UserChoose(string choices)
     {
         const int ESCAPE = -1;
@@ -151,7 +169,7 @@ class WiiLink_Patcher
         const int INVALID_INPUT = -24;
 
         ConsoleKeyInfo keyPressed;
-        string chooseText = patcherLang == "en"
+        string chooseText = patcherLang == PatcherLanguage.en
                 ? "Choose: "
                 : $"{localizedText?["UserChoose"]} ";
         AnsiConsole.Markup(chooseText);
@@ -195,7 +213,7 @@ class WiiLink_Patcher
         PrintHeader();
 
         // Build info
-        string buildInfo = patcherLang == "en"
+        string buildInfo = patcherLang == PatcherLanguage.en
             ? $"This build was compiled on [bold lime]{buildDate}[/] at [bold lime]{buildTime}[/]."
             : $"{localizedText?["Credits"]?["buildInfo"]}"
                 .Replace("{buildDate}", buildDate)
@@ -206,7 +224,7 @@ class WiiLink_Patcher
         var creditTable = new Table().Border(inCompatabilityMode ? TableBorder.None : TableBorder.DoubleEdge);
 
         // Credits header
-        string credits = patcherLang == "en"
+        string credits = patcherLang == PatcherLanguage.en
             ? "Credits"
             : $"{localizedText?["Credits"]?["credits"]}";
         creditTable.AddColumn(new TableColumn($"[bold lime]{credits}[/]").Centered());
@@ -215,19 +233,19 @@ class WiiLink_Patcher
         var creditGrid = new Grid().AddColumn().AddColumn();
 
         // Credits text
-        string sketchDesc = patcherLang == "en"
+        string sketchDesc = patcherLang == PatcherLanguage.en
             ? "WiiLink Founder"
             : $"{localizedText?["Credits"]?["sketchDesc"]}";
-        string pablosDesc = patcherLang == "en"
+        string pablosDesc = patcherLang == PatcherLanguage.en
             ? "WiiLink Patcher Developer"
             : $"{localizedText?["Credits"]?["pablosDesc"]}";
-        string lunaDesc = patcherLang == "en"
+        string lunaDesc = patcherLang == PatcherLanguage.en
             ? "Lead Translator"
             : $"{localizedText?["Credits"]?["lunaDesc"]}";
-        string leathlWiiDatabase = patcherLang == "en"
+        string leathlWiiDatabase = patcherLang == PatcherLanguage.en
             ? "leathl and WiiDatabase"
             : $"{localizedText?["Credits"]?["leathlWiiDatabase"]}";
-        string leathlWiiDatabaseDesc = patcherLang == "en"
+        string leathlWiiDatabaseDesc = patcherLang == PatcherLanguage.en
             ? "libWiiSharp developers"
             : $"{localizedText?["Credits"]?["leathlWiiDatabaseDesc"]}";
 
@@ -242,7 +260,7 @@ class WiiLink_Patcher
         AnsiConsole.Write(creditTable);
 
         // Special thanks grid
-        string specialThanksTo = patcherLang == "en"
+        string specialThanksTo = patcherLang == PatcherLanguage.en
             ? "Special thanks to:"
             : $"{localizedText?["Credits"]?["specialThanksTo"]}";
         AnsiConsole.MarkupLine($"\n[bold lime]{specialThanksTo}[/]\n");
@@ -250,19 +268,19 @@ class WiiLink_Patcher
         var specialThanksGrid = new Grid().AddColumn().AddColumn();
 
         // Special thanks text
-        string theshadoweeveeRole = patcherLang == "en"
+        string theshadoweeveeRole = patcherLang == PatcherLanguage.en
             ? "- Pointing me in the right direction with implementing libWiiSharp!"
             : $"{localizedText?["Credits"]?["theshadoweeveeRole"]}";
-        string ourTesters = patcherLang == "en"
+        string ourTesters = patcherLang == PatcherLanguage.en
             ? "Our Testers"
             : $"{localizedText?["Credits"]?["ourTesters"]}";
-        string ourTestersRole = patcherLang == "en"
+        string ourTestersRole = patcherLang == PatcherLanguage.en
             ? "- For testing the patcher and reporting bugs/anomalies!"
             : $"{localizedText?["Credits"]?["ourTestersRole"]}";
-        string you = patcherLang == "en"
+        string you = patcherLang == PatcherLanguage.en
             ? "You!"
             : $"{localizedText?["Credits"]?["you"]}";
-        string youRole = patcherLang == "en"
+        string youRole = patcherLang == PatcherLanguage.en
             ? "- For your continued support of WiiLink!"
             : $"{localizedText?["Credits"]?["youRole"]}";
 
@@ -274,10 +292,10 @@ class WiiLink_Patcher
         AnsiConsole.MarkupLine("");
 
         // Links grid
-        string wiilinkSite = patcherLang == "en"
+        string wiilinkSite = patcherLang == PatcherLanguage.en
             ? "WiiLink website"
             : $"{localizedText?["Credits"]?["wiilinkSite"]}";
-        string githubRepo = patcherLang == "en"
+        string githubRepo = patcherLang == PatcherLanguage.en
             ? "Github repository"
             : $"{localizedText?["Credits"]?["githubRepo"]}";
 
@@ -290,7 +308,7 @@ class WiiLink_Patcher
         AnsiConsole.MarkupLine("");
 
         // Press any key to go back to settings
-        string pressAnyKey = patcherLang == "en"
+        string pressAnyKey = patcherLang == PatcherLanguage.en
             ? "Press any key to go back to settings..."
             : $"{localizedText?["Credits"]?["pressAnyKey"]}";
         AnsiConsole.Markup($"[bold]{pressAnyKey}[/]");
@@ -311,7 +329,7 @@ class WiiLink_Patcher
 
         DownloadFile($"https://hbb1.oscwii.org/unzipped_apps/{appName}/apps/{appName}/boot.dol", Path.Join(appPath, "boot.dol"), appName);
         DownloadFile($"https://hbb1.oscwii.org/unzipped_apps/{appName}/apps/{appName}/meta.xml", Path.Join(appPath, "meta.xml"), appName);
-        DownloadFile($"https://hbb1.oscwii.org/hbb/{appName}.png", Path.Join(appPath, "icon.png"), appName);
+        DownloadFile($"https://hbb1.oscwii.org/api/v3/contents/{appName}/icon.png", Path.Join(appPath, "icon.png"), appName);
     }
 
     /// <summary>
@@ -320,7 +338,8 @@ class WiiLink_Patcher
     /// <param name="URL">The URL to download the file from.</param>
     /// <param name="dest">The destination to save the file to.</param>
     /// <param name="name">The name of the file.</param>
-    static void DownloadFile(string URL, string dest, string name)
+    /// <param name="noError">Optional parameter. If true, the function will return instead of throwing an error.</param>
+    static void DownloadFile(string URL, string dest, string name, bool noError = false)
     {
         // Loop until the file is successfully downloaded.
         while (true)
@@ -331,28 +350,32 @@ class WiiLink_Patcher
                 AnsiConsole.MarkupLine($"[lime]Downloading [bold]{name}[/] from [bold]{URL}[/] to [bold]{dest}[/][/]...");
             try
             {
-                // Create a new HttpClient instance to handle the download.
-                using var client = new HttpClient();
                 // Send a GET request to the specified URL.
-                var response = client.GetAsync(URL).Result;
+                var response = httpClient.GetAsync(URL).Result;
                 if (response.IsSuccessStatusCode)
                 {
                     // If the response is successful, create a new file at the specified destination and save the response stream to it.
-                    using (var stream = response.Content.ReadAsStream())
-                    using (var fileStream = File.Create(dest))
-                    {
-                        stream.CopyTo(fileStream);
-                    }
+                    using var stream = response.Content.ReadAsStream();
+                    using var fileStream = File.Create(dest);
+                    stream.CopyTo(fileStream);
                     break;
                 }
                 else
                 {
+                    if (noError)
+                    {
+                        return;
+                    }
                     int statusCode = (int)response.StatusCode;
                     ErrorScreen(statusCode, $"Failed to download [bold]{name}[/] from [bold]{URL}[/] to [bold]{dest}[/]");
                 }
             }
             catch (Exception e)
             {
+                if (noError)
+                {
+                    return;
+                }
                 AnsiConsole.MarkupLine($"[bold red]ERROR:[/] {e.Message}");
                 AnsiConsole.MarkupLine("Press any key to try again...");
                 Console.ReadKey(true);
@@ -444,22 +467,6 @@ class WiiLink_Patcher
     {
         string patchUrl = $"{wiiLinkPatcherUrl}/{folderName.ToLower()}/{patchInput}";
         string patchDestinationPath = Path.Join(tempDir, "Patches", folderName, patchOutput);
-
-/*         if (folderName == "IOS31")
-        {
-            switch (patchInput)
-            {
-                case "IOS31_Wii.delta":
-                    patchUrl = "https://cdn.discordapp.com/attachments/253286648291393536/1148277389445566647/IOS31_Wii.delta";
-                    break;
-                case "IOS31_vWii_8.delta":
-                    patchUrl = "https://cdn.discordapp.com/attachments/253286648291393536/1148277390204731412/IOS31_vWii_8.delta";
-                    break;
-                case "IOS31_vWii_E.delta":
-                    patchUrl = "https://cdn.discordapp.com/attachments/253286648291393536/1148277389818863748/IOS31_vWii_E.delta";
-                    break;
-            }
-        } */
 
         if (DEBUG_MODE)
         {
@@ -574,7 +581,7 @@ class WiiLink_Patcher
     }
 
     // This function patches the WiiConnect24 channels
-    static void PatchWC24Channel(string channelName, string channelTitle, int channelVersion, Region? channelRegion, string titleID, string[] patchFile, string[] appFile)
+    static void PatchWC24Channel(string channelName, string channelTitle, int channelVersion, Region? channelRegion, string titleID, List<string> patchFile, List<string> appFile)
     {
         // Define the necessary paths and filenames
         string titleFolder = Path.Join(tempDir, "Unpack");
@@ -592,130 +599,48 @@ class WiiLink_Patcher
         Directory.CreateDirectory(titleFolder);
         Directory.CreateDirectory(tempFolder);
 
-        // Define the URLs for the necessary files
-        var discordURLs = new Dictionary<string, Dictionary<string, string>>{
-            // Nintendo Channel Certs and Tiks
-            {"000100014841544a", new Dictionary<string, string> { // JPN
-                {"cert", "https://cdn.discordapp.com/attachments/253286648291393536/1123709388641800263/000100014841544a.cert"},
-                {"tmd", ""},
-                {"tik", "https://cdn.discordapp.com/attachments/253286648291393536/1123709425149038612/000100014841544a.tik"}
-            }},
-            {"0001000148415445", new Dictionary<string, string> { // USA
-                {"cert", "https://cdn.discordapp.com/attachments/253286648291393536/1123709388998324235/0001000148415445.cert"},
-                {"tmd", ""},
-                {"tik", "https://cdn.discordapp.com/attachments/253286648291393536/1123709425518129173/0001000148415445.tik"}
-            }},
-            {"0001000148415450", new Dictionary<string, string> { // PAL
-                {"cert", "https://cdn.discordapp.com/attachments/253286648291393536/1123709389329678417/0001000148415450.cert"},
-                {"tmd", ""},
-                {"tik", "https://cdn.discordapp.com/attachments/253286648291393536/1123709425950130236/0001000148415450.tik"}
-            }},
-            // Forecast Channel Certs
-            {"000100024841464a", new Dictionary<string, string> { // JPN
-                {"cert", "https://cdn.discordapp.com/attachments/253286648291393536/1123709479372980326/000100024841464a.cert"},
-                {"tmd", ""},
-                {"tik", ""}
-            }},
-            {"0001000248414645", new Dictionary<string, string> { // USA
-                {"cert", "https://cdn.discordapp.com/attachments/253286648291393536/1123709478697709638/0001000248414645.cert"},
-                {"tmd", ""},
-                {"tik", ""}
-            }},
-            {"0001000248414650", new Dictionary<string, string> { // PAL
-                {"cert", "https://cdn.discordapp.com/attachments/253286648291393536/1123709479016484967/0001000248414650.cert"},
-                {"tmd", ""},
-                {"tik", ""}
-            }},
-            // Everybody Votes Channel Certs and TIK
-            {"0001000148414a4a", new Dictionary<string, string> { // JPN
-                {"cert", "https://cdn.discordapp.com/attachments/253286648291393536/1144052128361496638/0001000148414a4a.cert"},
-                {"tmd", ""},
-                {"tik", "https://cdn.discordapp.com/attachments/253286648291393536/1144052253469200534/0001000148414a4a.tik"}
-            }},
-            {"0001000148414a45", new Dictionary<string, string> { // USA
-                {"cert", "https://cdn.discordapp.com/attachments/253286648291393536/1144052127832997959/0001000148414a45.cert"},
-                {"tmd", ""},
-                {"tik", "https://cdn.discordapp.com/attachments/253286648291393536/1144052253091692645/0001000148414a45.tik"}
-            }},
-            {"0001000148414a50", new Dictionary<string, string> { // PAL
-                {"cert", "https://cdn.discordapp.com/attachments/253286648291393536/1144052128764145755/0001000148414a50.cert"},
-                {"tmd", ""},
-                {"tik", "https://cdn.discordapp.com/attachments/253286648291393536/1144052253804736632/0001000148414a50.tik"}
-            }},
-            // IOS31 Cert
-            {"000000010000001f", new Dictionary<string, string> { // JPN
-                {"cert", "https://cdn.discordapp.com/attachments/253286648291393536/1148279472404049951/000000010000001f.cert"},
-                {"tmd", ""},
-                {"tik", ""}
-            }},
-            // Kirby TV Channel Cert, TMD, and TIK
-            {"0001000148434d50", new Dictionary<string, string> { // Global
-                {"cert", "https://cdn.discordapp.com/attachments/253286648291393536/1123828090754314261/0001000148434d50.cert"},
-                {"tmd", "https://cdn.discordapp.com/attachments/253286648291393536/1123828527918231563/0001000148434d50.tmd"},
-                {"tik", "https://cdn.discordapp.com/attachments/253286648291393536/1123828811860017203/0001000148434d50.tik"}
-            }},
-            // Region Select Certs
-            {"0001000848414c4a", new Dictionary<string, string> { // JPN
-                {"cert", "https://cdn.discordapp.com/attachments/253286648291393536/1147995629080035448/0001000848414c4a.cert"},
-                {"tmd", ""},
-                {"tik", ""}
-            }},
-            {"0001000848414c45", new Dictionary<string, string> { // USA
-                {"cert", "https://cdn.discordapp.com/attachments/253286648291393536/1147995628740288673/0001000848414c45.cert"},
-                {"tmd", ""},
-                {"tik", ""}
-            }},
-            {"0001000848414c50", new Dictionary<string, string> { // PAL
-                {"cert", "https://cdn.discordapp.com/attachments/253286648291393536/1147995629461708890/0001000848414c50.cert"},
-                {"tmd", ""},
-                {"tik", ""}
-            }},
+        string fileURL = $"{wiiLinkPatcherUrl}/{channelName.ToLower()}/{titleID}";
+
+        // Define the URLs and file paths
+        var files = new Dictionary<string, string>
+        {
+            {".cert", Path.Join(titleFolder, $"{titleID}.cert")},
+            {".tmd", Path.Join(titleFolder, $"tmd.{channelVersion}")},
+            {".tik", Path.Join(titleFolder, "cetk")}
         };
 
-        //// Download the necessary files for the channel ////
+        // Download the necessary files for the channel
         task = $"Downloading necessary files for {channelTitle}";
 
-        // Download the cetk file
-        DownloadFile(discordURLs[titleID]["cert"], Path.Join(titleFolder, $"{titleID}.cert"), $"{channelTitle} cert");
-
-        // Download the tik file if it exists
-        if (discordURLs[titleID]["tik"] != "")
-            DownloadFile(discordURLs[titleID]["tik"], Path.Join(titleFolder, "cetk"), $"{channelTitle} tik");
+        // Download the files
+        foreach (var file in files)
+        {
+            string url = $"{fileURL}{file.Key}";
+            try // Try to download the file
+            {
+                DownloadFile(url, file.Value, $"{channelTitle} {file.Key}", noError: true);
+            }
+            catch (Exception)
+            {
+                // File doesn't exist, move on to the next one
+                continue;
+            }
+        }
 
         // Extract the necessary files for the channel
         task = $"Extracting stuff for {channelTitle}";
         DownloadNUS(titleID, titleFolder, channelVersion.ToString(), true);
-
-        // Download the TMD file if it exists
-        if (discordURLs[titleID]["tmd"] != "")
-            DownloadFile(discordURLs[titleID]["tmd"], Path.Join(titleFolder, $"tmd.{channelVersion}"), $"{channelTitle} TMD");
 
         // Rename the extracted files
         task = $"Renaming files for {channelTitle}";
         File.Move(Path.Join(titleFolder, $"tmd.{channelVersion}"), Path.Join(titleFolder, $"{titleID}.tmd"));
         File.Move(Path.Join(titleFolder, "cetk"), Path.Join(titleFolder, $"{titleID}.tik"));
 
-        // Apply the delta patch to the app file
+        // Apply the delta patches to the app file
         task = $"Applying delta patch for {channelTitle}";
-        ApplyPatch(File.OpenRead(Path.Join(titleFolder, $"{appFile[0]}.app")), File.OpenRead(Path.Join(patchFolder, $"{patchFile[0]}.delta")), File.OpenWrite(Path.Join(tempFolder, $"{appFile[0]}.app")));
-
-        // If there are more than one delta patches, apply the rest of them
-        for (int i = 1; i < patchFile.Length; i++)
+        foreach (var (app, patch) in appFile.Zip(patchFile, (app, patch) => (app, patch)))
         {
-            ApplyPatch(File.OpenRead(Path.Join(tempFolder, $"{appFile[i]}.app")), File.OpenRead(Path.Join(patchFolder, $"{patchFile[i]}.delta")), File.OpenWrite(Path.Join(tempFolder, $"{appFile[i]}.app")));
-        }
-
-        // Apply the special second Forecast patch if the channel is Forecast
-        if (channelName == "forecast")
-        {
-            task = $"Applying Forecast Channel Fix";
-            // Delete existing 0000000f.app and replace it with this one, then rename it to 0000000f.app
-            File.Delete(Path.Join(titleFolder, "0000000f.app"));
-
-            // Since the patch doesn't seem to work correctly, I'm using this as a workaround 
-            DownloadFile("https://cdn.discordapp.com/attachments/1061653146872582204/1127695471666810950/banner_rso.arc", Path.Join(tempFolder, "banner_rso.arc"), "Forecast Channel Fix");
-
-            File.Move(Path.Join(tempFolder, "banner_rso.arc"), Path.Join(titleFolder, "0000000f.app"));
+            ApplyPatch(File.OpenRead(Path.Join(titleFolder, $"{app}.app")), File.OpenRead(Path.Join(patchFolder, $"{patch}.delta")), File.OpenWrite(Path.Join(tempFolder, $"{app}.app")));
         }
 
         // Copy the patched files to the unpack folder
@@ -740,54 +665,53 @@ class WiiLink_Patcher
 
 
     // Install Choose (Express Install)
-    static void JapaneseChannel_LangSetup()
+    static void WiiLinkChannels_LangSetup()
     {
         while (true)
         {
             PrintHeader();
 
             // Express Install Header Text
-            string EIHeader = patcherLang == "en"
+            string EIHeader = patcherLang == PatcherLanguage.en
                 ? "Express Install"
                 : $"{localizedText?["ExpressInstall"]?["Header"]}";
             AnsiConsole.MarkupLine($"[bold lime]{EIHeader}[/]\n");
 
             // Express Install Welcome Message Text
-            string welcomeMessage = patcherLang == "en"
+            string welcomeMessage = patcherLang == PatcherLanguage.en
                 ? $"Hello [bold lime]{Environment.UserName}[/]! Welcome to the Express Installation of WiiLink!"
-                : $"{localizedText?["ExpressInstall"]?["CoreChannel_LangSetup"]?["welcomeMessage"]}";
-            if (patcherLang != "en")
-                welcomeMessage = welcomeMessage.Replace("{userName}", $"[bold lime]{Environment.UserName}[/]");
+                : $"{localizedText?["ExpressInstall"]?["WiiLinkChannels_LangSetup"]?["welcomeMessage"]}"
+                    .Replace("{userName}", $"[bold lime]{Environment.UserName}[/]");
             AnsiConsole.MarkupLine($"{welcomeMessage}\n");
 
             // Patcher Will Download Text
-            string patcherWillDownload = patcherLang == "en"
+            string patcherWillDownload = patcherLang == PatcherLanguage.en
                 ? "The patcher will download any files that are required to run the patcher."
-                : $"{localizedText?["ExpressInstall"]?["CoreChannel_LangSetup"]?["patcherWillDownload"]}";
+                : $"{localizedText?["ExpressInstall"]?["WiiLinkChannels_LangSetup"]?["patcherWillDownload"]}";
             AnsiConsole.MarkupLine($"{patcherWillDownload}\n");
 
             // Step 1 Text
-            string step1Message = patcherLang == "en"
-                ? "Step 1: Choose Japanese channel language"
-                : $"{localizedText?["ExpressInstall"]?["CoreChannel_LangSetup"]?["step1Message"]}";
+            string step1Message = patcherLang == PatcherLanguage.en
+                ? "Step 1: Choose WiiLink channels language"
+                : $"{localizedText?["ExpressInstall"]?["WiiLinkChannels_LangSetup"]?["step1Message"]}";
             AnsiConsole.MarkupLine($"[bold]{step1Message}[/]\n");
 
             // Instructions Text
-            string instructions = patcherLang == "en"
+            string instructions = patcherLang == PatcherLanguage.en
                 ? "For [bold]Wii Room[/], [bold]Photo Prints Channel[/], and [bold]Food Channel[/], which language would you like to select?"
-                : $"{localizedText?["ExpressInstall"]?["CoreChannel_LangSetup"]?["instructions"]}";
+                : $"{localizedText?["ExpressInstall"]?["WiiLinkChannels_LangSetup"]?["instructions"]}";
             AnsiConsole.MarkupLine($"{instructions}\n");
 
             // User Choices
-            string englishTranslation = patcherLang == "en"
+            string englishTranslation = patcherLang == PatcherLanguage.en
                 ? "English Translation"
-                : $"{localizedText?["ExpressInstall"]?["CoreChannel_LangSetup"]?["englishOption"]}";
-            string japanese = patcherLang == "en"
+                : $"{localizedText?["ExpressInstall"]?["WiiLinkChannels_LangSetup"]?["englishOption"]}";
+            string japanese = patcherLang == PatcherLanguage.en
                 ? "Japanese"
-                : $"{localizedText?["ExpressInstall"]?["CoreChannel_LangSetup"]?["japaneseOption"]}";
-            string goBackToMainMenu = patcherLang == "en"
+                : $"{localizedText?["ExpressInstall"]?["WiiLinkChannels_LangSetup"]?["japaneseOption"]}";
+            string goBackToMainMenu = patcherLang == PatcherLanguage.en
                 ? "Go Back to Main Menu"
-                : $"{localizedText?["ExpressInstall"]?["CoreChannel_LangSetup"]?["goBackToMainMenu"]}";
+                : $"{localizedText?["ExpressInstall"]?["WiiLinkChannels_LangSetup"]?["goBackToMainMenu"]}";
 
             AnsiConsole.MarkupLine($"1. {englishTranslation}");
             AnsiConsole.MarkupLine($"2. {japanese}\n");
@@ -824,44 +748,43 @@ class WiiLink_Patcher
             PrintHeader();
 
             // Express Install Header Text
-            string EIHeader = patcherLang == "en"
+            string EIHeader = patcherLang == PatcherLanguage.en
                 ? "Express Install"
                 : $"{localizedText?["ExpressInstall"]?["Header"]}";
             AnsiConsole.MarkupLine($"[bold lime]{EIHeader}[/]\n");
 
             // Step 1B Text
-            string step1bTitle = patcherLang == "en"
-                ? "Step 1B: Choose Food Channel version"
-                : $"{localizedText?["ExpressInstall"]?["DemaeConfiguration"]?["step1bTitle"]}";
-            AnsiConsole.MarkupLine($"[bold]{step1bTitle}[/]\n");
+            string stepNumber = patcherLang == PatcherLanguage.en
+                ? "Step 1B"
+                : $"{localizedText?["ExpressInstall"]?["DemaeConfiguration"]?["stepNum"]}";
+            string step1bTitle = patcherLang == PatcherLanguage.en
+                ? "Choose Food Channel version"
+                : $"{localizedText?["ExpressInstall"]?["DemaeConfiguration"]?["stepTitle"]}";
+            AnsiConsole.MarkupLine($"[bold]{stepNumber}: {step1bTitle}[/]\n");
 
             // Instructions Text
-            string instructions = patcherLang == "en"
+            string instructions = patcherLang == PatcherLanguage.en
                 ? "For [bold]Food Channel[/], which version would you like to install?"
                 : $"{localizedText?["ExpressInstall"]?["DemaeConfiguration"]?["instructions"]}";
             AnsiConsole.MarkupLine($"{instructions}\n");
 
             // User Choices
-            string demaeStandard = patcherLang == "en"
+            string demaeStandard = patcherLang == PatcherLanguage.en
                 ? "Standard [bold](Fake Ordering)[/]"
                 : $"{localizedText?["ExpressInstall"]?["DemaeConfiguration"]?["demaeStandard"]}";
-            string demaeDominos = patcherLang == "en"
+            string demaeDominos = patcherLang == PatcherLanguage.en
                 ? "Domino's [bold](US and Canada only)[/]"
                 : $"{localizedText?["ExpressInstall"]?["DemaeConfiguration"]?["demaeDominos"]}";
-            string demaeDeliveroo = patcherLang == "en"
-                ? "Deliveroo [bold](Select countries only)[/]"
-                : $"{localizedText?["ExpressInstall"]?["DemaeConfiguration"]?["demaeDeliveroo"]}";
-            string goBackToMainMenu = patcherLang == "en"
+            string goBackToMainMenu = patcherLang == PatcherLanguage.en
                 ? "Go Back to Main Menu"
                 : $"{localizedText?["ExpressInstall"]?["DemaeConfiguration"]?["goBackToMainMenu"]}";
 
             AnsiConsole.MarkupLine($"1. {demaeStandard}");
-            AnsiConsole.MarkupLine($"2. {demaeDominos}");
-            AnsiConsole.MarkupLine($"3. {demaeDeliveroo}\n");
+            AnsiConsole.MarkupLine($"2. {demaeDominos}\n");
 
-            AnsiConsole.MarkupLine($"4. {goBackToMainMenu}\n");
+            AnsiConsole.MarkupLine($"3. {goBackToMainMenu}\n");
 
-            int choice = UserChoose("1234");
+            int choice = UserChoose("123");
             switch (choice)
             {
                 case 1:
@@ -872,11 +795,7 @@ class WiiLink_Patcher
                     demaeVersion = DemaeVersion.Dominos;
                     WiiConnect24Setup();
                     break;
-                case 3:
-                    demaeVersion = DemaeVersion.Deliveroo;
-                    WiiConnect24Setup();
-                    break;
-                case 4: // Go back to main menu
+                case 3: // Go back to main menu
                     MainMenu();
                     break;
                 default:
@@ -893,31 +812,31 @@ class WiiLink_Patcher
             PrintHeader();
 
             // Express Install Header Text
-            string EIHeader = patcherLang == "en"
+            string EIHeader = patcherLang == PatcherLanguage.en
                 ? "Express Install"
                 : $"{localizedText?["ExpressInstall"]?["Header"]}";
             AnsiConsole.MarkupLine($"[bold lime]{EIHeader}[/]\n");
 
             // Would you like to install WiiLink's WiiConnect24 services? Text
-            string wouldYouLike = patcherLang == "en"
+            string wouldYouLike = patcherLang == PatcherLanguage.en
                 ? "Would you like to install [bold]WiiLink's WiiConnect24 services[/]?"
                 : $"{localizedText?["ExpressInstall"]?["WiiConnect24Setup"]?["wouldYouLike"]}";
             AnsiConsole.MarkupLine($"{wouldYouLike}\n");
 
             // Services that would be installed Text
-            string toBeInstalled = patcherLang == "en"
+            string toBeInstalled = patcherLang == PatcherLanguage.en
                 ? "Services that would be installed:"
                 : $"{localizedText?["ExpressInstall"]?["WiiConnect24Setup"]?["toBeInstalled"]}";
             AnsiConsole.MarkupLine($"{toBeInstalled}\n");
 
             // Channel Names
-            string nintendoChannel = patcherLang == "en"
+            string nintendoChannel = patcherLang == PatcherLanguage.en
                 ? "Nintendo Channel"
                 : $"{localizedText?["ExpressInstall"]?["WiiConnect24Setup"]?["NintendoChannel"]}";
-            string forecastChannel = patcherLang == "en"
+            string forecastChannel = patcherLang == PatcherLanguage.en
                 ? "Forecast Channel"
                 : $"{localizedText?["ExpressInstall"]?["WiiConnect24Setup"]?["ForecastChannel"]}";
-            string everybodyVotesChannel = patcherLang == "en"
+            string everybodyVotesChannel = patcherLang == PatcherLanguage.en
                 ? "Everybody Votes Channel"
                 : $"{localizedText?["ExpressInstall"]?["WiiConnect24Setup"]?["EverybodyVotesChannel"]}";
 
@@ -926,10 +845,10 @@ class WiiLink_Patcher
             AnsiConsole.MarkupLine($"  ● {everybodyVotesChannel}\n");
 
             // Yes or No Text
-            string yes = patcherLang == "en"
+            string yes = patcherLang == PatcherLanguage.en
                 ? "Yes"
                 : $"{localizedText?["ExpressInstall"]?["WiiConnect24Setup"]?["yes"]}";
-            string no = patcherLang == "en"
+            string no = patcherLang == PatcherLanguage.en
                 ? "No"
                 : $"{localizedText?["ExpressInstall"]?["WiiConnect24Setup"]?["no"]}";
 
@@ -937,7 +856,7 @@ class WiiLink_Patcher
             Console.WriteLine($"2. {no}\n");
 
             // Go Back to Main Menu Text
-            string goBackToMainMenu = patcherLang == "en"
+            string goBackToMainMenu = patcherLang == PatcherLanguage.en
                 ? "Go Back to Main Menu"
                 : $"{localizedText?["ExpressInstall"]?["WiiConnect24Setup"]?["goBackToMainMenu"]}";
             Console.WriteLine($"3. {goBackToMainMenu}\n");
@@ -970,38 +889,38 @@ class WiiLink_Patcher
             PrintHeader();
 
             // Express Install Header Text
-            string EIHeader = patcherLang == "en"
+            string EIHeader = patcherLang == PatcherLanguage.en
                 ? "Express Install"
                 : $"{localizedText?["ExpressInstall"]?["Header"]}";
             AnsiConsole.MarkupLine($"[bold lime]{EIHeader}[/]\n");
 
             // Step 2 Text
-            string stepNum = patcherLang == "en"
+            string stepNum = patcherLang == PatcherLanguage.en
                 ? "Step 2"
                 : $"{localizedText?["ExpressInstall"]?["NintendoChannelSetup"]?["stepNum"]}";
-            string stepTitle = patcherLang == "en"
+            string stepTitle = patcherLang == PatcherLanguage.en
                 ? "Choose Nintendo Channel region"
                 : $"{localizedText?["ExpressInstall"]?["NintendoChannelSetup"]?["stepTitle"]}";
 
             AnsiConsole.MarkupLine($"[bold]{stepNum}: {stepTitle}[/]\n");
 
             // Instructions Text
-            string instructions = patcherLang == "en"
+            string instructions = patcherLang == PatcherLanguage.en
                 ? "For [bold]Nintendo Channel[/], which region would you like to install?"
                 : $"{localizedText?["ExpressInstall"]?["NintendoChannelSetup"]?["instructions"]}";
             AnsiConsole.MarkupLine($"{instructions}\n");
 
             // User Choices
-            string northAmerica = patcherLang == "en"
+            string northAmerica = patcherLang == PatcherLanguage.en
                 ? "North America"
                 : $"{localizedText?["ExpressInstall"]?["NintendoChannelSetup"]?["northAmerica"]}";
-            string pal = patcherLang == "en"
+            string pal = patcherLang == PatcherLanguage.en
                 ? "PAL"
                 : $"{localizedText?["ExpressInstall"]?["NintendoChannelSetup"]?["pal"]}";
-            string japan = patcherLang == "en"
+            string japan = patcherLang == PatcherLanguage.en
                 ? "Japan"
                 : $"{localizedText?["ExpressInstall"]?["NintendoChannelSetup"]?["japan"]}";
-            string goBackToMainMenu = patcherLang == "en"
+            string goBackToMainMenu = patcherLang == PatcherLanguage.en
                 ? "Go Back to Main Menu"
                 : $"{localizedText?["ExpressInstall"]?["NintendoChannelSetup"]?["goBackToMainMenu"]}";
 
@@ -1044,38 +963,38 @@ class WiiLink_Patcher
             PrintHeader();
 
             // Express Install Header Text
-            string EIHeader = patcherLang == "en"
+            string EIHeader = patcherLang == PatcherLanguage.en
                 ? "Express Install"
                 : $"{localizedText?["ExpressInstall"]?["Header"]}";
             AnsiConsole.MarkupLine($"[bold lime]{EIHeader}[/]\n");
 
             // Step 3 Text
-            string stepNum = patcherLang == "en"
+            string stepNum = patcherLang == PatcherLanguage.en
                 ? "Step 3"
                 : $"{localizedText?["ExpressInstall"]?["ForecastChannelSetup"]?["stepNum"]}";
-            string stepTitle = patcherLang == "en"
+            string stepTitle = patcherLang == PatcherLanguage.en
                 ? "Choose Forecast Channel region"
                 : $"{localizedText?["ExpressInstall"]?["ForecastChannelSetup"]?["stepTitle"]}";
 
             AnsiConsole.MarkupLine($"[bold]{stepNum}: {stepTitle}[/]\n");
 
             // Instructions Text
-            string instructions = patcherLang == "en"
+            string instructions = patcherLang == PatcherLanguage.en
                 ? "For [bold]Forecast Channel[/], which region would you like to install?"
                 : $"{localizedText?["ExpressInstall"]?["ForecastChannelSetup"]?["instructions"]}";
             AnsiConsole.MarkupLine($"{instructions}\n");
 
             // User Choices
-            string northAmerica = patcherLang == "en"
+            string northAmerica = patcherLang == PatcherLanguage.en
                 ? "North America"
                 : $"{localizedText?["ExpressInstall"]?["ForecastChannelSetup"]?["northAmerica"]}";
-            string pal = patcherLang == "en"
+            string pal = patcherLang == PatcherLanguage.en
                 ? "PAL"
                 : $"{localizedText?["ExpressInstall"]?["ForecastChannelSetup"]?["pal"]}";
-            string japan = patcherLang == "en"
+            string japan = patcherLang == PatcherLanguage.en
                 ? "Japan"
                 : $"{localizedText?["ExpressInstall"]?["ForecastChannelSetup"]?["japan"]}";
-            string goBackToMainMenu = patcherLang == "en"
+            string goBackToMainMenu = patcherLang == PatcherLanguage.en
                 ? "Go Back to Main Menu"
                 : $"{localizedText?["ExpressInstall"]?["ForecastChannelSetup"]?["goBackToMainMenu"]}";
 
@@ -1117,38 +1036,38 @@ class WiiLink_Patcher
             PrintHeader();
 
             // Express Install Header Text
-            string EIHeader = patcherLang == "en"
+            string EIHeader = patcherLang == PatcherLanguage.en
                 ? "Express Install"
                 : $"{localizedText?["ExpressInstall"]?["Header"]}";
             AnsiConsole.MarkupLine($"[bold lime]{EIHeader}[/]\n");
 
             // Step 4 Text
-            string stepNum = patcherLang == "en"
+            string stepNum = patcherLang == PatcherLanguage.en
                 ? "Step 4"
                 : $"{localizedText?["ExpressInstall"]?["EVCSetup"]?["stepNum"]}";
-            string stepTitle = patcherLang == "en"
+            string stepTitle = patcherLang == PatcherLanguage.en
                 ? "Choose Everybody Votes Channel region"
                 : $"{localizedText?["ExpressInstall"]?["EVCSetup"]?["stepTitle"]}";
 
             AnsiConsole.MarkupLine($"[bold]{stepNum}: {stepTitle}[/]\n");
 
             // Instructions Text
-            string instructions = patcherLang == "en"
+            string instructions = patcherLang == PatcherLanguage.en
                 ? "For [bold]Everybody Votes Channel[/], which region would you like to install?"
                 : $"{localizedText?["ExpressInstall"]?["EVCSetup"]?["instructions"]}";
             AnsiConsole.MarkupLine($"{instructions}\n");
 
             // User Choices
-            string northAmerica = patcherLang == "en"
+            string northAmerica = patcherLang == PatcherLanguage.en
                 ? "North America"
                 : $"{localizedText?["ExpressInstall"]?["EVCSetup"]?["northAmerica"]}";
-            string pal = patcherLang == "en"
+            string pal = patcherLang == PatcherLanguage.en
                 ? "PAL"
                 : $"{localizedText?["ExpressInstall"]?["EVCSetup"]?["pal"]}";
-            string japan = patcherLang == "en"
+            string japan = patcherLang == PatcherLanguage.en
                 ? "Japan"
                 : $"{localizedText?["ExpressInstall"]?["EVCSetup"]?["japan"]}";
-            string goBackToMainMenu = patcherLang == "en"
+            string goBackToMainMenu = patcherLang == PatcherLanguage.en
                 ? "Go Back to Main Menu"
                 : $"{localizedText?["ExpressInstall"]?["EVCSetup"]?["goBackToMainMenu"]}";
 
@@ -1163,14 +1082,90 @@ class WiiLink_Patcher
             {
                 case 1: // USA
                     evc_reg = Region.USA;
+                    //CMOCSetup(); Skip CMOC for now since it's not out yet
                     KirbyTVSetup();
                     break;
                 case 2: // PAL
                     evc_reg = Region.PAL;
+                    //CMOCSetup(); Skip CMOC for now since it's not out yet
                     KirbyTVSetup();
                     break;
                 case 3: // Japan
                     evc_reg = Region.Japan;
+                    //CMOCSetup(); Skip CMOC for now since it's not out yet
+                    KirbyTVSetup();
+                    break;
+                case 4: // Go back to main menu
+                    MainMenu();
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    // Configure Check Mii Out Channel (Express Install)
+    static void CMOCSetup()
+    {
+        while (true)
+        {
+            PrintHeader();
+
+            // Express Install Header Text
+            string EIHeader = patcherLang == PatcherLanguage.en
+                ? "Express Install"
+                : $"{localizedText?["ExpressInstall"]?["Header"]}";
+            AnsiConsole.MarkupLine($"[bold lime]{EIHeader}[/]\n");
+
+            // Step 5 Text
+            string stepNum = patcherLang == PatcherLanguage.en
+                ? "Step 5"
+                : $"{localizedText?["ExpressInstall"]?["CMOCSetup"]?["stepNum"]}";
+            string stepTitle = patcherLang == PatcherLanguage.en
+                ? "Choose Check Mii Out Channel region"
+                : $"{localizedText?["ExpressInstall"]?["CMOCSetup"]?["stepTitle"]}";
+
+            AnsiConsole.MarkupLine($"[bold]{stepNum}: {stepTitle}[/]\n");
+
+            // Instructions Text
+            string instructions = patcherLang == PatcherLanguage.en
+                ? "For [bold]Check Mii Out Channel[/], which region would you like to install?"
+                : $"{localizedText?["ExpressInstall"]?["CMOCSetup"]?["instructions"]}";
+            AnsiConsole.MarkupLine($"{instructions}\n");
+
+            // User Choices
+            string northAmerica = patcherLang == PatcherLanguage.en
+                ? "North America"
+                : $"{localizedText?["ExpressInstall"]?["CMOCSetup"]?["northAmerica"]}";
+            string pal = patcherLang == PatcherLanguage.en
+                ? "PAL"
+                : $"{localizedText?["ExpressInstall"]?["CMOCSetup"]?["pal"]}";
+            string japan = patcherLang == PatcherLanguage.en
+                ? "Japan"
+                : $"{localizedText?["ExpressInstall"]?["CMOCSetup"]?["japan"]}";
+            string goBackToMainMenu = patcherLang == PatcherLanguage.en
+                ? "Go Back to Main Menu"
+                : $"{localizedText?["ExpressInstall"]?["CMOCSetup"]?["goBackToMainMenu"]}";
+
+            AnsiConsole.MarkupLine($"1. {northAmerica}");
+            AnsiConsole.MarkupLine($"2. {pal}");
+            AnsiConsole.MarkupLine($"3. {japan}\n");
+
+            AnsiConsole.MarkupLine($"4. {goBackToMainMenu}\n");
+
+            int choice = UserChoose("1234");
+            switch (choice)
+            {
+                case 1: // USA
+                    //cmoc_reg = Region.USA;
+                    KirbyTVSetup();
+                    break;
+                case 2: // PAL
+                    //cmoc_reg = Region.PAL;
+                    KirbyTVSetup();
+                    break;
+                case 3: // Japan
+                    //cmoc_reg = Region.Japan;
                     KirbyTVSetup();
                     break;
                 case 4: // Go back to main menu
@@ -1191,36 +1186,36 @@ class WiiLink_Patcher
             PrintHeader();
 
             // Express Install Header Text
-            string EIHeader = patcherLang == "en"
+            string EIHeader = patcherLang == PatcherLanguage.en
                 ? "Express Install"
                 : $"{localizedText?["ExpressInstall"]?["Header"]}";
             AnsiConsole.MarkupLine($"[bold lime]{EIHeader}[/]\n");
 
             // Change step number depending on if WiiConnect24 is being installed or not
-            string stepNum = patcherLang == "en"
+            string stepNum = patcherLang == PatcherLanguage.en
                 ? !installWC24 ? "Step 2" : "Step 5"
                 : $"{localizedText?["ExpressInstall"]?["KirbyTVSetup"]?[!installWC24 ? "ifNoWC24" : "ifWC24"]?["stepNum:"]}";
 
             // Step Text
-            string stepTitle = patcherLang == "en"
+            string stepTitle = patcherLang == PatcherLanguage.en
                 ? $"Choose to install [bold]Kirby TV Channel[/]"
                 : $"{localizedText?["ExpressInstall"]?["KirbyTVSetup"]?["stepTitle"]}";
             AnsiConsole.MarkupLine($"[bold]{stepNum}: {stepTitle}[/]\n");
 
             // Instructions Text
-            string instructions = patcherLang == "en"
+            string instructions = patcherLang == PatcherLanguage.en
                 ? "Would you like to install [bold]Kirby TV Channel[/]?"
                 : $"{localizedText?["ExpressInstall"]?["KirbyTVSetup"]?["instructions"]}";
             AnsiConsole.MarkupLine($"{instructions}\n");
 
             // User Choices
-            string yes = patcherLang == "en"
+            string yes = patcherLang == PatcherLanguage.en
                 ? "Yes"
                 : $"{localizedText?["ExpressInstall"]?["KirbyTVSetup"]?["yes"]}";
-            string no = patcherLang == "en"
+            string no = patcherLang == PatcherLanguage.en
                 ? "No"
                 : $"{localizedText?["ExpressInstall"]?["KirbyTVSetup"]?["no"]}";
-            string goBackToMainMenu = patcherLang == "en"
+            string goBackToMainMenu = patcherLang == PatcherLanguage.en
                 ? "Go Back to Main Menu"
                 : $"{localizedText?["ExpressInstall"]?["KirbyTVSetup"]?["goBackToMainMenu"]}";
 
@@ -1258,35 +1253,35 @@ class WiiLink_Patcher
             PrintHeader();
 
             // Express Install Header Text
-            string EIHeader = patcherLang == "en"
+            string EIHeader = patcherLang == PatcherLanguage.en
                 ? "Express Install"
                 : $"{localizedText?["ExpressInstall"]?["Header"]}";
             AnsiConsole.MarkupLine($"[bold lime]{EIHeader}[/]\n");
 
             // Change step number depending on if WiiConnect24 is being installed or not
-            string stepNum = patcherLang == "en"
+            string stepNum = patcherLang == PatcherLanguage.en
                 ? !installWC24 ? "Step 3" : "Step 6"
                 : $"{localizedText?["ExpressInstall"]?["ChoosePlatform"]?[!installWC24 ? "ifNoWC24" : "ifWC24"]?["stepNum"]}";
-            string stepTitle = patcherLang == "en"
+            string stepTitle = patcherLang == PatcherLanguage.en
                 ? "Choose console platform"
                 : $"{localizedText?["ExpressInstall"]?["ChoosePlatform"]?["stepTitle"]}";
 
             AnsiConsole.MarkupLine($"[bold]{stepNum}: {stepTitle}[/]\n");
 
             // Instructions Text
-            string instructions = patcherLang == "en"
+            string instructions = patcherLang == PatcherLanguage.en
                 ? "Which Wii version are you installing to?"
                 : $"{localizedText?["ExpressInstall"]?["ChoosePlatform"]?["instructions"]}";
             AnsiConsole.MarkupLine($"{instructions}\n");
 
             // User Choices
-            string wii = patcherLang == "en"
+            string wii = patcherLang == PatcherLanguage.en
                 ? "Wii [bold](or Dolphin Emulator)[/]"
                 : $"{localizedText?["ExpressInstall"]?["ChoosePlatform"]?["wii"]}";
-            string vWii = patcherLang == "en"
+            string vWii = patcherLang == PatcherLanguage.en
                 ? "vWii [bold](Wii U)[/]"
                 : $"{localizedText?["ExpressInstall"]?["ChoosePlatform"]?["vWii"]}";
-            string goBackToMainMenu = patcherLang == "en"
+            string goBackToMainMenu = patcherLang == PatcherLanguage.en
                 ? "Go Back to Main Menu"
                 : $"{localizedText?["ExpressInstall"]?["ChoosePlatform"]?["goBackToMainMenu"]}";
 
@@ -1324,47 +1319,47 @@ class WiiLink_Patcher
             PrintHeader();
 
             // Change step number depending on if WiiConnect24 is being installed or not
-            string stepNum = patcherLang == "en"
+            string stepNum = patcherLang == PatcherLanguage.en
                 ? isCustomSetup ? "Step 4" : (!installWC24 ? "Step 4" : "Step 7")
                 : $"{localizedText?["SDSetup"]?[isCustomSetup ? "ifCustom" : "ifExpress"]?[installWC24 ? "ifWC24" : "ifNoWC24"]?["stepNum"]}";
 
             // Change header depending on if it's Express Install or Custom Install
-            string installType = patcherLang == "en"
+            string installType = patcherLang == PatcherLanguage.en
                 ? isCustomSetup ? "Custom Install" : "Express Install"
                 : isCustomSetup ? $"{localizedText?["ExpressInstall"]?["Header"]}" : $"{localizedText?["CustomInstall"]?["Header"]}";
 
             // Step title
-            string stepTitle = patcherLang == "en"
+            string stepTitle = patcherLang == PatcherLanguage.en
                 ? "Insert SD Card / USB Drive (if applicable)"
                 : $"{localizedText?["SDSetup"]?["stepTitle"]}";
 
             // After passing this step text
-            string afterPassingThisStep = patcherLang == "en"
+            string afterPassingThisStep = patcherLang == PatcherLanguage.en
                 ? "After passing this step, any user interaction won't be needed, so sit back and relax!"
                 : $"{localizedText?["SDSetup"]?["afterPassingThisStep"]}";
 
             // Download to SD card text
-            string downloadToSD = patcherLang == "en"
+            string downloadToSD = patcherLang == PatcherLanguage.en
                 ? "You can download everything directly to your Wii SD Card / USB Drive if you insert it before starting the patching\nprocess. Otherwise, everything will be saved in the same folder as this patcher on your computer."
                 : $"{localizedText?["SDSetup"]?["downloadToSD"]}";
 
             // User Choices
-            string startOption = patcherLang == "en"
+            string startOption = patcherLang == PatcherLanguage.en
                 ? sdcard != null ? "Start" : "Start without SD Card / USB Drive"
                 : sdcard != null ? $"{localizedText?["SDSetup"]?["start_withSD"]}" : $"{localizedText?["SDSetup"]?["start_noSD"]}";
 
             // User Choices
-            string manualDetection = patcherLang == "en"
+            string manualDetection = patcherLang == PatcherLanguage.en
                 ? "Manually Select SD Card / USB Drive Path"
                 : $"{localizedText?["SDSetup"]?["manualDetection"]}";
 
             // SD card detected text
-            string sdDetected = patcherLang == "en"
+            string sdDetected = patcherLang == PatcherLanguage.en
                 ? sdcard != null ? $"SD card detected: [bold lime]{sdcard}[/]" : ""
                 : sdcard != null ? $"{localizedText?["SDSetup"]?["sdDetected"]}: [bold lime]{sdcard}[/]" : "";
 
             // Go Back to Main Menu Text
-            string goBackToMainMenu = patcherLang == "en"
+            string goBackToMainMenu = patcherLang == PatcherLanguage.en
                 ? "Go Back to Main Menu"
                 : $"{localizedText?["ExpressInstall"]?["SDSetup"]?["goBackToMainMenu"]}";
 
@@ -1419,37 +1414,37 @@ class WiiLink_Patcher
                 PrintHeader();
 
                 // Change header depending on if it's Express Install or Custom Install
-                string installType = patcherLang == "en"
+                string installType = patcherLang == PatcherLanguage.en
                     ? isCustomSetup ? "Custom Install" : "Express Install"
                     : isCustomSetup ? $"{localizedText?["ExpressInstall"]?["Header"]}" : $"{localizedText?["CustomInstall"]?["Header"]}";
-                string stepNum = patcherLang == "en"
+                string stepNum = patcherLang == PatcherLanguage.en
                     ? isCustomSetup ? "Step 5" : (!installWC24 ? "Step 5" : "Step 8")
                     : isCustomSetup ? $"{localizedText?["WADFolderCheck"]?["ifCustom"]?["stepNum"]}" : $"{localizedText?["WADFolderCheck"]?["ifExpress"]?[installWC24 ? "ifWC24" : "ifNoWC24"]?["stepNum"]}";
 
                 AnsiConsole.MarkupLine($"[bold lime]{installType}[/]\n");
 
                 // Step title
-                string stepTitle = patcherLang == "en"
+                string stepTitle = patcherLang == PatcherLanguage.en
                     ? "WAD folder detected"
                     : $"{localizedText?["WADFolderCheck"]?["stepTitle"]}";
 
                 AnsiConsole.MarkupLine($"[bold]{stepNum}: {stepTitle}[/]\n");
 
                 // WAD folder detected text
-                string wadFolderDetected = patcherLang == "en"
+                string wadFolderDetected = patcherLang == PatcherLanguage.en
                     ? "A [bold]WAD[/] folder has been detected in the current directory. This folder is used to store the WAD files that are downloaded during the patching process. If you choose to delete this folder, it will be recreated when you start the patching process again."
                     : $"{localizedText?["WADFolderCheck"]?["wadFolderDetected"]}";
 
                 AnsiConsole.MarkupLine($"{wadFolderDetected}\n");
 
                 // User Choices
-                string deleteWADFolder = patcherLang == "en"
+                string deleteWADFolder = patcherLang == PatcherLanguage.en
                     ? "Delete WAD folder"
                     : $"{localizedText?["WADFolderCheck"]?["deleteWADFolder"]}";
-                string keepWADFolder = patcherLang == "en"
+                string keepWADFolder = patcherLang == PatcherLanguage.en
                     ? "Keep WAD folder"
                     : $"{localizedText?["WADFolderCheck"]?["keepWADFolder"]}";
-                string goBackToMainMenu = patcherLang == "en"
+                string goBackToMainMenu = patcherLang == PatcherLanguage.en
                     ? "Go Back to Main Menu"
                     : $"{localizedText?["WADFolderCheck"]?["goBackToMainMenu"]}";
 
@@ -1471,7 +1466,7 @@ class WiiLink_Patcher
                             AnsiConsole.MarkupLine($"[bold red]ERROR:[/] {e.Message}\n");
 
                             // Press any key to try again
-                            string pressAnyKey = patcherLang == "en"
+                            string pressAnyKey = patcherLang == PatcherLanguage.en
                                 ? "Press any key to try again..."
                                 : $"{localizedText?["WADFolderCheck"]?["pressAnyKey"]}";
                             AnsiConsole.MarkupLine($"{pressAnyKey}\n");
@@ -1514,24 +1509,22 @@ class WiiLink_Patcher
         // Demae version text to be used in the patching progress for Demae Channel (eg. "Food Channel (English) [Standard]")
         string demaeVerTxt = demaeVersion == DemaeVersion.Standard
             ? "Standard"
-            : demaeVersion == DemaeVersion.Dominos
-                ? "Domino's"
-                : "Deliveroo";
+            : "Domino's";
 
-        // Define Japanese channel titles
-        string demae_title = patcherLang == "en" // Demae Channel
+        // Define WiiLink channels titles
+        string demae_title = patcherLang == PatcherLanguage.en // Demae Channel
             ? lang == Language.English
                 ? $"Food Channel [bold](English)[/] [bold][[{demaeVerTxt}]][/]"
                 : $"Demae Channel [bold](Japanese)[/] [bold][[{demaeVerTxt}]][/]"
             : $"{localizedText?["ChannelNames"]?[$"{lang}]?[${(lang == Language.English ? "food" : "demae")}"]} [bold]({lang})[/] [bold][[{demaeVerTxt}]][/]";
 
-        string wiiroom_title = patcherLang == "en" // Wii no Ma
+        string wiiroom_title = patcherLang == PatcherLanguage.en // Wii no Ma
             ? lang == Language.English
                 ? "Wii Room [bold](English)[/]"
                 : "Wii no Ma [bold](Japanese)[/]"
             : $"{localizedText?["ChannelNames"]?[$"{lang}"]?[$"{(lang == Language.English ? "wiiRoom" : "wiiNoMa")}"]} [bold]({lang})[/]";
 
-        string digicam_title = patcherLang == "en" // Digicam Print Channel
+        string digicam_title = patcherLang == PatcherLanguage.en // Digicam Print Channel
             ? lang == Language.English
                 ? "Photo Prints Channel [bold](English)[/]"
                 : "Digicam Print Channel [bold](Japanese)[/]"
@@ -1548,22 +1541,21 @@ class WiiLink_Patcher
         // Define and add WC24 channel titles to the channelMessages dictionary (if applicable)
         if (installWC24)
         {
-            string NCTitle = patcherLang == "en" // Nintendo Channel
+            string NCTitle = patcherLang == PatcherLanguage.en // Nintendo Channel
                 ? $"{(nc_reg == Region.USA || nc_reg == Region.PAL ? "Nintendo Channel" : "Minna no Nintendo Channel")} [bold]({nc_reg})[/]"
                 : $"{localizedText?["ChannelNames"]?[(nc_reg == Region.USA || nc_reg == Region.PAL ? "International" : "Japanese")]?["nintendoChn"]} [bold]({nc_reg})[/]";
 
-            string forecastTitle = patcherLang == "en" // Forecast Channel
+            string forecastTitle = patcherLang == PatcherLanguage.en // Forecast Channel
                 ? $"Forecast Channel [bold]({forecast_reg})[/]"
                 : $"{localizedText?["ChannelNames"]?["International"]?["forecastChn"]} [bold]({forecast_reg})[/]";
 
-            string evcTitle = patcherLang == "en" // Everybody Votes Channel
+            string evcTitle = patcherLang == PatcherLanguage.en // Everybody Votes Channel
                 ? $"Everybody Votes Channel [bold]({evc_reg})[/]"
                 : $"{localizedText?["ChannelNames"]?["International"]?["everybodyVotes"]} [bold]({evc_reg})[/]";
 
             channelMessages.Add("nc", NCTitle);
             channelMessages.Add("forecast", forecastTitle);
             channelMessages.Add("evc", evcTitle);
-            //channelMessages.Add("ios31", $"{(platformType == Platform.Wii ? "IOS31 Patch [bold][[Wii]][/]" : "IOS31 Patches [bold][[vWii]][/]")}");
         }
 
         //// Setup patching process list ////
@@ -1595,7 +1587,7 @@ class WiiLink_Patcher
         patchingProgress_express.Clear();
         patchingProgress_express.Add("downloading", "in_progress");
 
-        // Patching Japanese channels
+        // Patching WiiLink channels
         foreach (string channel in new string[] { "wiiroom", "digicam", "demae" })
             patchingProgress_express.Add(channel, "not_started");
 
@@ -1619,10 +1611,10 @@ class WiiLink_Patcher
             PrintHeader();
 
             // Progress bar and completion display
-            string patching = patcherLang == "en"
+            string patching = patcherLang == PatcherLanguage.en
                 ? "Patching... this can take some time depending on the processing speed (CPU) of your computer."
                 : $"{localizedText?["PatchingProgress"]?["patching"]}";
-            string progress = patcherLang == "en"
+            string progress = patcherLang == PatcherLanguage.en
                 ? "Progress"
                 : $"{localizedText?["PatchingProgress"]?["progress"]}";
             AnsiConsole.MarkupLine($"[bold][[*]] {patching}[/]\n");
@@ -1634,23 +1626,22 @@ class WiiLink_Patcher
 
             // Calculate progress bar
             counter_done = (int)((float)percentage / 10.0f);
+
+            // Display progress bar
             StringBuilder progressBar = new("[[");
-            for (int i = 0; i < counter_done; i++)
-            {
+            for (int i = 0; i < counter_done; i++) // Add completed blocks
                 progressBar.Append("[bold lime]■[/]");
-            }
-            for (int i = counter_done; i < 10; i++)
-            {
+            for (int i = counter_done; i < 10; i++) // Add empty blocks
                 progressBar.Append(" ");
-            }
             progressBar.Append("]]");
+
             AnsiConsole.Markup(progressBar.ToString());
 
             // Display percentage
-            string percentComplete = patcherLang == "en"
+            string percentComplete = patcherLang == PatcherLanguage.en
                 ? "completed"
                 : $"{localizedText?["PatchingProgress"]?["percentComplete"]}";
-            string pleaseWait = patcherLang == "en"
+            string pleaseWait = patcherLang == PatcherLanguage.en
                 ? "Please wait while the patching process is in progress..."
                 : $"{localizedText?["PatchingProgress"]?["pleaseWait"]}";
             AnsiConsole.Markup($" [bold]{percentage}%[/] {percentComplete}\n\n");
@@ -1659,10 +1650,10 @@ class WiiLink_Patcher
             //// Display progress for each channel ////
 
             // Pre-Patching Section: Downloading files
-            string prePatching = patcherLang == "en"
+            string prePatching = patcherLang == PatcherLanguage.en
                 ? "Pre-Patching"
                 : $"{localizedText?["PatchingProgress"]?["prePatching"]}";
-            string downloadingFiles = patcherLang == "en"
+            string downloadingFiles = patcherLang == PatcherLanguage.en
                 ? "Downloading files..."
                 : $"{localizedText?["PatchingProgress"]?["downloadingFiles"]}";
             AnsiConsole.MarkupLine($"[bold]{prePatching}:[/]");
@@ -1679,11 +1670,11 @@ class WiiLink_Patcher
                     break;
             }
 
-            // Patching Section: Patching Japanese channels
-            string patchingJapaneseChannels = patcherLang == "en"
-                ? "Patching Japanese channels"
-                : $"{localizedText?["PatchingProgress"]?["patchingJapaneseChannels"]}";
-            AnsiConsole.MarkupLine($"\n[bold]{patchingJapaneseChannels}:[/]");
+            // Patching Section: Patching WiiLink channels
+            string patchingWiiLinkChannels = patcherLang == PatcherLanguage.en
+                ? "Patching WiiLink channels"
+                : $"{localizedText?["PatchingProgress"]?["patchingWiiLinkChannels"]}";
+            AnsiConsole.MarkupLine($"\n[bold]{patchingWiiLinkChannels}:[/]");
             foreach (string channel in new string[] { "wiiroom", "digicam", "demae" })
             {
                 switch (patchingProgress_express[channel])
@@ -1700,8 +1691,8 @@ class WiiLink_Patcher
                 }
             }
 
-            // Patching Kirby TV Channel (if applicable) in Japanese Channels section
-            string kirbyTVChannel = patcherLang == "en"
+            // Patching Kirby TV Channel (if applicable) in WiiLink Channels section
+            string kirbyTVChannel = patcherLang == PatcherLanguage.en
                 ? "Kirby TV Channel"
                 : $"{localizedText?["PatchingProgress"]?["kirbyTVChannel"]}";
             if (installKirbyTV)
@@ -1721,7 +1712,7 @@ class WiiLink_Patcher
             }
 
             // Patching Section: Patching WiiConnect24 channels (if applicable)
-            string patchingWiiConnect24Channels = patcherLang == "en"
+            string patchingWiiConnect24Channels = patcherLang == PatcherLanguage.en
                 ? "Patching WiiConnect24 Channels"
                 : $"{localizedText?["PatchingProgress"]?["patchingWiiConnect24Channels"]}";
             if (installWC24)
@@ -1746,10 +1737,10 @@ class WiiLink_Patcher
             AnsiConsole.MarkupLine("");
 
             // Post-Patching Section: Finishing up
-            string postPatching = patcherLang == "en"
+            string postPatching = patcherLang == PatcherLanguage.en
                 ? "Post-Patching"
                 : $"{localizedText?["PatchingProgress"]?["postPatching"]}";
-            string finishingUp = patcherLang == "en"
+            string finishingUp = patcherLang == PatcherLanguage.en
                 ? "Finishing up..."
                 : $"{localizedText?["PatchingProgress"]?["finishingUp"]}";
             AnsiConsole.MarkupLine($"[bold]{postPatching}:[/]");
@@ -1785,15 +1776,11 @@ class WiiLink_Patcher
         int partCompleted = 0;
 
         // List of channels to patch
-        List<string> channelsToPatch = new List<string>();
-        foreach (string channel in japaneseChannels_selection)
+        List<string> channelsToPatch = new();
+        foreach (string channel in wiiLinkChannels_selection)
             channelsToPatch.Add(channel);
         foreach (string channel in wiiConnect24Channels_selection)
             channelsToPatch.Add(channel);
-
-        // If any WC24 channels are selected, add IOS31 to the list
-        /*         if (wiiConnect24Channels_selection.Count > 0)
-                    channelsToPatch.Add("ios31"); */
 
         // Set up patching progress dictionary
         patchingProgress_custom.Clear(); // Flush dictionary
@@ -1802,7 +1789,7 @@ class WiiLink_Patcher
             patchingProgress_custom.Add(channel, "not_started");
         patchingProgress_custom.Add("finishing", "not_started"); // Finishing up
 
-        // Give each Japanese channel a proper name
+        // Give each WiiLink channel a proper name
         var channelMap = new Dictionary<string, string>()
         {
             { "wiiroom_en", "Wii Room [bold](English)[/]" },
@@ -1812,7 +1799,6 @@ class WiiLink_Patcher
             { "food_en", "Food Channel [bold](Standard) [[English]][/]" },
             { "demae_jp", "Demae Channel [bold](Standard) [[Japanese]][/]" },
             { "food_dominos", "Food Channel [bold](Dominos) [[English]][/]" },
-            { "food_deliveroo", "Food Channel [bold](Deliveroo) [[English]][/]" },
             { "nc_us", "Nintendo Channel [bold](USA)[/]" },
             { "nc_eu", "Nintendo Channel [bold](Europe)[/]" },
             { "mnnc_jp", "Minna no Nintendo Channel [bold](Japan)[/]" },
@@ -1835,7 +1821,6 @@ class WiiLink_Patcher
             { "food_en", () => Demae_Patch(Language.English, DemaeVersion.Standard) },
             { "demae_jp", () => Demae_Patch(Language.Japan, DemaeVersion.Standard) },
             { "food_dominos", () => Demae_Patch(Language.English, DemaeVersion.Dominos) },
-            { "food_deliveroo", () => Demae_Patch(Language.English, DemaeVersion.Deliveroo) },
             { "kirbytv", () => KirbyTV_Patch() },
             { "nc_us", () => NC_Patch(Region.USA) },
             { "nc_eu", () => NC_Patch(Region.PAL) },
@@ -1845,7 +1830,7 @@ class WiiLink_Patcher
             { "forecast_jp", () => Forecast_Patch(Region.Japan) },
             { "evc_us", () => EVC_Patch(Region.USA) },
             { "evc_eu", () => EVC_Patch(Region.PAL) },
-            { "evc_jp", () => EVC_Patch(Region.Japan) }
+            { "evc_jp", () => EVC_Patch(Region.Japan) },
         };
 
         // Create a list of patching functions to execute
@@ -1867,10 +1852,10 @@ class WiiLink_Patcher
             PrintHeader();
 
             // Progress text
-            string patching = patcherLang == "en"
+            string patching = patcherLang == PatcherLanguage.en
                 ? "Patching... this can take some time depending on the processing speed (CPU) of your computer."
                 : $"{localizedText?["PatchingProgress"]?["patching"]}";
-            string progress = patcherLang == "en"
+            string progress = patcherLang == PatcherLanguage.en
                 ? "Progress"
                 : $"{localizedText?["PatchingProgress"]?["progress"]}";
             AnsiConsole.MarkupLine($"[bold][[*]] {patching}[/]\n");
@@ -1884,31 +1869,32 @@ class WiiLink_Patcher
             counter_done = (int)((float)percentage / 10.0f);
 
             // Display progress bar
-            StringBuilder progressBar = new StringBuilder("[[");
-            for (int i = 0; i < counter_done; i++)
+            StringBuilder progressBar = new("[[");
+            for (int i = 0; i < counter_done; i++) // Add completed blocks
                 progressBar.Append("[bold lime]■[/]");
-            for (int i = counter_done; i < 10; i++)
+            for (int i = counter_done; i < 10; i++) // Add empty blocks
                 progressBar.Append(" ");
             progressBar.Append("]]");
 
             AnsiConsole.Markup(progressBar.ToString());
 
             // Display percentage
-            string percentComplete = patcherLang == "en"
+            string percentComplete = patcherLang == PatcherLanguage.en
                 ? "completed"
                 : $"{localizedText?["PatchingProgress"]?["percentComplete"]}";
-            string pleaseWait = patcherLang == "en"
+            string pleaseWait = patcherLang == PatcherLanguage.en
                 ? "Please wait while the patching process is in progress..."
                 : $"{localizedText?["PatchingProgress"]?["pleaseWait"]}";
             AnsiConsole.Markup($" [bold]{percentage}%[/] {percentComplete}\n\n");
+            AnsiConsole.MarkupLine($"{pleaseWait}\n");
 
             //// Display progress for each channel ////
 
             // Pre-Patching Section: Downloading files
-            string prePatching = patcherLang == "en"
+            string prePatching = patcherLang == PatcherLanguage.en
                 ? "Pre-Patching"
                 : $"{localizedText?["PatchingProgress"]?["prePatching"]}";
-            string downloadingFiles = patcherLang == "en"
+            string downloadingFiles = patcherLang == PatcherLanguage.en
                 ? "Downloading files..."
                 : $"{localizedText?["PatchingProgress"]?["downloadingFiles"]}";
             AnsiConsole.MarkupLine($"[bold]{prePatching}:[/]");
@@ -1925,13 +1911,13 @@ class WiiLink_Patcher
                     break;
             }
 
-            // Patching Section: Patching Japanese channels
-            if (japaneseChannels_selection.Count > 0)
+            // Patching Section: Patching WiiLink channels
+            if (wiiLinkChannels_selection.Count > 0)
             {
-                string patchingJapaneseChannels = patcherLang == "en"
-                    ? "Patching Japanese Channels"
-                    : $"{localizedText?["PatchingProgress"]?["patchingJapaneseChannels"]}";
-                AnsiConsole.MarkupLine($"\n[bold]{patchingJapaneseChannels}:[/]");
+                string patchingWiiLinkChannels = patcherLang == PatcherLanguage.en
+                    ? "Patching WiiLink Channels"
+                    : $"{localizedText?["PatchingProgress"]?["patchingWiiLinkChannels"]}";
+                AnsiConsole.MarkupLine($"\n[bold]{patchingWiiLinkChannels}:[/]");
                 foreach (string jpnChannel in channelsToPatch)
                 {
                     List<string> jpnChannels = new() { "wiiroom_en", "wiinoma_jp", "digicam_en", "digicam_jp", "food_en", "demae_jp", "food_dominos", "food_deliveroo", "kirbytv" };
@@ -1957,7 +1943,7 @@ class WiiLink_Patcher
             if (wiiConnect24Channels_selection.Count > 0)
             {
                 //AnsiConsole.MarkupLine("\n[bold]Patching WiiConnect24 Channels:[/]");
-                string patchingWC24Channels = patcherLang == "en"
+                string patchingWC24Channels = patcherLang == PatcherLanguage.en
                     ? "Patching WiiConnect24 Channels"
                     : $"{localizedText?["PatchingProgress"]?["patchingWC24Channels"]}";
                 AnsiConsole.MarkupLine($"\n[bold]{patchingWC24Channels}:[/]");
@@ -1983,10 +1969,10 @@ class WiiLink_Patcher
             }
 
             // Post-Patching Section: Finishing up
-            string postPatching = patcherLang == "en"
+            string postPatching = patcherLang == PatcherLanguage.en
                 ? "Post-Patching"
                 : $"{localizedText?["PatchingProgress"]?["postPatching"]}";
-            string finishingUp = patcherLang == "en"
+            string finishingUp = patcherLang == PatcherLanguage.en
                 ? "Finishing up..."
                 : $"{localizedText?["PatchingProgress"]?["finishingUp"]}";
             AnsiConsole.MarkupLine($"\n[bold]{postPatching}:[/]");
@@ -2018,17 +2004,17 @@ class WiiLink_Patcher
                     patchingProgress_custom["downloading"] = "done";
                     patchingProgress_custom[channelsToPatch[0]] = "in_progress";
                     break;
-                case int n when (n > 1 && n < totalChannels + 1):
+                case int n when n > 1 && n < totalChannels + 1:
                     // If we're on a channel that's not the first or last, mark the previous channel as done and the current channel as in progress
                     patchingProgress_custom[channelsToPatch[partCompleted - 2]] = "done";
                     patchingProgress_custom[channelsToPatch[partCompleted - 1]] = "in_progress";
                     break;
-                case int n when (n == totalChannels + 1):
+                case int n when n == totalChannels + 1:
                     // If we're on the last channel, mark the previous channel as done and finishing as in progress
                     patchingProgress_custom[channelsToPatch[partCompleted - 2]] = "done";
                     patchingProgress_custom["finishing"] = "in_progress";
                     break;
-                case int n when (n == totalChannels + 2):
+                case int n when n == totalChannels + 2:
                     // If we're done patching, mark finishing as done
                     patchingProgress_custom["finishing"] = "done";
                     break;
@@ -2084,18 +2070,13 @@ class WiiLink_Patcher
                 DownloadPatch("Dominos", $"Dominos_1.delta", "Dominos_1.delta", "Demae Channel (Dominos)");
                 DownloadPatch("Dominos", $"Dominos_2.delta", "Dominos_2.delta", "Demae Channel (Dominos)");
                 break;
-            case DemaeVersion.Deliveroo:
-                DownloadPatch("Deliveroo", $"Deliveroo_0.delta", "Deliveroo_0.delta", "Demae Channel (Deliveroo)");
-                DownloadPatch("Deliveroo", $"Deliveroo_1.delta", "Deliveroo_1.delta", "Demae Channel (Deliveroo)");
-                DownloadPatch("Deliveroo", $"Deliveroo_2.delta", "Deliveroo_2.delta", "Demae Channel (Deliveroo)");
-                break;
         }
 
         // Download yawmME from OSC for installing WADs on the Wii
         DownloadOSCApp("yawmME");
 
-        // Downloading Get Console ID (for Demae Domino's and Deliveroo) from OSC
-        if (demaeVersion == DemaeVersion.Dominos || demaeVersion == DemaeVersion.Deliveroo)
+        // Downloading Get Console ID (for Demae Domino's) from OSC
+        if (demaeVersion == DemaeVersion.Dominos)
             DownloadOSCApp("GetConsoleID");
 
         // Download WC24 patches if applicable
@@ -2106,6 +2087,7 @@ class WiiLink_Patcher
 
             // Forecast Channel
             DownloadPatch("forecast", $"Forecast_1.delta", "Forecast_1.delta", "Forecast Channel");
+            DownloadPatch("forecast", $"Forecast_5.delta", "Forecast_5.delta", "Forecast Channel");
 
             // Download AnyGlobe_Changer from OSC for use with the Forecast Channel
             DownloadOSCApp("AnyGlobe_Changer");
@@ -2117,19 +2099,17 @@ class WiiLink_Patcher
             // Download EVC-Transfer-Tool from OSC for use with the Everybody Votes Channel
             DownloadOSCApp("EVC-Transfer-Tool");
 
-            // Download IOS31 patch based on platform type
-            /*             if (platformType == Platform.Wii)
-                        {
-                            DownloadPatch("IOS31", $"IOS31_Wii.delta", "IOS31_Wii.delta", "IOS31 Patch (Wii)");
-                        } else {
-                            DownloadPatch("IOS31", $"IOS31_vWii_8.delta", "IOS31_vWii_8.delta", "IOS31 Patch (vWii)");
-                            DownloadPatch("IOS31", $"IOS31_vWii_E.delta", "IOS31_vWii_E.delta", "IOS31 Patch (vWii)");
-                        } */
+            // Download ww-43db-patcher for vWii if applicable
+            if (platformType == Platform.vWii)
+                DownloadOSCApp("ww-43db-patcher");
         }
 
         // Kirby TV Channel (only if user chose to install it)
         if (installKirbyTV)
             DownloadPatch("ktv", $"ktv_2.delta", "KirbyTV_2.delta", "Kirby TV Channel");
+
+        // Install the WiiLink Mail Patcher
+        DownloadOSCApp("WiiLink-Mail-Patcher");
 
         // Downloading stuff is finished!
         patchingProgress_express["downloading"] = "done";
@@ -2144,17 +2124,13 @@ class WiiLink_Patcher
         return (start, end);
     }
 
-    // Custom Install (Part 1 - Select Japanese channels)
-    static void CustomInstall_JapaneseChannel_Setup()
+    // Custom Install (Part 1 - Select WiiLink channels)
+    static void CustomInstall_WiiLinkChannels_Setup()
     {
-        task = "Custom Install (Part 1 - Select Japanese channels)";
+        task = "Custom Install (Part 1 - Select WiiLink channels)";
 
-        // Flush the list of selected channels (in case the user goes back to the previous menu)
-        japaneseChannels_selection.Clear();
-        wiiConnect24Channels_selection.Clear();
-
-        // Define a dictionary to map channel names to easy-to-read format
-        var channelMap = new Dictionary<string, string>()
+        // Define a dictionary to map the Japanese channel names to easy-to-read format
+        var wiiLinkChannelMap = new Dictionary<string, string>()
         {
             { "Wii Room [bold](English)[/]", "wiiroom_en" },
             { "Wii no Ma [bold](Japanese)[/]", "wiinoma_jp" },
@@ -2163,170 +2139,11 @@ class WiiLink_Patcher
             { "Food Channel [bold](Standard) [[English]][/]", "food_en" },
             { "Demae Channel [bold](Standard) [[Japanese]][/]", "demae_jp" },
             { "Food Channel [bold](Dominos) [[English]][/]", "food_dominos" },
-            { "Food Channel [bold](Deliveroo) [[English]][/]", "food_deliveroo" },
             { "Kirby TV Channel", "kirbytv" }
         };
 
-        // Initialize selection array to "Not selected" using LINQ
-        string[] selected = channelMap.Values.Select(_ => "[grey]Not selected[/]").ToArray();
-
-        // Page setup
-        const int ITEMS_PER_PAGE = 9;
-        int currentPage = 1;
-
-        while (true)
-        {
-            PrintHeader();
-
-            // Print title
-            //AnsiConsole.MarkupLine("[bold lime]Custom Install[/]");
-            string customInstall = patcherLang == "en"
-                ? "Custom Install"
-                : $"{localizedText?["CustomSetup"]?["Header"]}";
-            AnsiConsole.MarkupLine($"[bold lime]{customInstall}[/]\n");
-
-            //AnsiConsole.MarkupLine("[bold]Step 1:[/] Select Japanese channel(s) to install\n");
-            // Print step number and title
-            string stepNum = patcherLang == "en"
-                ? "Step 1"
-                : $"{localizedText?["CustomSetup"]?["japaneseChannel_Setup"]?["stepNum"]}";
-            string stepTitle = patcherLang == "en"
-                ? "Select Japanese channel(s) to install"
-                : $"{localizedText?["CustomSetup"]?["japaneseChannel_Setup"]?["stepTitle"]}";
-            AnsiConsole.MarkupLine($"[bold]{stepNum}:[/] {stepTitle}\n");
-
-            // Display Japanese channel selection menu
-            //AnsiConsole.MarkupLine("[bold]Select Japanese channel(s) to install:[/]\n");
-            string selectJapanese = patcherLang == "en"
-                ? "Select Japanese channel(s) to install:"
-                : $"{localizedText?["CustomSetup"]?["japaneseChannel_Setup"]?["selectJapanese"]}";
-            AnsiConsole.MarkupLine($"[bold]{selectJapanese}[/]\n");
-            var grid = new Grid();
-
-            // Add channels to grid
-            grid.AddColumn();
-            grid.AddColumn();
-
-            // Calculate the start and end indices for the items on the current page
-            (int start, int end) = GetPageIndices(currentPage, channelMap.Count, ITEMS_PER_PAGE);
-
-            // Display list of channels
-            for (int i = start; i < end; i++)
-            {
-                KeyValuePair<string, string> channel = channelMap.ElementAt(i);
-                grid.AddRow($"[bold]{i - start + 1}.[/] {channel.Key}", selected[i]);
-            }
-
-            AnsiConsole.Write(grid);
-            Console.WriteLine();
-
-            // Page navigation
-            double totalPages = Math.Ceiling((double)channelMap.Count / ITEMS_PER_PAGE);
-
-            // Only display page navigation and number if there's more than one page
-            if (totalPages > 1)
-            {
-                // If the current page is greater than 1, display a bold white '<' for previous page navigation
-                // Otherwise, display a grey '<'
-                AnsiConsole.Markup(currentPage > 1 ? "[bold white]<[/] " : "[grey]<[/] ");
-
-                // Print page number
-                string pageNum = patcherLang == "en"
-                    ? $"Page {currentPage} of {totalPages}"
-                    : $"{localizedText?["CustomSetup"]?["pageNum"]}"
-                        .Replace("{currentPage}", currentPage.ToString())
-                        .Replace("{totalPages}", totalPages.ToString());
-                AnsiConsole.Markup($"[bold]{pageNum}[/] ");
-
-                // If the current page is less than total pages, display a bold white '>' for next page navigation
-                // Otherwise, display a grey '>'
-                AnsiConsole.Markup(currentPage < totalPages ? "[bold white]>[/]" : "[grey]>[/]");
-
-
-                // Print instructions
-                //AnsiConsole.MarkupLine(" [grey](Press [bold white]<-[/] or [bold white]->[/] to navigate pages)[/]\n");
-                string pageInstructions = patcherLang == "en"
-                    ? "(Press [bold white]<-[/] or [bold white]->[/] to navigate pages)"
-                    : $"{localizedText?["CustomSetup"]?["pageInstructions"]}";
-                AnsiConsole.MarkupLine($" [grey]{pageInstructions}[/]\n");
-            }
-
-            string regInstructions = patcherLang == "en"
-                ? "< Press [bold white]a number[/] to select/deselect a channel, [bold white]ENTER[/] to continue, [bold white]Backspace[/] to go back, [bold white]ESC[/] to go back to exit setup >"
-                : $"{localizedText?["CustomSetup"]?["regInstructions"]}";
-            AnsiConsole.MarkupLine($"[grey]{regInstructions}[/]\n");
-
-            // Print regular instructions
-            //AnsiConsole.MarkupLine("[grey]< Press [bold white]a number[/] to select/deselect a channel, [bold white]ENTER[/] to continue, [bold white]Backspace[/] to go back, [bold white]ESC[/] to go back to exit setup >[/]\n");
-
-            // Generate the choice string dynamically
-            string choices = string.Join("", Enumerable.Range(1, ITEMS_PER_PAGE).Select(n => n.ToString()));
-            int choice = UserChoose(choices);
-
-            // Handle page navigation
-            if (choice == -99 && currentPage > 1) // Left arrow
-            {
-                currentPage--;
-            }
-            else if (choice == 99 && currentPage < totalPages) // Right arrow
-            {
-                currentPage++;
-            }
-
-            // Not selected and Selected strings
-            string notSelected = patcherLang == "en"
-                ? "Not selected"
-                : $"{localizedText?["CustomSetup"]?["notSelected"]}";
-            string selectedText = patcherLang == "en"
-                ? "Selected"
-                : $"{localizedText?["CustomSetup"]?["selected"]}";
-
-            // Handle user input
-            switch (choice)
-            {
-                case -1: // Escape
-                case -2: // Backspace
-                    japaneseChannels_selection.Clear();
-                    wiiConnect24Channels_selection.Clear();
-                    MainMenu();
-                    break;
-                case 0: // Enter
-                    // Save selected channels to global variable if any are selected
-                    foreach (string channel in channelMap.Values.Where(selected.Contains))
-                    {
-                        japaneseChannels_selection.Add(channel);
-                    }
-
-                    CustomInstall_WiiConnect24_Setup();
-                    break;
-                default:
-                    if (choice >= 1 && choice <= Math.Min(ITEMS_PER_PAGE, channelMap.Count - start))
-                    {
-                        int index = start + choice - 1;
-                        string channelName = channelMap.Values.ElementAt(index);
-                        if (selected.Contains(channelName))
-                        {
-                            selected = selected.Where(val => val != channelName).ToArray();
-                            selected[index] = $"[grey]{notSelected}[/]";
-                        }
-                        else
-                        {
-                            selected = selected.Append(channelName).ToArray();
-                            selected[index] = $"[bold lime]{selectedText}[/]";
-                        }
-                    }
-                    break;
-            }
-        }
-    }
-
-    // Custom Install (Part 2 - Select WiiConnect24 channels)
-    static void CustomInstall_WiiConnect24_Setup()
-    {
-        task = "Custom Install (Part 2 - Select WiiConnect24 channels)";
-
-        // Define a dictionary to map channel names to easy-to-read format
-        var channelMap = new Dictionary<string, string>()
+        // Define a dictionary to map the WC24 channel names to easy-to-read format
+        var wc24ChannelMap = new Dictionary<string, string>()
         {
             { "Nintendo Channel [bold](USA)[/]", "nc_us" },
             { "Nintendo Channel [bold](Europe)[/]", "nc_eu" },
@@ -2337,10 +2154,17 @@ class WiiLink_Patcher
             { "Everybody Votes Channel [bold](USA)[/]", "evc_us" },
             { "Everybody Votes Channel [bold](Europe)[/]", "evc_eu" },
             { "Everybody Votes Channel [bold](Japan)[/]", "evc_jp" }
+            //{ "Check Mii Out Channel [bold](USA)[/]", "cmoc_us" },
+            //{ "Mii Contest Channel [bold](Europe)[/]", "mcc_eu" },
+            //{ "Mii Contest Channel [bold](Japan)[/]", "mcc_jp" }
         };
 
-        // Initialize selection array to "Not selected" using LINQ
-        string[] selected = channelMap.Values.Select(_ => "[grey]Not selected[/]").ToArray();
+        // Merge the two dictionaries into one
+        var channelMap = wiiLinkChannelMap.Concat(wc24ChannelMap).ToDictionary(x => x.Key, x => x.Value);
+
+        // Initialize selection list to "Not selected" using LINQ
+        if (combinedChannels_selection.Count == 0) // Only do this
+            combinedChannels_selection = channelMap.Values.Select(_ => "[grey]Not selected[/]").ToList();
 
         // Page setup
         const int ITEMS_PER_PAGE = 9;
@@ -2351,28 +2175,25 @@ class WiiLink_Patcher
             PrintHeader();
 
             // Print title
-            //AnsiConsole.MarkupLine("[bold lime]Custom Install[/]\n");
-            string customInstall = patcherLang == "en"
+            string customInstall = patcherLang == PatcherLanguage.en
                 ? "Custom Install"
                 : $"{localizedText?["CustomSetup"]?["Header"]}";
             AnsiConsole.MarkupLine($"[bold lime]{customInstall}[/]\n");
 
-            //AnsiConsole.MarkupLine("[bold]Step 2:[/] Select WiiConnect24 channel(s)\n");
             // Print step number and title
-            string stepNum = patcherLang == "en"
-                ? "Step 2"
-                : $"{localizedText?["CustomSetup"]?["wiiConnect24_Setup"]?["stepNum"]}";
-            string stepTitle = patcherLang == "en"
-                ? "Choose WiiConnect24 channel(s) to install"
-                : $"{localizedText?["CustomSetup"]?["wiiConnect24_Setup"]?["stepTitle"]}";
+            string stepNum = patcherLang == PatcherLanguage.en
+                ? "Step 1"
+                : $"{localizedText?["CustomSetup"]?["wiiLinkChannels_Setup"]?["stepNum"]}";
+            string stepTitle = patcherLang == PatcherLanguage.en
+                ? "Select WiiLink channel(s) to install"
+                : $"{localizedText?["CustomSetup"]?["wiiLinkChannels_Setup"]?["stepTitle"]}";
             AnsiConsole.MarkupLine($"[bold]{stepNum}:[/] {stepTitle}\n");
 
-            // Display WC24 channel selection menu
-            //AnsiConsole.MarkupLine("[bold]Select WiiConnect24 channel(s) to install:[/]\n");
-            string selectWiiConnect24 = patcherLang == "en"
-                ? "Select WiiConnect24 channel(s) to install:"
-                : $"{localizedText?["CustomSetup"]?["wiiConnect24_Setup"]?["selectWiiConnect24"]}";
-            AnsiConsole.MarkupLine($"[bold]{selectWiiConnect24}[/]\n");
+            // Display WiiLink channel selection menu
+            string selectWiiLinkChns = patcherLang == PatcherLanguage.en
+                ? "Select WiiLink channel(s) to install:"
+                : $"{localizedText?["CustomSetup"]?["wiiLinkChannels_Setup"]?["selectWiiLinkChns"]}";
+            AnsiConsole.MarkupLine($"[bold]{selectWiiLinkChns}[/]\n");
             var grid = new Grid();
 
             // Add channels to grid
@@ -2386,7 +2207,17 @@ class WiiLink_Patcher
             for (int i = start; i < end; i++)
             {
                 KeyValuePair<string, string> channel = channelMap.ElementAt(i);
-                grid.AddRow($"[bold]{i - start + 1}.[/] {channel.Key}", selected[i]);
+                grid.AddRow($"[bold][[{i - start + 1}]][/] {channel.Key}", combinedChannels_selection[i]);
+
+                // Add blank rows if there are less than nine pages
+                if (i == end - 1 && end - start < 9)
+                {
+                    int numBlankRows = 9 - (end - start);
+                    for (int j = 0; j < numBlankRows; j++)
+                    {
+                        grid.AddRow("", "");
+                    }
+                }
             }
 
             AnsiConsole.Write(grid);
@@ -2398,34 +2229,34 @@ class WiiLink_Patcher
             // Only display page navigation and number if there's more than one page
             if (totalPages > 1)
             {
-                // If the current page is greater than 1, display a bold white '<' for previous page navigation
-                // Otherwise, display a grey '<'
-                AnsiConsole.Markup(currentPage > 1 ? "[bold white]<[/] " : "[grey]<[/] ");
+                // If the current page is greater than 1, display a bold white '<<' for previous page navigation
+                // Otherwise, display two lines '||'
+                AnsiConsole.Markup(currentPage > 1 ? "[bold white]<<[/] " : "   ");
 
                 // Print page number
-                string pageNum = patcherLang == "en"
+                string pageNum = patcherLang == PatcherLanguage.en
                     ? $"Page {currentPage} of {totalPages}"
                     : $"{localizedText?["CustomSetup"]?["pageNum"]}"
                         .Replace("{currentPage}", currentPage.ToString())
                         .Replace("{totalPages}", totalPages.ToString());
                 AnsiConsole.Markup($"[bold]{pageNum}[/] ");
 
-                // If the current page is less than total pages, display a bold white '>' for next page navigation
-                // Otherwise, display a grey '>'
-                AnsiConsole.Markup(currentPage < totalPages ? "[bold white]>[/]" : "[grey]>[/]");
-
+                // If the current page is less than total pages, display a bold white '>?' for next page navigation
+                // Otherwise, display a space '  '
+                AnsiConsole.Markup(currentPage < totalPages ? "[bold white]>>[/]" : "  ");
 
                 // Print instructions
                 //AnsiConsole.MarkupLine(" [grey](Press [bold white]<-[/] or [bold white]->[/] to navigate pages)[/]\n");
-                string pageInstructions = patcherLang == "en"
+                string pageInstructions = patcherLang == PatcherLanguage.en
                     ? "(Press [bold white]<-[/] or [bold white]->[/] to navigate pages)"
                     : $"{localizedText?["CustomSetup"]?["pageInstructions"]}";
                 AnsiConsole.MarkupLine($" [grey]{pageInstructions}[/]\n");
             }
-            string regInstructions = patcherLang == "en"
+
+            // Print regular instructions
+            string regInstructions = patcherLang == PatcherLanguage.en
                 ? "< Press [bold white]a number[/] to select/deselect a channel, [bold white]ENTER[/] to continue, [bold white]Backspace[/] to go back, [bold white]ESC[/] to go back to exit setup >"
                 : $"{localizedText?["CustomSetup"]?["regInstructions"]}";
-
             AnsiConsole.MarkupLine($"[grey]{regInstructions}[/]\n");
 
             // Generate the choice string dynamically
@@ -2443,10 +2274,10 @@ class WiiLink_Patcher
             }
 
             // Not selected and Selected strings
-            string notSelected = patcherLang == "en"
+            string notSelected = patcherLang == PatcherLanguage.en
                 ? "Not selected"
                 : $"{localizedText?["CustomSetup"]?["notSelected"]}";
-            string selectedText = patcherLang == "en"
+            string selectedText = patcherLang == PatcherLanguage.en
                 ? "Selected"
                 : $"{localizedText?["CustomSetup"]?["selected"]}";
 
@@ -2454,27 +2285,27 @@ class WiiLink_Patcher
             switch (choice)
             {
                 case -1: // Escape
+                case -2: // Backspace
+                    // Clear selection list
+                    wiiLinkChannels_selection.Clear();
                     wiiConnect24Channels_selection.Clear();
-                    japaneseChannels_selection.Clear();
+                    combinedChannels_selection.Clear();
                     MainMenu();
                     break;
-                case -2: // Backspace
-                    wiiConnect24Channels_selection.Clear();
-                    japaneseChannels_selection.Clear();
-                    CustomInstall_JapaneseChannel_Setup();
-                    break;
                 case 0: // Enter
-                    // Save selected channels to global variable if any are selected
-                    foreach (string channel in channelMap.Values.Where(selected.Contains))
+                    // Save selected channels to global variable if any are selected, divide them into WiiLink and WC24 channels
+                    foreach (string channel in channelMap.Values.Where(combinedChannels_selection.Contains))
                     {
-                        wiiConnect24Channels_selection.Add(channel);
+                        if (wiiLinkChannelMap.ContainsValue(channel) && !wiiLinkChannels_selection.Contains(channel))
+                            wiiLinkChannels_selection.Add(channel);
+                        else if (wc24ChannelMap.ContainsValue(channel) && !wiiConnect24Channels_selection.Contains(channel))
+                            wiiConnect24Channels_selection.Add(channel);
                     }
-
-                    // If both coreChannels_selection and wiiConnect24Channels_selection are empty, error out
-                    if (!japaneseChannels_selection.Any() && !wiiConnect24Channels_selection.Any())
+                    // If selection is empty, display error message
+                    if (!channelMap.Values.Any(combinedChannels_selection.Contains))
                     {
                         //AnsiConsole.MarkupLine("\n[bold red]ERROR:[/] You must select at least one channel to proceed!");
-                        string mustSelectOneChannel = patcherLang == "en"
+                        string mustSelectOneChannel = patcherLang == PatcherLanguage.en
                             ? "[bold red]ERROR:[/] You must select at least one channel to proceed!"
                             : $"{localizedText?["CustomSetup"]?["mustSelectOneChannel"]}";
                         AnsiConsole.MarkupLine($"\n{mustSelectOneChannel}");
@@ -2482,26 +2313,23 @@ class WiiLink_Patcher
                         continue;
                     }
 
-                    // If any selected Japanese channels have "_en" in their name, go to SPD setup
-                    if (japaneseChannels_selection.Any(channel => channel.Contains("_en")) || japaneseChannels_selection.Contains("food_dominos") || japaneseChannels_selection.Contains("food_deliveroo"))
-                        CustomInstall_SPD_Setup();
-                    else
-                        CustomInstall_SummaryScreen();
+                    // Go to next step
+                    CustomInstall_ConsolePlatform_Setup();
                     break;
                 default:
                     if (choice >= 1 && choice <= Math.Min(ITEMS_PER_PAGE, channelMap.Count - start))
                     {
                         int index = start + choice - 1;
                         string channelName = channelMap.Values.ElementAt(index);
-                        if (selected.Contains(channelName))
+                        if (combinedChannels_selection.Contains(channelName))
                         {
-                            selected = selected.Where(val => val != channelName).ToArray();
-                            selected[index] = $"[grey]{notSelected}[/]";
+                            combinedChannels_selection = combinedChannels_selection.Where(val => val != channelName).ToList();
+                            combinedChannels_selection[index] = $"[grey]{notSelected}[/]";
                         }
                         else
                         {
-                            selected = selected.Append(channelName).ToArray();
-                            selected[index] = $"[bold lime]{selectedText}[/]";
+                            combinedChannels_selection = combinedChannels_selection.Append(channelName).ToList();
+                            combinedChannels_selection[index] = $"[bold lime]{selectedText}[/]";
                         }
                     }
                     break;
@@ -2509,50 +2337,50 @@ class WiiLink_Patcher
         }
     }
 
-    // Custom Install (Part 3 - Select SPD version)
-    static void CustomInstall_SPD_Setup()
+    // Custom Install (Part 2 - Select Console Platform)
+    static void CustomInstall_ConsolePlatform_Setup()
     {
-        task = "Custom Install (Part 3 - Select SPD version)";
+        task = "Custom Install (Part 2 - Select Console Platform)";
         while (true)
         {
             PrintHeader();
 
             // Print title
-            string customInstall = patcherLang == "en"
+            string customInstall = patcherLang == PatcherLanguage.en
                 ? "Custom Install"
                 : $"{localizedText?["CustomSetup"]?["Header"]}";
             AnsiConsole.MarkupLine($"[bold lime]{customInstall}[/]\n");
 
             // Print step number and title
-            string stepNum = patcherLang == "en"
-                ? "Step 3"
-                : $"{localizedText?["CustomSetup"]?["SPD_Setup"]?["stepNum"]}";
-            string stepTitle = patcherLang == "en"
-                ? "Select WiiLink SPD version"
-                : $"{localizedText?["CustomSetup"]?["SPD_Setup"]?["stepTitle"]}";
+            string stepNum = patcherLang == PatcherLanguage.en
+                ? "Step 2"
+                : $"{localizedText?["CustomSetup"]?["ConsolePlatform_Setup"]?["stepNum"]}";
+            string stepTitle = patcherLang == PatcherLanguage.en
+                ? "Select Console Platform"
+                : $"{localizedText?["CustomSetup"]?["ConsolePlatform_Setup"]?["stepTitle"]}";
             AnsiConsole.MarkupLine($"[bold]{stepNum}:[/] {stepTitle}\n");
 
-            // Display SPD version selection menu
-            string selectSPDVer = patcherLang == "en"
-                ? "Select WiiLink SPD version to install:"
-                : $"{localizedText?["CustomSetup"]?["SPD_Setup"]?["selectSPDVer"]}";
-            AnsiConsole.MarkupLine($"[bold]{selectSPDVer}[/]\n");
+            // Display console platform selection menu
+            string selectConsolePlatform = patcherLang == PatcherLanguage.en
+                ? "Which console platform are you installing these channels on?"
+                : $"{localizedText?["CustomSetup"]?["ConsolePlatform_Setup"]?["selectConsolePlatform"]}";
+            AnsiConsole.MarkupLine($"[bold]{selectConsolePlatform}[/]\n");
 
-            // Print SPD version options
-            string spdVersionWii = patcherLang == "en"
-                ? "WiiLink SPD [bold grey][[Wii]][/]"
-                : $"{localizedText?["CustomSetup"]?["SPD_Setup"]?["spdVersionWii"]}";
-            string spdVersionvWii = patcherLang == "en"
-                ? "WiiLink SPD [bold deepskyblue1][[vWii]][/]"
-                : $"{localizedText?["CustomSetup"]?["SPD_Setup"]?["spdVersionvWii"]}";
-            AnsiConsole.MarkupLine($"[bold]1.[/] {spdVersionWii}");
-            AnsiConsole.MarkupLine($"[bold]2.[/] {spdVersionvWii}\n");
+            // Print Console Platform options
+            string onWii = patcherLang == PatcherLanguage.en
+                ? "[bold grey]Wii[/]"
+                : $"{localizedText?["CustomSetup"]?["ConsolePlatform_Setup"]?["onWii"]}";
+            string onvWii = patcherLang == PatcherLanguage.en
+                ? "[bold deepskyblue1]vWii (Wii U)[/]"
+                : $"{localizedText?["CustomSetup"]?["ConsolePlatform_Setup"]?["onvWii"]}";
+            AnsiConsole.MarkupLine($"[bold]1.[/] {onWii}");
+            AnsiConsole.MarkupLine($"[bold]2.[/] {onvWii}\n");
 
             // Print instructions
-            string spdInstructions = patcherLang == "en"
-                ? "< Press [bold white]a number[/] to select a version, [bold white]Backspace[/] to go back, [bold white]ESC[/] to go back to exit setup >"
-                : $"{localizedText?["CustomSetup"]?["SPD_Setup"]?["spdInstructions"]}";
-            AnsiConsole.MarkupLine($"[grey]{spdInstructions}[/]\n");
+            string platformInstructions = patcherLang == PatcherLanguage.en
+                ? "< Press [bold white]a number[/] to select platform, [bold white]Backspace[/] to go back, [bold white]ESC[/] to go back to exit setup >"
+                : $"{localizedText?["CustomSetup"]?["ConsolePlatform_Setup"]?["platformInstructions"]}";
+            AnsiConsole.MarkupLine($"[grey]{platformInstructions}[/]\n");
 
             int choice = UserChoose("12");
 
@@ -2560,20 +2388,18 @@ class WiiLink_Patcher
             switch (choice)
             {
                 case -1: // Escape
-                    wiiConnect24Channels_selection.Clear();
-                    japaneseChannels_selection.Clear();
+                    combinedChannels_selection.Clear();
                     MainMenu();
                     break;
                 case -2: // Backspace
-                    wiiConnect24Channels_selection.Clear();
-                    CustomInstall_WiiConnect24_Setup();
+                    CustomInstall_WiiLinkChannels_Setup();
                     break;
                 case 1:
-                    spdVersion_custom = Platform.Wii;
+                    platformType_custom = Platform.Wii;
                     CustomInstall_SummaryScreen(showSPD: true);
                     break;
                 case 2:
-                    spdVersion_custom = Platform.vWii;
+                    platformType_custom = Platform.vWii;
                     CustomInstall_SummaryScreen(showSPD: true);
                     break;
                 default:
@@ -2583,12 +2409,12 @@ class WiiLink_Patcher
     }
 
 
-    // Custom Install (Part 4 - Show summary of selected channels to be installed)
+    // Custom Install (Part 3 - Show summary of selected channels to be installed)
     static void CustomInstall_SummaryScreen(bool showSPD = false)
     {
-        task = "Custom Install (Part 4 - Show summary of selected channels to be installed)";
-        // Convert Japanese channel names to proper names
-        var coreChannelMap = new Dictionary<string, string>()
+        task = "Custom Install (Part 3 - Show summary of selected channels to be installed)";
+        // Convert WiiLink channel names to proper names
+        var wiiLinkChannelMap = new Dictionary<string, string>()
         {
             { "wiiroom_en", "● Wii Room [bold](English)[/]" },
             { "wiinoma_jp", "● Wii no Ma [bold](Japanese)[/]" },
@@ -2597,22 +2423,21 @@ class WiiLink_Patcher
             { "food_en", "● Food Channel [bold](Standard) [[English]][/]" },
             { "demae_jp", "● Demae Channel [bold](Standard) [[Japanese]][/]" },
             { "food_dominos", "● Food Channel [bold](Dominos) [[English]][/]" },
-            { "food_deliveroo", "● Food Channel [bold](Deliveroo) [[English]][/]" },
             { "kirbytv", "● Kirby TV Channel" }
         };
 
-        var selectedJPChannels = new List<string>();
-        if (japaneseChannels_selection.Count > 0)
+        var selectedWiiLinkChannels = new List<string>();
+        if (wiiLinkChannels_selection.Count > 0)
         {
-            foreach (string channel in japaneseChannels_selection)
+            foreach (string channel in combinedChannels_selection)
             {
-                if (coreChannelMap.TryGetValue(channel, out string? modifiedChannel))
-                    selectedJPChannels.Add(modifiedChannel);
+                if (wiiLinkChannelMap.TryGetValue(channel, out string? modifiedChannel))
+                    selectedWiiLinkChannels.Add(modifiedChannel);
             }
         }
         else
         {
-            selectedJPChannels.Add("● [grey]N/A[/]");
+            selectedWiiLinkChannels.Add("● [grey]N/A[/]");
         }
 
         // Convert WiiConnect24 channel names to proper names
@@ -2627,31 +2452,31 @@ class WiiLink_Patcher
             { "evc_us", "● Everybody Votes Channel [bold](USA)[/]" },
             { "evc_eu", "● Everybody Votes Channel [bold](Europe)[/]" },
             { "evc_jp", "● Everybody Votes Channel [bold](Japan)[/]" }
+            //{ "cmoc_us", "● Check Mii Out Channel [bold](USA)[/]" },
+            //{ "mcc_eu", "● Mii Contest Channel [bold](Europe)[/]" },
+            //{ "mcc_jp", "● Mii Contest Channel [bold](Japan)[/]" }
         };
 
         var selectedWiiConnect24Channels = new List<string>();
-        if (wiiConnect24Channels_selection.Count > 0)
+        foreach (string channel in combinedChannels_selection)
         {
-            foreach (string channel in wiiConnect24Channels_selection)
-            {
-                if (wiiConnect24ChannelMap.TryGetValue(channel, out string? modifiedChannel))
-                    selectedWiiConnect24Channels.Add(modifiedChannel);
-            }
+            if (wiiConnect24ChannelMap.TryGetValue(channel, out string? modifiedChannel))
+                selectedWiiConnect24Channels.Add(modifiedChannel);
         }
-        else
+
+        if (!selectedWiiConnect24Channels.Any())
         {
             selectedWiiConnect24Channels.Add("● [grey]N/A[/]");
         }
-
         while (true)
         {
             PrintHeader();
 
             // Print title
-            string customInstall = patcherLang == "en"
+            string customInstall = patcherLang == PatcherLanguage.en
                 ? "Custom Install"
                 : $"{localizedText?["CustomSetup"]?["Header"]}";
-            string summaryHeader = patcherLang == "en"
+            string summaryHeader = patcherLang == PatcherLanguage.en
                 ? "Summary of selected channels to be installed:"
                 : $"{localizedText?["CustomSetup"]?["summaryScreen"]?["summaryHeader"]}";
             AnsiConsole.MarkupLine($"[bold lime]{customInstall}[/]\n");
@@ -2663,42 +2488,39 @@ class WiiLink_Patcher
             grid.AddColumn();
 
             // Grid header text
-            string japaneseChannels = patcherLang == "en"
-                ? "Japanese channels:"
-                : $"{localizedText?["CustomSetup"]?["summaryScreen"]?["japaneseChannels"]}";
-            string wiiConnect24Channels = patcherLang == "en"
+            string wiiLinkChannels = patcherLang == PatcherLanguage.en
+                ? "WiiLink channels:"
+                : $"{localizedText?["CustomSetup"]?["summaryScreen"]?["wiiLinkChannels"]}";
+            string wiiConnect24Channels = patcherLang == PatcherLanguage.en
                 ? "WiiConnect24 Channels:"
                 : $"{localizedText?["CustomSetup"]?["summaryScreen"]?["wiiConnect24Channels"]}";
-            string spdVersion = patcherLang == "en"
-                ? "SPD Version:"
-                : $"{localizedText?["CustomSetup"]?["summaryScreen"]?["SPDVersion"]}";
+            string consoleVersion = patcherLang == PatcherLanguage.en
+                ? "Console Platform:"
+                : $"{localizedText?["CustomSetup"]?["summaryScreen"]?["ConsoleVersion"]}";
 
-            if (showSPD)
-            {
-                grid.AddColumn();
-                grid.AddRow($"[bold lime]{japaneseChannels}[/]", $"[bold lime]{wiiConnect24Channels}[/]", $"[bold lime]{spdVersion}[/]");
-                grid.AddRow(string.Join("\n", selectedJPChannels), string.Join("\n", selectedWiiConnect24Channels), spdVersion_custom == Platform.Wii ? "● [bold grey]Wii[/]" : "● [bold deepskyblue1]vWii[/]");
-            }
-            else
-            {
-                grid.AddRow($"[bold lime]{japaneseChannels}[/]", $"[bold lime]{wiiConnect24Channels}[/]");
-                grid.AddRow(string.Join("\n", selectedJPChannels), string.Join("\n", selectedWiiConnect24Channels));
-            }
+            grid.AddColumn();
+
+            grid.AddRow($"[bold lime]{wiiLinkChannels}[/]", $"[bold lime]{wiiConnect24Channels}[/]", $"[bold lime]{consoleVersion}[/]");
+
+            grid.AddRow(string.Join("\n", selectedWiiLinkChannels), string.Join("\n", selectedWiiConnect24Channels),
+
+            platformType_custom == Platform.Wii ? "● [bold grey]Wii[/]" : "● [bold deepskyblue1]vWii (Wii U)[/]");
+
             AnsiConsole.Write(grid);
 
             // Print instructions
-            string prompt = patcherLang == "en"
+            string prompt = patcherLang == PatcherLanguage.en
                 ? "Are you sure you want to install these selected channels?"
                 : $"{localizedText?["CustomSetup"]?["summaryScreen"]?["confirmation"]?["prompt"]}";
 
             // User confirmation strings
-            string yes = patcherLang == "en"
+            string yes = patcherLang == PatcherLanguage.en
                 ? "Yes"
                 : $"{localizedText?["CustomSetup"]?["summaryScreen"]?["confirmation"]?["yes"]}";
-            string noStartOver = patcherLang == "en"
+            string noStartOver = patcherLang == PatcherLanguage.en
                 ? "No, start over"
                 : $"{localizedText?["CustomSetup"]?["summaryScreen"]?["confirmation"]?["noStartOver"]}";
-            string noGoBackToMainMenu = patcherLang == "en"
+            string noGoBackToMainMenu = patcherLang == PatcherLanguage.en
                 ? "No, go back to Main Menu"
                 : $"{localizedText?["CustomSetup"]?["summaryScreen"]?["confirmation"]?["noGoBackToMainMenu"]}";
 
@@ -2718,13 +2540,11 @@ class WiiLink_Patcher
                     SDSetup(isCustomSetup: true);
                     break;
                 case 2: // No, start over
-                    japaneseChannels_selection.Clear();
-                    wiiConnect24Channels_selection.Clear();
-                    CustomInstall_JapaneseChannel_Setup();
+                    combinedChannels_selection.Clear();
+                    CustomInstall_WiiLinkChannels_Setup();
                     break;
                 case 3: // No, go back to main menu
-                    japaneseChannels_selection.Clear();
-                    wiiConnect24Channels_selection.Clear();
+
                     MainMenu();
                     break;
                 default:
@@ -2733,27 +2553,22 @@ class WiiLink_Patcher
         }
     }
 
-    // Download respective patches for selected core and WiiConnect24 channels (and SPD if English is selected for Japanese channels)
+    // Download respective patches for selected core and WiiConnect24 channels (and SPD if English is selected for WiiLink channels)
     static void DownloadCustomPatches(List<string> channelSelection)
     {
         task = "Downloading selected patches";
 
-        // Download SPD if English is selected for Japanese channels (or if Demae Domino's or Deliveroo is selected)
-        if (japaneseChannels_selection.Any(channel => channel.Contains("_en")) || japaneseChannels_selection.Contains("food_dominos") || japaneseChannels_selection.Contains("food_deliveroo"))
-            DownloadSPD(spdVersion_custom);
+        // Download SPD if English is selected for WiiLink channels (or if Demae Domino's is selected)
+        if (wiiLinkChannels_selection.Any(channel => channel.Contains("_en")) || wiiLinkChannels_selection.Contains("food_"))
+            DownloadSPD(platformType_custom);
         else
             Directory.CreateDirectory("WAD");
 
-        // Download IOS31 pacthes if any WC24 channels are selected
-        /*         if (wiiConnect24Channels_selection.Count > 0)
-                {
-                    task = "Downloading IOS31 patches";
-                    DownloadPatch("IOS31", $"IOS31_Wii.delta", "IOS31_Wii.delta", "IOS31 (Wii)");
-                    DownloadPatch("IOS31", $"IOS31_vWii_8.delta", "IOS31_vWii_8.delta", "IOS31 (vWii)");
-                    DownloadPatch("IOS31", $"IOS31_vWii_E.delta", "IOS31_vWii_E.delta", "IOS31 (vWii)");
-                } */
+        // Download ww-43db-patcher for vWii if applicable
+        if (platformType_custom == Platform.vWii)
+            DownloadOSCApp("ww-43db-patcher");
 
-        // Download patches for selected Japanese channels
+        // Download patches for selected WiiLink channels
         foreach (string channel in channelSelection)
         {
             switch (channel)
@@ -2796,13 +2611,6 @@ class WiiLink_Patcher
                     DownloadPatch("Dominos", $"Dominos_2.delta", "Dominos_2.delta", "Food Channel (Domino's)");
                     DownloadOSCApp("GetConsoleID");
                     break;
-                case "food_deliveroo":
-                    task = "Downloading Food Channel (Deliveroo)";
-                    DownloadPatch("Deliveroo", $"Deliveroo_0.delta", "Deliveroo_0.delta", "Food Channel (Deliveroo)");
-                    DownloadPatch("Deliveroo", $"Deliveroo_1.delta", "Deliveroo_1.delta", "Food Channel (Deliveroo)");
-                    DownloadPatch("Deliveroo", $"Deliveroo_2.delta", "Deliveroo_2.delta", "Food Channel (Deliveroo)");
-                    DownloadOSCApp("GetConsoleID");
-                    break;
                 case "nc_us":
                     task = "Downloading Nintendo Channel (USA)";
                     DownloadPatch("nc", $"NC_1_USA.delta", "NC_1_USA.delta", "Nintendo Channel");
@@ -2820,6 +2628,7 @@ class WiiLink_Patcher
                 case "forecast_eu":
                     task = "Downloading Forecast Channel";
                     DownloadPatch("forecast", $"Forecast_1.delta", "Forecast_1.delta", "Forecast Channel");
+                    DownloadPatch("forecast", $"Forecast_5.delta", "Forecast_5.delta", "Forecast Channel");
                     DownloadOSCApp("AnyGlobe_Changer"); // Download AnyGlobe_Changer from OSC for use with the Forecast Channel
                     break;
                 case "evc_us":
@@ -2840,6 +2649,11 @@ class WiiLink_Patcher
                     DownloadPatch("RegSel", "RegSel_1.delta", "RegSel_1.delta", "Region Select");
                     DownloadOSCApp("EVC-Transfer-Tool"); // Download EVC-Transfer-Tool from OSC for use with the Everybody Votes Channel
                     break;
+                case "cmoc_us":
+                case "mcc_eu":
+                case "mcc_jp":
+                    // TODO: Add patch for Check Mii Out Channel / Mii Contest Channel
+                    break;
                 case "kirbytv":
                     task = "Downloading Kirby TV Channel";
                     DownloadPatch("ktv", $"ktv_2.delta", "KirbyTV_2.delta", "Kirby TV Channel");
@@ -2849,25 +2663,32 @@ class WiiLink_Patcher
 
         // Downloading yawmME from OSC
         DownloadOSCApp("yawmME");
+
+        // Install the WiiLink Mail Patcher
+        DownloadOSCApp("WiiLink-Mail-Patcher");
     }
 
     // Patching Wii no Ma
-    static void WiiRoom_Patch(Language lang)
+    static void WiiRoom_Patch(Language language)
     {
         task = "Patching Wii no Ma";
 
         // Dictionary for which files to patch
         var wiiRoomPatchList = new List<KeyValuePair<string, string>>()
         {
-            new($"WiinoMa_0_{lang}", "00000000"),
-            new($"WiinoMa_1_{lang}", "00000001"),
-            new($"WiinoMa_2_{lang}", "00000002")
+            new($"WiinoMa_0_{language}", "00000000"),
+            new($"WiinoMa_1_{language}", "00000001"),
+            new($"WiinoMa_2_{language}", "00000002")
         };
 
         // If English, change channel title to "Wii Room"
-        string wiiRoomTitle = lang == Language.English ? "Wii Room" : "Wii no Ma";
+        string channelTitle = language switch
+        {
+            Language.English => "Wii Room",
+            _ => "Wii no Ma"
+        };
 
-        PatchCoreChannel("WiinoMa", wiiRoomTitle, "000100014843494a", wiiRoomPatchList, lang: lang);
+        PatchCoreChannel("WiinoMa", channelTitle, "000100014843494a", wiiRoomPatchList, lang: language);
 
         // Finished patching Wii no Ma
         patchingProgress_express["wiiroom"] = "done";
@@ -2875,19 +2696,25 @@ class WiiLink_Patcher
     }
 
     // Patching Digicam Print Channel
-    static void Digicam_Patch(Language lang)
+    static void Digicam_Patch(Language language)
     {
         task = "Patching Digicam Print Channel";
 
         // Dictionary for which files to patch
         var digicamPatchList = new List<KeyValuePair<string, string>>()
         {
-            new($"Digicam_0_{lang}", "00000000"),
-            new($"Digicam_1_{lang}", "00000001"),
-            new($"Digicam_2_{lang}", "00000002")
+            new($"Digicam_0_{language}", "00000000"),
+            new($"Digicam_1_{language}", "00000001"),
+            new($"Digicam_2_{language}", "00000002")
         };
 
-        PatchCoreChannel("Digicam", $"{(lang == Language.English ? "Photo Prints Channel" : "Digicam Print Channel")}", "000100014843444a", digicamPatchList, lang: lang);
+        string channelTitle = language switch
+        {
+            Language.English => "Photo Prints Channel",
+            _ => "Digicam Print Channel"
+        };
+
+        PatchCoreChannel("Digicam", channelTitle, "000100014843444a", digicamPatchList, lang: language);
 
         // Finished patching Digicam Print Channel
         patchingProgress_express["digicam"] = "done";
@@ -2895,40 +2722,46 @@ class WiiLink_Patcher
     }
 
     // Patching Demae Channel
-    static void Demae_Patch(Language lang, DemaeVersion demaeVersion)
+    static void Demae_Patch(Language language, DemaeVersion demaeVersion)
     {
         task = "Patching Demae Channel";
 
-        // If language chosen is English, change channel title to "Food Channel", else "Demae Channel"
-        string demaeTitle = lang == Language.English ? "Food Channel" : "Demae Channel";
+        // Assign channel title based on language chosen
+        string channelTitle = language switch
+        {
+            Language.English => "Food Channel",
+            _ => "Demae Channel"
+        };
 
-        // Generate patch list for Demae Channel based on version (Standard, Dominos, Deliveroo)
+        // Generate patch list for Demae Channel based on version (Standard, Dominos)
         List<KeyValuePair<string, string>> GeneratePatchList(string prefix, DemaeVersion version)
         {
-            bool appendLang = version == DemaeVersion.Standard;
+            // Append language to patch name if version is Standard
+            bool appendLang = version switch
+            {
+                DemaeVersion.Standard => true,
+                _ => false
+            };
+
             return new List<KeyValuePair<string, string>>
             {
-                new($"{prefix}_0{(appendLang ? $"_{lang}" : "")}", "00000000"),
-                new($"{prefix}_1{(appendLang ? $"_{lang}" : "")}", "00000001"),
-                new($"{prefix}_2{(appendLang ? $"_{lang}" : "")}", "00000002")
+                new($"{prefix}_0{(appendLang ? $"_{language}" : "")}", "00000000"),
+                new($"{prefix}_1{(appendLang ? $"_{language}" : "")}", "00000001"),
+                new($"{prefix}_2{(appendLang ? $"_{language}" : "")}", "00000002")
             };
         }
 
-        // Map DemaeVersion to patch list and folder name (Patch list, folder name, version text)
-        var demaeData = new Dictionary<DemaeVersion, (List<KeyValuePair<string, string>>, string)>()
+        // Map DemaeVersion to patch list and folder name (Patch list, folder name)
+        var demaeData = new Dictionary<DemaeVersion, (List<KeyValuePair<string, string>>, string)>
         {
             [DemaeVersion.Standard] = (GeneratePatchList("Demae", DemaeVersion.Standard), "Demae"),
-            [DemaeVersion.Dominos] = (GeneratePatchList("Dominos", DemaeVersion.Dominos), "Dominos"),
-            [DemaeVersion.Deliveroo] = (GeneratePatchList("Deliveroo", DemaeVersion.Deliveroo), "Deliveroo")
+            [DemaeVersion.Dominos] = (GeneratePatchList("Dominos", DemaeVersion.Dominos), "Dominos")
         };
 
-        // Get patch list and folder name based on demae_version
+        // Get patch list and folder name for the current version
         var (demaePatchList, folderName) = demaeData[demaeVersion];
 
-        // Get string representation of demaeVersion
-        var demaeVerText = demaeVersion.ToString();
-
-        PatchCoreChannel(folderName, $"{demaeTitle} ({demaeVerText})", "000100014843484a", demaePatchList, lang: lang);
+        PatchCoreChannel(folderName, $"{channelTitle} ({folderName})", "000100014843484a", demaePatchList, lang: language);
 
         // Finished patching Demae Channel
         patchingProgress_express["demae"] = "done";
@@ -2940,7 +2773,10 @@ class WiiLink_Patcher
     {
         task = "Patching Kirby TV Channel";
 
-        PatchWC24Channel("ktv", "Kirby TV Channel", 257, null, "0001000148434d50", new string[] { "KirbyTV_2" }, new string[] { "0000000e" });
+        List<string> patches = new() { "KirbyTV_2" };
+        List<string> appNums = new() { "0000000e" };
+
+        PatchWC24Channel("ktv", $"Kirby TV Channel", 257, null, "0001000148434d50", patches, appNums);
 
         // Finished patching Kirby TV Channel
         patchingProgress_express["kirbytv"] = "done";
@@ -2949,20 +2785,25 @@ class WiiLink_Patcher
 
 
     // Patching Nintendo Channel
-    static void NC_Patch(Region nc_reg)
+    static void NC_Patch(Region region)
     {
         task = "Patching Nintendo Channel";
 
-        // Properly set Nintendo Channel titleID, appNum, and channel_title
-        var channelID = new Dictionary<Region, (string, string, string)>
+        // Define a dictionary to map Region to channelID, appNum, and channel_title
+        Dictionary<Region, (string channelID, string appNum, string channel_title)> regionData = new()
         {
-            {Region.USA, ("0001000148415445", "0000002c", "Nintendo Channel")},
-            {Region.PAL, ("0001000148415450", "0000002d", "Nintendo Channel")},
-            {Region.Japan, ("000100014841544a", "0000003e", "Minna no Nintendo Channel")}
+            { Region.USA, ("0001000148415445", "0000002c", "Nintendo Channel") },
+            { Region.PAL, ("0001000148415450", "0000002d", "Nintendo Channel") },
+            { Region.Japan, ("000100014841544a", "0000003e", "Minna no Nintendo Channel") },
         };
 
-        var (NC_titleID, appNum, channel_title) = channelID[nc_reg];
-        PatchWC24Channel("nc", $"{channel_title}", 1792, nc_reg, NC_titleID, new string[] { $"NC_1_{nc_reg}" }, new string[] { appNum });
+        // Get the data for the current region
+        var (channelID, appNum, channel_title) = regionData[region];
+
+        List<string> patches = new() { $"NC_1_{region}" };
+        List<string> appNums = new() { appNum };
+
+        PatchWC24Channel("nc", $"{channel_title}", 1792, region, channelID, patches, appNums);
 
         // Finished patching Nintendo Channel
         patchingProgress_express["nc"] = "done";
@@ -2970,19 +2811,23 @@ class WiiLink_Patcher
     }
 
     // Patching Forecast Channel
-    static void Forecast_Patch(Region forecast_reg)
+    static void Forecast_Patch(Region region)
     {
         task = "Patching Forecast Channel";
 
         // Properly set Forecast Channel titleID
-        var channelID = new Dictionary<Region, string>
+        string channelID = region switch
         {
-            {Region.USA, "0001000248414645"},
-            {Region.PAL, "0001000248414650"},
-            {Region.Japan, "000100024841464a"}
+            Region.USA => "0001000248414645",
+            Region.PAL => "0001000248414650",
+            Region.Japan => "000100024841464a",
+            _ => throw new NotImplementedException(),
         };
 
-        PatchWC24Channel("forecast", $"Forecast Channel", 7, forecast_reg, channelID[forecast_reg], new string[] { $"Forecast_1" }, new string[] { "0000000d" });
+        List<string> patches = new() { "Forecast_1", "Forecast_5" };
+        List<string> appNums = new() { "0000000d", "0000000f" };
+
+        PatchWC24Channel("forecast", $"Forecast Channel", 7, region, channelID, patches, appNums);
 
         // Finished patching Forecast Channel
         patchingProgress_express["forecast"] = "done";
@@ -2990,27 +2835,62 @@ class WiiLink_Patcher
     }
 
     // Patching Everybody Votes Channel and Region Select
-    static void EVC_Patch(Region evc_reg)
+    static void EVC_Patch(Region region)
     {
 
         //// Patching Everybody Votes Channel
         task = "Patching Everybody Votes Channel";
 
         // Properly set Everybody Votes Channel titleID
-        var channelID = new Dictionary<Region, string>
+        string channelID = region switch
         {
-            {Region.USA, "0001000148414a45"},
-            {Region.PAL, "0001000148414a50"},
-            {Region.Japan, "0001000148414a4a"}
+            Region.USA => "0001000148414a45",
+            Region.PAL => "0001000148414a50",
+            Region.Japan => "0001000148414a4a",
+            _ => throw new NotImplementedException(),
         };
 
-        PatchWC24Channel("evc", $"Everybody Votes Channel", 512, evc_reg, channelID[evc_reg], new string[] { $"EVC_1_{evc_reg}" }, new string[] { "00000019" });
+        List<string> patches = new() { $"EVC_1_{region}" };
+        List<string> appNums = new() { "00000019" };
 
-        //// Patching Region Select
-        RegSel_Patch(evc_reg);
+        PatchWC24Channel("evc", $"Everybody Votes Channel", 512, region, channelID, patches, appNums);
+
+        //// Patching Region Select for Everybody Votes Channel
+        RegSel_Patch(region);
 
         // Finished patching Everybody Votes Channel
         patchingProgress_express["evc"] = "done";
+        patchingProgress_express["finishing"] = "in_progress";
+    }
+
+    // Patching Check Mii Out Channel
+    static void CheckMiiOut_Patch(Region region)
+    {
+        task = "Patching Check Mii Out Channel";
+
+        // Properly set Check Mii Out Channel titleID based on region
+        string channelID = region switch
+        {
+            Region.USA => "0001000148415045",
+            Region.PAL => "0001000148415050",
+            Region.Japan => "000100014841504a",
+            _ => throw new NotImplementedException(),
+        };
+
+        // Set Check Mii Out Channel title based on region
+        string channelTitle = region switch
+        {
+            Region.USA => "Check Mii Out Channel",
+            _ => "Mii Contest Channel",
+        };
+
+        List<string> patches = new() { $"CMOC_1_{region}" };
+        List<string> appNums = new() { "0000000X" };
+
+        PatchWC24Channel("cmoc", $"{channelTitle}", 256, region, channelID, patches, appNums);
+
+        // Finished patching Check Mii Out Channel
+        patchingProgress_express["cmoc"] = "done";
         patchingProgress_express["finishing"] = "in_progress";
     }
 
@@ -3019,38 +2899,20 @@ class WiiLink_Patcher
     {
         task = "Patching Region Select";
 
-        // Properly set Region Select titleID
-        var channelID = new Dictionary<Region, string>
+        // Properly set Region Select titleID based on region
+        string channelID = regSel_reg switch
         {
-            {Region.USA, "0001000848414c45"},
-            {Region.PAL, "0001000848414c50"},
-            {Region.Japan, "0001000848414c4a"}
+            Region.USA => "0001000848414c45",
+            Region.PAL => "0001000848414c50",
+            Region.Japan => "0001000848414c4a",
+            _ => throw new NotImplementedException(),
         };
 
-        //PatchWC24Channel("RegSel", $"Region Select", 2, regSel_reg, channelID[regSel_reg], $"RegSel_1", "00000009");
-        PatchWC24Channel("RegSel", $"Region Select", 2, regSel_reg, channelID[regSel_reg], new string[] { $"RegSel_1" }, new string[] { "00000009" });
+        List<string> patches = new() { "RegSel_1" };
+        List<string> appNums = new() { "00000009" };
+
+        PatchWC24Channel("RegSel", $"Region Select", 2, regSel_reg, channelID, patches, appNums);
     }
-
-    // Patching IOS31
-    /*     static void IOS31_Patch(bool isCustomSetup = false)
-        {
-            task = "Patching IOS31";
-
-            if (!isCustomSetup){ // Patch only the selected IOS31 based on platform
-                if (platformType == Platform.Wii) // Patch only the Wii IOS31
-                    PatchWC24Channel("IOS31", $"IOS31 [Wii]", 3608, null, "000000010000001f", new string[] {$"IOS31_Wii"}, new string[] {"00000016"});
-                else { // Patch only the vWii IOS31
-                    PatchWC24Channel("IOS31", $"IOS31 [vWii]", 3608, null, "000000010000001f", new string[] {$"IOS31_vWii_8", $"IOS31_vWii_E"}, new string[] {"00000037", "00000035"});
-                }
-            } else { // Patch all of them
-                PatchWC24Channel("IOS31", $"IOS31 [Wii]", 3608, null, "000000010000001f", new string[] {$"IOS31_Wii"}, new string[] {"00000016"});
-                PatchWC24Channel("IOS31", $"IOS31 [vWii]", 3608, null, "000000010000001f", new string[] {$"IOS31_vWii_8", $"IOS31_vWii_E"}, new string[] {"00000037", "00000035"});
-            }
-
-            // Finished patching IOS31
-            patchingProgress_express["ios31"] = "done";
-            patchingProgress_express["finishing"] = "in_progress";
-        } */
 
     // Finish SD Copy
     static void FinishSDCopy()
@@ -3061,7 +2923,7 @@ class WiiLink_Patcher
         if (sdcard != null)
         {
             // Copying files to SD card
-            string copyingFiles = patcherLang == "en"
+            string copyingFiles = patcherLang == PatcherLanguage.en
                 ? "Copying files to SD card, which may take a while."
                 : $"{localizedText?["FinishSDCopy"]?["copyingFiles"]}";
             AnsiConsole.MarkupLine($" [bold][[*]] {copyingFiles}[/]\n");
@@ -3075,7 +2937,7 @@ class WiiLink_Patcher
             catch (Exception e)
             {
                 // Error message
-                string pressAnyKey_error = patcherLang == "en"
+                string pressAnyKey_error = patcherLang == PatcherLanguage.en
                     ? "Press any key to try again..."
                     : $"{localizedText?["FinishSDCopy"]?["pressAnyKey_error"]}";
                 AnsiConsole.MarkupLine($"[bold red]ERROR:[/] {e.Message}\n{pressAnyKey_error}");
@@ -3100,11 +2962,16 @@ class WiiLink_Patcher
 
     static void Finished()
     {
+        // Clear all lists (just in case it's Custom Setup)
+        wiiLinkChannels_selection.Clear();
+        wiiConnect24Channels_selection.Clear();
+        combinedChannels_selection.Clear();
+
         while (true)
         {
             PrintHeader();
             // Patching Completed text
-            string completed = patcherLang == "en"
+            string completed = patcherLang == PatcherLanguage.en
                 ? "Patching Completed!"
                 : $"{localizedText?["Finished"]?["completed"]}";
             AnsiConsole.MarkupLine($"[bold slowblink lime]{completed}[/]\n");
@@ -3112,7 +2979,7 @@ class WiiLink_Patcher
             if (sdcard != null)
             {
                 // Every file is in its place text
-                string everyFileInPlace = patcherLang == "en"
+                string everyFileInPlace = patcherLang == PatcherLanguage.en
                     ? "Every file is in its place on your SD Card / USB Drive!"
                     : $"{localizedText?["Finished"]?["withSD/USB"]?["everyFileInPlace"]}";
                 AnsiConsole.MarkupLine($"{everyFileInPlace}\n");
@@ -3120,13 +2987,13 @@ class WiiLink_Patcher
             else
             {
                 // Please connect text
-                string connectDrive = patcherLang == "en"
+                string connectDrive = patcherLang == PatcherLanguage.en
                     ? "Please connect your Wii SD Card / USB Drive and copy the [u]WAD[/] and [u]apps[/] folders to the root (main folder) of your SD Card / USB Drive."
                     : $"{localizedText?["Finished"]?["withoutSD/USB"]?["connectDrive"]}";
                 AnsiConsole.MarkupLine($"{connectDrive}\n");
 
                 // Open the folder text
-                string canFindFolders = patcherLang == "en"
+                string canFindFolders = patcherLang == PatcherLanguage.en
                     ? "You can find these folders in the [u]{curDir}[/] folder of your computer."
                     : $"{localizedText?["Finished"]?["canFindFolders"]}";
                 canFindFolders = canFindFolders.Replace("{curDir}", curDir);
@@ -3134,25 +3001,25 @@ class WiiLink_Patcher
             }
 
             // Please proceed text
-            string pleaseProceed = patcherLang == "en"
-                ? "Please proceed with the tutorial that you can find on [bold lime link]https://wii.guide/wiilink[/]"
+            string pleaseProceed = patcherLang == PatcherLanguage.en
+                ? "Please proceed with the tutorial that you can find on [bold lime link]https://www.wiilink24.com/guide/2installation/[/]"
                 : $"{localizedText?["Finished"]?["pleaseProceed"]}";
             AnsiConsole.MarkupLine($"{pleaseProceed}\n");
 
             // What would you like to do now text
-            string whatWouldYouLikeToDo = patcherLang == "en"
+            string whatWouldYouLikeToDo = patcherLang == PatcherLanguage.en
                 ? "What would you like to do now?"
                 : $"{localizedText?["Finished"]?["whatWouldYouLikeToDo"]}";
             AnsiConsole.MarkupLine($"{whatWouldYouLikeToDo}\n");
 
             // User choices
-            string openFolder = patcherLang == "en"
+            string openFolder = patcherLang == PatcherLanguage.en
                 ? sdcard != null ? "Open the SD Card / USB Drive folder" : "Open the folder"
                 : sdcard != null ? $"{localizedText?["Finished"]?["withSD/USB"]?["openFolder"]}" : $"{localizedText?["Finished"]?["withoutSD/USB"]?["openFolder"]}";
-            string goBackToMainMenu = patcherLang == "en"
+            string goBackToMainMenu = patcherLang == PatcherLanguage.en
                 ? "Go back to the main menu"
                 : $"{localizedText?["Finished"]?["goBackToMainMenu"]}";
-            string exitProgram = patcherLang == "en"
+            string exitProgram = patcherLang == PatcherLanguage.en
                 ? "Exit the program"
                 : $"{localizedText?["Finished"]?["exitProgram"]}";
 
@@ -3193,28 +3060,28 @@ class WiiLink_Patcher
             PrintHeader();
 
             // Manual SD card selection header
-            string header = patcherLang == "en"
+            string header = patcherLang == PatcherLanguage.en
                 ? "Manually Select SD Card / USB Drive Path"
                 : $"{localizedText?["SDCardSelect"]?["header"]}";
             AnsiConsole.MarkupLine($"[bold lime]{header}[/]\n");
 
             string inputMessage = "";
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                inputMessage = patcherLang == "en"
+                inputMessage = patcherLang == PatcherLanguage.en
                     ? "Please enter the drive letter of your SD card/USB drive (e.g. E)"
                     : $"{localizedText?["SDCardSelect"]?["inputMessage"]?["windows"]}";
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                inputMessage = patcherLang == "en"
+                inputMessage = patcherLang == PatcherLanguage.en
                     ? "Please enter the mount name of your SD card/USB drive (e.g. /media/username/Wii)"
                     : $"{localizedText?["SDCardSelect"]?["inputMessage"]?["linux"]}";
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                inputMessage = patcherLang == "en"
+                inputMessage = patcherLang == PatcherLanguage.en
                     ? "Please enter the volume name of your SD card/USB drive (e.g. /Volumes/Wii)"
                     : $"{localizedText?["SDCardSelect"]?["inputMessage"]?["osx"]}";
             AnsiConsole.MarkupLine($"{inputMessage}");
 
             // Type EXIT to go back to previous menu
-            string exitMessage = patcherLang == "en"
+            string exitMessage = patcherLang == PatcherLanguage.en
                 ? "(Type [bold]EXIT[/] to go back to the previous menu)"
                 : $"{localizedText?["SDCardSelect"]?["exitMessage"]}";
             AnsiConsole.MarkupLine($"{exitMessage}\n");
@@ -3222,15 +3089,15 @@ class WiiLink_Patcher
             // New SD card/USB drive text
             string newSDCardMessage = "";
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                newSDCardMessage = patcherLang == "en"
+                newSDCardMessage = patcherLang == PatcherLanguage.en
                     ? "New SD card/USB drive:"
                     : $"{localizedText?["SDCardSelect"]?["newSDCardMessage"]?["windows"]}";
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                newSDCardMessage = patcherLang == "en"
+                newSDCardMessage = patcherLang == PatcherLanguage.en
                     ? "New SD card/USB drive volume:"
                     : $"{localizedText?["SDCardSelect"]?["newSDCardMessage"]?["linux"]}";
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                newSDCardMessage = patcherLang == "en"
+                newSDCardMessage = patcherLang == PatcherLanguage.en
                     ? "New SD card/USB drive volume:"
                     : $"{localizedText?["SDCardSelect"]?["newSDCardMessage"]?["osx"]}";
             AnsiConsole.MarkupLine($"{newSDCardMessage} ");
@@ -3253,7 +3120,7 @@ class WiiLink_Patcher
                 if (sdcard_new?.Length > 1)
                 {
                     // Driver letter must be 1 character text
-                    string driveLetterError = patcherLang == "en"
+                    string driveLetterError = patcherLang == PatcherLanguage.en
                         ? "Drive letter must be 1 character!"
                         : $"{localizedText?["SDCardSelect"]?["driveLetterError"]}";
                     AnsiConsole.MarkupLine($"[bold red]{driveLetterError}[/]");
@@ -3276,7 +3143,7 @@ class WiiLink_Patcher
             if (Path.GetPathRoot(sdcard_new) == Path.GetPathRoot(Path.GetPathRoot(Environment.SystemDirectory)))
             {
                 // You cannot select your boot drive text
-                string bootDriveError = patcherLang == "en"
+                string bootDriveError = patcherLang == PatcherLanguage.en
                     ? "You cannot select your boot drive!"
                     : $"{localizedText?["SDCardSelect"]?["bootDriveError"]}";
                 AnsiConsole.MarkupLine($"[bold red]{bootDriveError}[/]");
@@ -3288,7 +3155,7 @@ class WiiLink_Patcher
             if (sdcard_new == sdcard)
             {
                 // You have already selected this SD card/USB drive text
-                string alreadySelectedError = patcherLang == "en"
+                string alreadySelectedError = patcherLang == PatcherLanguage.en
                     ? "You have already selected this SD card/USB drive!"
                     : $"{localizedText?["SDCardSelect"]?["alreadySelectedError"]}";
                 AnsiConsole.MarkupLine($"[bold red]{alreadySelectedError}[/]");
@@ -3302,15 +3169,15 @@ class WiiLink_Patcher
                 // Drive does not exist text
                 string driveNotExistError = "";
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                    driveNotExistError = patcherLang == "en"
+                    driveNotExistError = patcherLang == PatcherLanguage.en
                         ? "Drive does not exist!"
                         : $"{localizedText?["SDCardSelect"]?["driveNotExistError"]?["windows"]}";
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                    driveNotExistError = patcherLang == "en"
+                    driveNotExistError = patcherLang == PatcherLanguage.en
                         ? "Volume does not exist!"
                         : $"{localizedText?["SDCardSelect"]?["driveNotExistError"]?["linux"]}";
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                    driveNotExistError = patcherLang == "en"
+                    driveNotExistError = patcherLang == PatcherLanguage.en
                         ? "Volume does not exist!"
                         : $"{localizedText?["SDCardSelect"]?["driveNotExistError"]?["osx"]}";
                 AnsiConsole.MarkupLine($"[bold red]{driveNotExistError}[/]");
@@ -3329,17 +3196,17 @@ class WiiLink_Patcher
             else
             {
                 // SD card is invalid text
-                string noAppsFolderError_message = patcherLang == "en"
+                string noAppsFolderError_message = patcherLang == PatcherLanguage.en
                     ? "Drive detected, but no /apps folder found!"
                     : $"{localizedText?["SDCardSelect"]?["noAppsFolderError"]?["message"]}";
-                string noAppsFolderError_instructions = patcherLang == "en"
+                string noAppsFolderError_instructions = patcherLang == PatcherLanguage.en
                     ? "Please create it first and then try again."
                     : $"{localizedText?["SDCardSelect"]?["noAppsFolderError"]?["instructions"]}";
                 AnsiConsole.MarkupLine($"[bold]{noAppsFolderError_message}[/]");
                 AnsiConsole.MarkupLine($"{noAppsFolderError_instructions}\n");
 
                 // Press any key to continue text
-                string pressAnyKey = patcherLang == "en"
+                string pressAnyKey = patcherLang == PatcherLanguage.en
                     ? "Press any key to continue..."
                     : $"{localizedText?["SDCardSelect"]?["pressAnyKey"]}";
                 AnsiConsole.MarkupLine($"{pressAnyKey}");
@@ -3356,26 +3223,15 @@ class WiiLink_Patcher
             PrintHeader();
             PrintNotice();
 
-            /*             var languages = new List<KeyValuePair<string, string>>
-                        {
-                            new("en", "English"),
-                            new("esUS", "Español (USA)"),
-                            new("esEU", "Español (Europeo)"),
-                            new("fr", "Français"),
-                            new("it", "Italiano"),
-                            new("de", "Deutsch"),
-                            new("ca", "Català"),
-                            new("nl", "Nederlands")
-                        }; */
-
-            // languages but it has English, Español (USA), Japanese, and Catalan
-            var languages = new List<KeyValuePair<string, string>>
+            // Dictionary for language codes and their names
+            var languages = new Dictionary<PatcherLanguage, string>
             {
-                new("en", "English")
+                {PatcherLanguage.en, "English"},
+                // Add other language codes here
             };
 
             // Choose a Language text
-            string chooseALanguage = patcherLang == "en"
+            string chooseALanguage = patcherLang == PatcherLanguage.en
                 ? "Choose a Language"
                 : $"{localizedText?["LanguageSettings"]?["chooseALanguage"]}";
             AnsiConsole.MarkupLine($"[bold lime]{chooseALanguage}[/]\n");
@@ -3385,20 +3241,24 @@ class WiiLink_Patcher
 
             // Display languages
             StringBuilder choices = new();
-            for (int i = 0; i < languages.Count; i++)
+            for (int i = 1; i <= languages.Count; i++)
             {
-                AnsiConsole.MarkupLine($"{i + 1}. {languages[i].Value}");
-                choices.Append(i + 1);
+                AnsiConsole.MarkupLine($"[bold]{i}.[/] {languages.ElementAt(i - 1).Value}");
+                choices.Append(i);
             }
             choices.Append(languages.Count + 1); // So user can go back to Settings Menu
 
             // Go back to Settings Menu text
-            string goBack = patcherLang == "en"
+            string goBack = patcherLang == PatcherLanguage.en
                 ? "Go back to Settings Menu"
                 : $"{localizedText?["LanguageSettings"]?["goBack"]}";
-            AnsiConsole.MarkupLine($"\n{languages.Count + 1}. {goBack}\n");
+            AnsiConsole.MarkupLine($"\n[bold]{languages.Count + 1}.[/] {goBack}\n");
 
             int choice = UserChoose(choices.ToString());
+
+            // Check if choice is valid
+            if (choice < 1 || choice > languages.Count + 1)
+                continue; // Restart LanguageMenu
 
             // Map choice to language code
             if (choice <= languages.Count)
@@ -3410,14 +3270,14 @@ class WiiLink_Patcher
                 patcherLang = langCode;
 
                 // Since English is hardcoded, there's no language pack for it
-                if (patcherLang == "en")
+                if (patcherLang == PatcherLanguage.en)
                 {
                     SettingsMenu();
                     break;
                 }
 
                 // Download language pack
-                DownloadLanguagePack(langCode);
+                DownloadLanguagePack(langCode.ToString());
 
                 // Set localizedText to use the language pack
                 localizedText = JObject.Parse(File.ReadAllText(Path.Join(tempDir, "LanguagePack", $"LocalizedText.{langCode}.json")));
@@ -3455,9 +3315,8 @@ class WiiLink_Patcher
             DateTime localFileModifiedDate = File.GetLastWriteTime(languageFilePath);
 
             // Get last modified date of server file
-            using HttpClient client = new();
             HttpRequestMessage request = new(HttpMethod.Head, languageFileUrl);
-            HttpResponseMessage response = client.Send(request);
+            HttpResponseMessage response = httpClient.Send(request);
             DateTime serverFileModifiedDate = response.Content.Headers.LastModified.GetValueOrDefault().DateTime;
 
             // If server file is newer, download it
@@ -3492,7 +3351,7 @@ class WiiLink_Patcher
             PrintNotice();
 
             // Settings text
-            string settings = patcherLang == "en"
+            string settings = patcherLang == PatcherLanguage.en
                 ? "Settings"
                 : $"{localizedText?["SettingsMenu"]?["settings"]}";
             AnsiConsole.MarkupLine($"[bold lime]{settings}[/]\n");
@@ -3500,13 +3359,13 @@ class WiiLink_Patcher
             if (!inCompatabilityMode)
             {
                 // User choices
-                string changeLanguage = patcherLang == "en"
+                string changeLanguage = patcherLang == PatcherLanguage.en
                     ? "Change Language"
                     : $"{localizedText?["SettingsMenu"]?["changeLanguage"]}";
-                string credits = patcherLang == "en"
+                string credits = patcherLang == PatcherLanguage.en
                     ? "Credits"
                     : $"{localizedText?["SettingsMenu"]?["credits"]}";
-                string goBack = patcherLang == "en"
+                string goBack = patcherLang == PatcherLanguage.en
                     ? "Go back to Main Menu"
                     : $"{localizedText?["SettingsMenu"]?["goBack"]}";
 
@@ -3570,76 +3429,106 @@ class WiiLink_Patcher
             PrintNotice();
 
             // Main Menu text
-            string welcomeMessage = patcherLang == "en"
+            string welcomeMessage = patcherLang == PatcherLanguage.en
                 ? "Welcome to the WiiLink Patcher!"
                 : $"{localizedText?["MainMenu"]?["welcomeMessage"]}";
-            AnsiConsole.MarkupLine($"[bold lime]{welcomeMessage}[/]\n");
 
             // Express Install text
-            string startExpressSetup = patcherLang == "en"
-                ? "1. Start Express Install Setup [bold lime](Recommended)[/]"
+            string startExpressSetup = patcherLang == PatcherLanguage.en
+                ? "Start Express Install Setup [bold lime](Recommended)[/]"
                 : $"{localizedText?["MainMenu"]?["startExpressSetup"]}";
-            AnsiConsole.MarkupLine(startExpressSetup);
 
             // Custom Install text
-            string startCustomSetup = patcherLang == "en"
-                ? "2. Start Custom Install Setup [bold](Advanced)[/]"
+            string startCustomSetup = patcherLang == PatcherLanguage.en
+                ? "Start Custom Install Setup [bold](Advanced)[/]"
                 : $"{localizedText?["MainMenu"]?["startCustomSetup"]}";
-            AnsiConsole.MarkupLine(startCustomSetup);
 
             // Settings text
-            string settings = patcherLang == "en"
-                ? "3. Settings\n"
-                : $"{localizedText?["MainMenu"]?["settings"]}\n";
-            AnsiConsole.MarkupLine(settings);
+            string settings = patcherLang == PatcherLanguage.en
+                ? "Settings"
+                : $"{localizedText?["MainMenu"]?["settings"]}";
+
+            // Visit the GitHub repository text
+            string visitGitHub = patcherLang == PatcherLanguage.en
+                ? "Visit the GitHub Repository"
+                : $"{localizedText?["MainMenu"]?["visitGitHub"]}";
+
+            // Visit the WiiLink website text
+            string visitWiiLink = patcherLang == PatcherLanguage.en
+                ? "Visit the WiiLink Website"
+                : $"{localizedText?["MainMenu"]?["visitWiiLink"]}";
 
             // Exit Patcher text
-            string exitPatcher = patcherLang == "en"
-                ? "4. Exit Patcher\n"
-                : $"{localizedText?["MainMenu"]?["exitPatcher"]}\n";
-            AnsiConsole.MarkupLine(exitPatcher);
+            string exitPatcher = patcherLang == PatcherLanguage.en
+                ? "Exit Patcher"
+                : $"{localizedText?["MainMenu"]?["exitPatcher"]}";
+
+            // Print all the text
+            AnsiConsole.MarkupLine($"[bold lime]{welcomeMessage}[/]\n");
+
+            if (version.Contains("T"))
+                AnsiConsole.MarkupLine($"[bold lime]You are using a test build of the WiiLink Patcher.[/]\n");
+
+            AnsiConsole.MarkupLine($"1. {startExpressSetup}");
+            AnsiConsole.MarkupLine($"2. {startCustomSetup}");
+            AnsiConsole.MarkupLine($"3. {settings}\n");
+
+            AnsiConsole.MarkupLine($"4. {visitGitHub}");
+            AnsiConsole.MarkupLine($"5. {visitWiiLink}\n");
+
+            AnsiConsole.MarkupLine($"6. {exitPatcher}\n");
 
             // Detect SD Card / USB Drive text
             string SDDetectedOrNot = sdcard != null
-                ? $"[bold lime]{(patcherLang == "en" ? "Detected SD Card / USB Drive:" : localizedText?["MainMenu"]?["sdCardDetected"])}[/] {sdcard}"
-                : $"[bold red]{(patcherLang == "en" ? "Could not detect your SD Card / USB Drive!" : localizedText?["MainMenu"]?["noSDCard"])}[/]";
+                ? $"[bold lime]{(patcherLang == PatcherLanguage.en
+                    ? "Detected SD Card / USB Drive:"
+                    : localizedText?["MainMenu"]?["sdCardDetected"])}[/] {sdcard}"
+                : $"[bold red]{(patcherLang == PatcherLanguage.en
+                    ? "Could not detect your SD Card / USB Drive!"
+                    : localizedText?["MainMenu"]?["noSDCard"])}[/]";
             AnsiConsole.MarkupLine(SDDetectedOrNot);
 
             // Automatically detect SD Card / USB Drive text
-            string automaticDetection = patcherLang == "en"
+            string automaticDetection = patcherLang == PatcherLanguage.en
                 ? "R. Automatically detect SD Card / USB Drive"
                 : $"{localizedText?["MainMenu"]?["automaticDetection"]}";
             AnsiConsole.MarkupLine(automaticDetection);
 
             // Manually select SD Card / USB Drive text
-            string manualDetection = patcherLang == "en"
+            string manualDetection = patcherLang == PatcherLanguage.en
                 ? "M. Manually select SD Card / USB Drive path\n"
                 : $"{localizedText?["MainMenu"]?["manualDetection"]}\n";
             AnsiConsole.MarkupLine(manualDetection);
 
             // User chooses an option
-            int choice = UserChoose("1234RrMm");
+            int choice = UserChoose("123456RrMm");
             switch (choice)
             {
                 case 1: // Start Express Install
-                    JapaneseChannel_LangSetup();
+                    WiiLinkChannels_LangSetup();
                     break;
                 case 2: // Start Custom Install
-                    CustomInstall_JapaneseChannel_Setup();
+                    CustomInstall_WiiLinkChannels_Setup();
                     break;
                 case 3: // Settings                
                     SettingsMenu();
                     break;
-                case 4: // Clear console and Exit app
+                case 4: // Visit GitHub
+                    VisitWebsite("https://github.com/WiiLink24/WiiLink24-Patcher");
+                    break;
+                case 5: // Visit WiiLink website
+                    VisitWebsite("https://wiilink24.com");
+                    break;
+                case 6: // Clear console and Exit app
                     Console.Clear();
                     ExitApp();
                     break;
-                case 5:
-                case 6: // Automatically detect SD Card path (R/r)
-                    sdcard = DetectSDCard();
+                case 7: // Automatically detect SD Card path (R/r)
+                case 8:
+                    sdcard = DetectSDCard;
                     break;
-                case 7:
-                case 8: // Manually select SD Card path (M/m)
+                case 9: // Manually select SD Card path (M/m)
+                case 10:
                     SDCardSelect();
                     break;
                 default:
@@ -3648,89 +3537,130 @@ class WiiLink_Patcher
         }
     }
 
-    // Check if server is up
-    static async Task<(System.Net.HttpStatusCode, string)> CheckServerAsync(string serverURL, int maxRetries = 3, int retryDelayMs = 1000)
+    private static void VisitWebsite(string url)
     {
-        // Use the following URL to check if the server is up
+        try
+        {
+            // Determine the operating system
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                // Windows
+                Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                // Linux
+                Process.Start("xdg-open", url);
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                // macOS
+                Process.Start("open", url);
+            }
+        }
+        catch (Exception ex)
+        {
+            AnsiConsole.MarkupLine($"\n[bold red]ERROR:[/] {ex.Message}");
+        }
+    }
+
+    // This function checks if a server is up and running
+    static async Task<(HttpStatusCode, string)> CheckServerAsync(string serverURL, int maxRetries = 3, int retryDelayMs = 1000)
+    {
+        // URL to check server status
         string url = $"{serverURL}/wiinoma/WiinoMa_1_English.delta";
-        var httpClient = new HttpClient();
 
         PrintHeader();
-        //Console.WriteLine($"Checking server status...");
-        // Check server status text
-        string checkingServerStatus = patcherLang == "en"
+
+        // Display server status check message
+        string checkingServerStatus = patcherLang == PatcherLanguage.en
             ? "Checking server status..."
-            : $"{localizedText?["CheckServerStatus"]?["checking"]}";
+            : $"{localizedText?["CheckServerStatus"]}";
         AnsiConsole.MarkupLine($"{checkingServerStatus}\n");
 
-        for (int i = 0; i < maxRetries; i++)
+        int retryCount = 0;
+        do
         {
             try
             {
-                using (var response = await httpClient.GetAsync(url))
+                // Send a GET request to the server
+                using var response = await httpClient.GetAsync(url);
+                if (response.IsSuccessStatusCode)
                 {
-                    if (response.IsSuccessStatusCode)
-                    {
-                        //AnsiConsole.MarkupLine("[bold lime]Successfully connected to server![/]");
-                        string success = patcherLang == "en"
-                            ? "Successfully connected to server!"
-                            : $"{localizedText?["CheckServerStatus"]?["success"]}";
-                        AnsiConsole.MarkupLine($"[bold lime]{success}[/]\n");
-                        await Task.Delay(1000); // Wait for 1 second
-                        return (System.Net.HttpStatusCode.OK, "Successfully connected to server!");
-                    }
-                    else
-                    {
-                        return (response.StatusCode == default(HttpStatusCode) ? System.Net.HttpStatusCode.InternalServerError : response.StatusCode, response.ReasonPhrase ?? "Unknown error");
-                    }
+                    // If successful, display success message and return
+                    string success = patcherLang == PatcherLanguage.en
+                        ? "Successfully connected to server!"
+                        : $"{localizedText?["CheckServerStatus"]}";
+                    AnsiConsole.MarkupLine($"[bold lime]{success}[/]\n");
+                    await Task.Delay(1000); // Wait for 1 second
+                    return (HttpStatusCode.OK, "Successfully connected to server!");
+                }
+                else
+                {
+                    // If not successful, return the status code and reason
+                    return (response.StatusCode == default ? HttpStatusCode.InternalServerError : response.StatusCode, response.ReasonPhrase ?? "Unknown error");
                 }
             }
             catch (HttpRequestException ex)
             {
-                if (i == maxRetries - 1)
+                // If an exception occurs, display error message and return
+                if (retryCount == maxRetries - 1)
                 {
-                    //AnsiConsole.MarkupLine("[bold red]Connection to server failed![/]\n");
-                    string failed = patcherLang == "en"
+                    string failed = patcherLang == PatcherLanguage.en
                         ? "Connection to server failed!"
-                        : $"{localizedText?["CheckServerStatus"]?["failed"]}";
+                        : $"{localizedText?["CheckServerStatus"]}";
                     AnsiConsole.MarkupLine($"[bold red]{failed}[/]\n");
-                    return (ex.StatusCode ?? System.Net.HttpStatusCode.InternalServerError, ex.Message);
+                    return (ex.StatusCode ?? HttpStatusCode.InternalServerError, ex.Message);
+                }
+            }
+            catch (TaskCanceledException)
+            {
+                // If a timeout occurs, display error message and return
+                if (retryCount == maxRetries - 1)
+                {
+                    string timeout = patcherLang == PatcherLanguage.en
+                        ? "Connection to server timed out!"
+                        : $"{localizedText?["CheckServerStatus"]}";
+                    AnsiConsole.MarkupLine($"[bold red]{timeout}[/]\n");
+                    return (HttpStatusCode.RequestTimeout, "Connection to server timed out!");
                 }
             }
 
-            if (i < maxRetries - 1)
+            // If the maximum number of retries has not been reached, wait and then retry
+            if (retryCount < maxRetries - 1)
             {
-                //AnsiConsole.MarkupLine($"Retrying in [bold]{retryDelayMs / 1000}[/] seconds...\n");
-                string retrying = patcherLang == "en"
+                string retrying = patcherLang == PatcherLanguage.en
                     ? $"Retrying in [bold]{retryDelayMs / 1000}[/] seconds..."
-                    : $"{localizedText?["CheckServerStatus"]?["retrying"]}"
-                        .Replace("{retryDelayMs / 1000}", $"[bold]{retryDelayMs / 1000}[/]");
+                    : $"{localizedText?["CheckServerStatus"]}";
                 AnsiConsole.MarkupLine($"{retrying}\n");
                 await Task.Delay(retryDelayMs);
             }
-        }
 
-        return (System.Net.HttpStatusCode.ServiceUnavailable, "Connection to server failed!");
+            retryCount++;
+        } while (retryCount < maxRetries);
+
+        // If all retries fail, return service unavailable
+        return (HttpStatusCode.ServiceUnavailable, "Connection to server failed!");
     }
 
-    static void ConnectionFailed(System.Net.HttpStatusCode statusCode, string msg)
+    static void ConnectionFailed(HttpStatusCode statusCode, string msg)
     {
         PrintHeader();
 
         // Connection to server failed text
-        string connectionFailed = patcherLang == "en"
+        string connectionFailed = patcherLang == PatcherLanguage.en
             ? "Connection to server failed!"
             : $"{localizedText?["ServerDown"]?["connectionFailed"]}";
         AnsiConsole.MarkupLine($"[bold blink red]{connectionFailed}[/]\n");
 
         // Check internet connection text
-        string checkInternet = patcherLang == "en"
+        string checkInternet = patcherLang == PatcherLanguage.en
             ? "Connection to the server failed. Please check your internet connection and try again."
             : $"{localizedText?["ServerDown"]?["checkInternet"]}";
-        string serverOrInternet = patcherLang == "en"
+        string serverOrInternet = patcherLang == PatcherLanguage.en
             ? "It seems that either the server is down or your internet connection is not working."
             : $"{localizedText?["ServerDown"]?["serverOrInternet"]}";
-        string reportIssue = patcherLang == "en"
+        string reportIssue = patcherLang == PatcherLanguage.en
             ? "If you are sure that your internet connection is working, please join our [link=https://discord.gg/WiiLink bold lime]Discord Server[/] and report this issue."
             : $"{localizedText?["ServerDown"]?["reportIssue"]}";
         AnsiConsole.MarkupLine($"{checkInternet}\n");
@@ -3738,13 +3668,13 @@ class WiiLink_Patcher
         AnsiConsole.MarkupLine($"{reportIssue}\n");
 
         // Status code text
-        string statusCodeText = patcherLang == "en"
+        string statusCodeText = patcherLang == PatcherLanguage.en
             ? "Status code:"
             : $"{localizedText?["ServerDown"]?["statusCode"]}";
-        string messageText = patcherLang == "en"
+        string messageText = patcherLang == PatcherLanguage.en
             ? "Message:"
             : $"{localizedText?["ServerDown"]?["message"]}";
-        string exitMessage = patcherLang == "en"
+        string exitMessage = patcherLang == PatcherLanguage.en
             ? "Press any key to exit..."
             : $"{localizedText?["ServerDown"]?["exitMessage"]}";
         AnsiConsole.MarkupLine($"{statusCodeText} {statusCode}");
@@ -3761,7 +3691,7 @@ class WiiLink_Patcher
         PrintHeader();
 
         // Check for updates text
-        string checkingForUpdates = patcherLang == "en"
+        string checkingForUpdates = patcherLang == PatcherLanguage.en
             ? "Checking for updates..."
             : $"{localizedText?["CheckForUpdates"]?["checking"]}";
         AnsiConsole.MarkupLine($"{checkingForUpdates}\n");
@@ -3770,20 +3700,19 @@ class WiiLink_Patcher
         string updateUrl = "https://raw.githubusercontent.com/PablosCorner/wiilink-patcher-version/main/version.txt";
 
         // Download the latest version number from the server
-        HttpClient client = new();
-        string updateInfo = "";
+        string updateInfo;
         try
         {
-            updateInfo = await client.GetStringAsync(updateUrl);
+            updateInfo = await httpClient.GetStringAsync(updateUrl);
         }
         catch (HttpRequestException ex)
         {
             // Error retrieving update information text
-            string errorRetrievingUpdateInfo = patcherLang == "en"
+            string errorRetrievingUpdateInfo = patcherLang == PatcherLanguage.en
                 ? $"Error retrieving update information: [bold red]{ex.Message}[/]"
                 : $"{localizedText?["CheckForUpdates"]?["errorChecking"]}"
                     .Replace("{ex.Message}", ex.Message);
-            string skippingUpdateCheck = patcherLang == "en"
+            string skippingUpdateCheck = patcherLang == PatcherLanguage.en
                 ? "Skipping update check..."
                 : $"{localizedText?["CheckForUpdates"]?["skippingCheck"]}";
 
@@ -3823,13 +3752,13 @@ class WiiLink_Patcher
                 PrintHeader();
 
                 // Prompt user to download the latest version
-                string updateAvailable = patcherLang == "en"
+                string updateAvailable = patcherLang == PatcherLanguage.en
                     ? "A new version is available! Would you like to download it now?"
                     : $"{localizedText?["CheckForUpdates"]?["updateAvailable"]}";
-                string currentVersionText = patcherLang == "en"
+                string currentVersionText = patcherLang == PatcherLanguage.en
                     ? "Current version:"
                     : $"{localizedText?["CheckForUpdates"]?["currentVersion"]}";
-                string latestVersionText = patcherLang == "en"
+                string latestVersionText = patcherLang == PatcherLanguage.en
                     ? "Latest version:"
                     : $"{localizedText?["CheckForUpdates"]?["latestVersion"]}";
 
@@ -3839,16 +3768,16 @@ class WiiLink_Patcher
                 AnsiConsole.MarkupLine($"{latestVersionText} [bold lime]{latestVersion}[/]\n");
 
                 // Show changelog via Github link
-                string changelogLink = patcherLang == "en"
+                string changelogLink = patcherLang == PatcherLanguage.en
                     ? "Changelog:"
                     : $"{localizedText?["CheckForUpdates"]?["changelogLink"]}";
                 AnsiConsole.MarkupLine($"[bold]{changelogLink}[/] [link lime]https://github.com/WiiLink24/WiiLink24-Patcher/releases/tag/{latestVersion}[/]\n");
 
                 // Yes/No text
-                string yes = patcherLang == "en"
+                string yes = patcherLang == PatcherLanguage.en
                     ? "Yes"
                     : $"{localizedText?["CheckForUpdates"]?["yes"]}";
-                string no = patcherLang == "en"
+                string no = patcherLang == PatcherLanguage.en
                     ? "No"
                     : $"{localizedText?["CheckForUpdates"]?["no"]}";
 
@@ -3862,15 +3791,15 @@ class WiiLink_Patcher
                 {
                     case 1: // Download the latest version
                         // Determine the operating system name
-                        string? osName = System.Runtime.InteropServices.RuntimeInformation
+                        string? osName = RuntimeInformation
                             .IsOSPlatform(OSPlatform.Windows) ? "Windows" :
-                            System.Runtime.InteropServices.RuntimeInformation
+                            RuntimeInformation
                             .IsOSPlatform(OSPlatform.OSX) ? "macOS" :
-                            System.Runtime.InteropServices.RuntimeInformation
+                            RuntimeInformation
                             .IsOSPlatform(OSPlatform.Linux) ? "Linux" : "Unknown";
 
                         // Log message
-                        string downloadingFrom = patcherLang == "en"
+                        string downloadingFrom = patcherLang == PatcherLanguage.en
                             ? $"Downloading [lime]{latestVersion}[/] for [lime]{osName}[/]..."
                             : $"{localizedText?["CheckForUpdates"]?["downloadingFrom"]}"
                                 .Replace("{latestVersion}", latestVersion)
@@ -3880,15 +3809,15 @@ class WiiLink_Patcher
 
                         // Download the latest version and save it to a file
                         HttpResponseMessage response;
-                        response = await client.GetAsync(downloadUrl);
+                        response = await httpClient.GetAsync(downloadUrl);
                         if (!response.IsSuccessStatusCode) // Ideally shouldn't happen if version.txt is set up correctly
                         {
                             // Download failed text
-                            string downloadFailed = patcherLang == "en"
+                            string downloadFailed = patcherLang == PatcherLanguage.en
                                 ? $"An error occurred while downloading the latest version:[/] {response.StatusCode}"
                                 : $"{localizedText?["CheckForUpdates"]?["downloadFailed"]}"
                                     .Replace("{response.StatusCode}", response.StatusCode.ToString());
-                            string pressAnyKey = patcherLang == "en"
+                            string pressAnyKey = patcherLang == PatcherLanguage.en
                                 ? "Press any key to exit..."
                                 : $"{localizedText?["CheckForUpdates"]?["pressAnyKey"]}";
                             AnsiConsole.MarkupLine($"\n[red]{downloadFailed}[/]");
@@ -3912,11 +3841,11 @@ class WiiLink_Patcher
                         {
                             PrintHeader();
                             // Download complete text
-                            string downloadComplete = patcherLang == "en"
-                                ? $"Download complete![/] Exiting in [bold lime]{i}[/] seconds..."
+                            string downloadComplete = patcherLang == PatcherLanguage.en
+                                ? $"[bold lime]Download complete![/] Exiting in [bold lime]{i}[/] seconds..."
                                 : $"{localizedText?["CheckForUpdates"]?["downloadComplete"]}"
                                     .Replace("{i}", i.ToString());
-                            AnsiConsole.MarkupLine($"\n[bold lime]{downloadComplete}[/]");
+                            AnsiConsole.MarkupLine($"\n{downloadComplete}");
                             Thread.Sleep(1000);
                         }
 
@@ -3933,7 +3862,7 @@ class WiiLink_Patcher
         else // On the latest version
         {
             // Log message
-            string onLatestVersion = patcherLang == "en"
+            string onLatestVersion = patcherLang == PatcherLanguage.en
                 ? "You are running the latest version!"
                 : $"{localizedText?["CheckForUpdates"]?["onLatestVersion"]}";
             AnsiConsole.MarkupLine($"[bold lime]{onLatestVersion}[/]");
@@ -3946,25 +3875,25 @@ class WiiLink_Patcher
         PrintHeader();
 
         // An error has occurred text
-        string errorOccurred = patcherLang == "en"
+        string errorOccurred = patcherLang == PatcherLanguage.en
             ? "An error has occurred."
             : $"{localizedText?["ErrorScreen"]?["title"]}";
         AnsiConsole.MarkupLine($"[bold red]{errorOccurred}[/]\n");
 
         // Error details text
-        string errorDetails = patcherLang == "en"
+        string errorDetails = patcherLang == PatcherLanguage.en
             ? "ERROR DETAILS:"
             : $"{localizedText?["ErrorScreen"]?["details"]}";
-        string taskText = patcherLang == "en"
+        string taskText = patcherLang == PatcherLanguage.en
             ? "Task: "
             : $"{localizedText?["ErrorScreen"]?["task"]}";
-        string commandText = patcherLang == "en"
+        string commandText = patcherLang == PatcherLanguage.en
             ? "Command:"
             : $"{localizedText?["ErrorScreen"]?["command"]}";
-        string messageText = patcherLang == "en"
+        string messageText = patcherLang == PatcherLanguage.en
             ? "Message:"
             : $"{localizedText?["ErrorScreen"]?["message"]}";
-        string exitCodeText = patcherLang == "en"
+        string exitCodeText = patcherLang == PatcherLanguage.en
             ? "Exit code:"
             : $"{localizedText?["ErrorScreen"]?["exitCode"]}";
 
@@ -3974,13 +3903,13 @@ class WiiLink_Patcher
         AnsiConsole.MarkupLine($" * {exitCodeText} {exitCode}\n");
 
         // Please open an issue text
-        string openAnIssue = patcherLang == "en"
+        string openAnIssue = patcherLang == PatcherLanguage.en
             ? "Please open an issue on our GitHub page ([link bold lime]https://github.com/WiiLink24/WiiLink24-Patcher/issues[/]) and describe the\nerror you encountered. Please include the error details above in your issue."
             : $"{localizedText?["ErrorScreen"]?["githubIssue"]}";
         AnsiConsole.MarkupLine($"{openAnIssue}\n");
 
         // Press any key to go back to the main menu text
-        string pressAnyKey = patcherLang == "en"
+        string pressAnyKey = patcherLang == PatcherLanguage.en
             ? "Press any key to go back to the main menu..."
             : $"{localizedText?["ErrorScreen"]?["pressAnyKey"]}";
         AnsiConsole.MarkupLine($"[bold]{pressAnyKey}[/]");

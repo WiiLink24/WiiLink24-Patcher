@@ -12,17 +12,11 @@
 
 .vscode
 
-unpack
-unpack_patched
-
 *.wad
+*.exe
 
 WAD
 apps
-WiinoMa_Patcher
-WiiLink_Patcher
-00000001.app
-00000002.app
 
 *.delta
 *.xdelta
