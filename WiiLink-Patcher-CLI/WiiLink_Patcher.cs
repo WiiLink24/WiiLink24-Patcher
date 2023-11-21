@@ -16,7 +16,7 @@ class WiiLink_Patcher
     static readonly string version = "v1.2.3";
     static readonly string copyrightYear = DateTime.Now.Year.ToString();
     static readonly string buildDate = "November 21th, 2023";
-    static readonly string buildTime = "9:58 PM";
+    static readonly string buildTime = "3:59 PM";
     static string? sdcard = DetectSDCard;
     static readonly string wiiLinkPatcherUrl = "https://patcher.wiilink24.com";
     ////////////////////
@@ -506,24 +506,12 @@ class WiiLink_Patcher
 
     static void DownloadSPD(Platform platformType)
     {
-        string spdUrl = "";
-        string spdDestinationPath = "";
-
         // Create WAD folder in current directory if it doesn't exist
         if (!Directory.Exists(Path.Join("WAD")))
             Directory.CreateDirectory(Path.Join("WAD"));
 
-        switch (platformType)
-        {
-            case Platform.Wii:
-                spdUrl = $"{wiiLinkPatcherUrl}/spd/SPD_Wii.wad";
-                spdDestinationPath = Path.Join("WAD", "WiiLink SPD (Wii).wad");
-                break;
-            case Platform.vWii:
-                spdUrl = $"{wiiLinkPatcherUrl}/spd/SPD_vWii.wad";
-                spdDestinationPath = Path.Join("WAD", "WiiLink SPD (vWii).wad");
-                break;
-        }
+        string spdUrl = $"{wiiLinkPatcherUrl}/spd/SPD_{platformType}.wad";
+        string spdDestinationPath = Path.Join("WAD", $"WiiLink SPD ({platformType}).wad");
 
         DownloadFile(spdUrl, spdDestinationPath, "SPD");
     }
@@ -2724,8 +2712,6 @@ class WiiLink_Patcher
     // Patching Demae Channel
     static void Demae_Patch(Language language, DemaeVersion demaeVersion)
     {
-        task = "Patching Demae Channel";
-
         // Assign channel title based on language chosen
         string channelTitle = language switch
         {
@@ -2733,16 +2719,11 @@ class WiiLink_Patcher
             _ => "Demae Channel"
         };
 
-        // Generate patch list for Demae Channel based on version (Standard, Dominos)
-        List<KeyValuePair<string, string>> GeneratePatchList(string prefix, DemaeVersion version)
-        {
-            // Append language to patch name if version is Standard
-            bool appendLang = version switch
-            {
-                DemaeVersion.Standard => true,
-                _ => false
-            };
+        task = $"Patching {channelTitle}";
 
+        // Generate patch list for Demae Channel
+        List<KeyValuePair<string, string>> GeneratePatchList(string prefix, bool appendLang)
+        {
             return new List<KeyValuePair<string, string>>
             {
                 new($"{prefix}_0{(appendLang ? $"_{language}" : "")}", "00000000"),
@@ -2754,14 +2735,14 @@ class WiiLink_Patcher
         // Map DemaeVersion to patch list and folder name (Patch list, folder name)
         var demaeData = new Dictionary<DemaeVersion, (List<KeyValuePair<string, string>>, string)>
         {
-            [DemaeVersion.Standard] = (GeneratePatchList("Demae", DemaeVersion.Standard), "Demae"),
-            [DemaeVersion.Dominos] = (GeneratePatchList("Dominos", DemaeVersion.Dominos), "Dominos")
+            [DemaeVersion.Standard] = (GeneratePatchList("Demae", true), "Demae"),
+            [DemaeVersion.Dominos] = (GeneratePatchList("Dominos", false), "Dominos")
         };
 
         // Get patch list and folder name for the current version
         var (demaePatchList, folderName) = demaeData[demaeVersion];
 
-        PatchCoreChannel(folderName, $"{channelTitle} ({folderName})", "000100014843484a", demaePatchList, lang: language);
+        PatchCoreChannel(folderName, $"{channelTitle} ({demaeVersion})", "000100014843484a", demaePatchList, lang: language);
 
         // Finished patching Demae Channel
         patchingProgress_express["demae"] = "done";
@@ -3142,6 +3123,12 @@ class WiiLink_Patcher
             // Prevent user from selecting boot drive
             if (Path.GetPathRoot(sdcard_new) == Path.GetPathRoot(Path.GetPathRoot(Environment.SystemDirectory)))
             {
+                // DEBUG: Print boot drive for comparison
+                AnsiConsole.MarkupLine($"[bold red]{Path.GetPathRoot(Environment.SystemDirectory)}[/]");
+                AnsiConsole.MarkupLine($"[bold red]{Path.GetPathRoot(Path.GetPathRoot(Environment.SystemDirectory))}[/]");
+
+                AnsiConsole.MarkupLine($"[bold yellow]{Path.GetPathRoot(sdcard_new)}[/]");
+
                 // You cannot select your boot drive text
                 string bootDriveError = patcherLang == PatcherLanguage.en
                     ? "You cannot select your boot drive!"
