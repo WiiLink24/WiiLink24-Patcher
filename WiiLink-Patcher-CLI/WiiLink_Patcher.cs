@@ -44,7 +44,7 @@ class WiiLink_Patcher
     static string curCmd = "";
     static readonly string curDir = Directory.GetCurrentDirectory();
     static readonly string tempDir = Path.Join(Path.GetTempPath(), "WiiLink_Patcher");
-    static readonly bool DEBUG_MODE = false;
+    static bool DEBUG_MODE = false;
     static PatcherLanguage patcherLang = PatcherLanguage.en;
     static JObject? localizedText = null;
 
@@ -3977,6 +3977,12 @@ class WiiLink_Patcher
 
     static async System.Threading.Tasks.Task Main(string[] args)
     {
+        // Check for debugging flag
+        bool debugArgExists = Array.Exists(args, element => element.ToLower() == "--debug");
+
+        // Set DEBUG_MODE
+        DEBUG_MODE = debugArgExists;
+
         // Set console encoding to UTF-8
         Console.OutputEncoding = Encoding.UTF8;
 
