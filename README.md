@@ -25,6 +25,12 @@ You can download the latest version of the patcher from the [Releases Page](http
 
 Compatible with Windows (**10** and **11**), macOS, and Linux!
 
+### Debug
+In order to troubleshoot any issues, you can use the `--debug` flag while running the patcher to have extended logs.
+```
+> <patcher executable> --debug
+```
+
 ## Compiling
 
 Clone or download the repository, and open the solution file in Visual Studio. You will need to make sure you have .NET 6.0 set up to compile it.
