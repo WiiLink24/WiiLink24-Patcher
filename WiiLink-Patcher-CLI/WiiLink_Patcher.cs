@@ -13,10 +13,10 @@ using Newtonsoft.Json.Linq;
 class WiiLink_Patcher
 {
     //// Build Info ////
-    static readonly string version = "v1.2.2";
+    static readonly string version = "v1.2.3";
     static readonly string copyrightYear = DateTime.Now.Year.ToString();
-    static readonly string buildDate = "October 12th, 2023";
-    static readonly string buildTime = "10:30 AM";
+    static readonly string buildDate = "November 21th, 2023";
+    static readonly string buildTime = "9:58 PM";
     static string? sdcard = DetectSDCard;
     static readonly string wiiLinkPatcherUrl = "https://patcher.wiilink24.com";
     ////////////////////
