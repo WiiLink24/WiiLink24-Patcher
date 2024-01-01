@@ -26,8 +26,7 @@ class WiiLink_Patcher
     static Language lang;
     static DemaeVersion demaeVersion;
     static bool installWC24 = false;
-    // static Region nc_reg, forecast_reg, news_reg, evc_reg, cmoc_reg;
-    static Region wc24_reg; // This will set the region for all WC24 channels rather than having to set it for each one
+    static Region wc24_reg;
     static Platform platformType;
     static Dictionary<string, string> patchingProgress_express = new();
 
