@@ -13,10 +13,10 @@ using Newtonsoft.Json.Linq;
 class WiiLink_Patcher
 {
     //// Build Info ////
-    static readonly string version = "v2.0.0T RC1";
+    static readonly string version = "v2.0.0T RC2";
     static readonly string copyrightYear = DateTime.Now.Year.ToString();
-    static readonly string buildDate = "December 31th, 2023";
-    static readonly string buildTime = "9:07 PM";
+    static readonly string buildDate = "January 1st, 2024";
+    static readonly string buildTime = "7:06 PM";
     static string? sdcard = DetectSDCard;
     static readonly string wiiLinkPatcherUrl = "https://patcher.wiilink24.com";
     ////////////////////
@@ -1084,10 +1084,11 @@ class WiiLink_Patcher
 
             // User Choices
             string startOption = patcherLang == PatcherLanguage.en
-                ? sdcard != null ? "Start" : "Start without SD Card / USB Drive"
+                ? sdcard != null ? "Start [bold]with[/] SD Card / USB Drive" : "Start [bold]without[/] SD Card / USB Drive"
                 : sdcard != null ? $"{localizedText?["SDSetup"]?["start_withSD"]}" : $"{localizedText?["SDSetup"]?["start_noSD"]}";
-
-            // User Choices
+            string startWithoutSDOption = patcherLang == PatcherLanguage.en
+                ? "Start [bold]without[/] SD Card / USB Drive"
+                : $"{localizedText?["SDSetup"]?["start_noSD"]}";
             string manualDetection = patcherLang == PatcherLanguage.en
                 ? "Manually Select SD Card / USB Drive Path"
                 : $"{localizedText?["SDSetup"]?["manualDetection"]}";
@@ -1110,23 +1111,56 @@ class WiiLink_Patcher
 
             Console.WriteLine($"{downloadToSD}\n");
 
-            AnsiConsole.MarkupLine($"1. {startOption}");
-            AnsiConsole.MarkupLine($"2. {manualDetection}\n");
-            if (sdcard != null)
-                AnsiConsole.MarkupLine(sdDetected);
-            Console.WriteLine($"3. {goBackToMainMenu}\n");
+            if (platformType == Platform.vWii && !isCustomSetup)
+            {
+                string eulaChannel = patcherLang == PatcherLanguage.en
+                ? "[bold]NOTE:[/] For [bold deepskyblue1]vWii[/] users, The EULA channel will also be included."
+                : $"{localizedText?["ExpressInstall"]?["SDSetup"]?["eulaChannel"]}";
+                AnsiConsole.MarkupLine($"{eulaChannel}\n");
+            }
 
-            int choice = UserChoose("123");
+            AnsiConsole.MarkupLine($"1. {startOption}");
+            AnsiConsole.MarkupLine($"2. {(sdcard != null ? startWithoutSDOption : manualDetection)}");
+            AnsiConsole.MarkupLine($"3. {(sdcard != null ? manualDetection : goBackToMainMenu)}\n");
+            
+            if (sdcard != null)
+                AnsiConsole.MarkupLine($"4. {goBackToMainMenu}\n");
+                
+            AnsiConsole.MarkupLine($"{sdDetected}\n");
+
+            int choice = sdcard != null ? UserChoose("1234") : UserChoose("123");
+
             switch (choice)
             {
-                case 1: // Check if WAD folder exists
+                case 1: // Check if WAD folder exists before starting patching process
                     WADFolderCheck(isCustomSetup);
                     break;
-                case 2: // Manually select SD card
-                    SDCardSelect();
+                case 2: // Start patching process without SD card or Manually select SD card
+                    if (sdcard != null)
+                    {
+                        sdcard = null;
+                        WADFolderCheck(isCustomSetup);
+                    }
+                    else
+                    {
+                        SDCardSelect();
+                    }
                     break;
-                case 3: // Go back to main menu
-                    MainMenu();
+                case 3: // Manually select SD card or Go back to main menu
+                    if (sdcard != null)
+                    {
+                        SDCardSelect();
+                    }
+                    else
+                    {
+                        MainMenu();
+                    }
+                    break;
+                case 4: // Go back to main menu
+                    if (sdcard != null)
+                    {
+                        MainMenu();
+                    }
                     break;
                 default:
                     break;
@@ -2224,10 +2258,11 @@ class WiiLink_Patcher
                 selectedWiiConnect24Channels.Add(modifiedChannel);
         }
 
+        if (!selectedWiiLinkChannels.Any())
+            selectedWiiLinkChannels.Add("● [grey]N/A[/]");
         if (!selectedWiiConnect24Channels.Any())
-        {
             selectedWiiConnect24Channels.Add("● [grey]N/A[/]");
-        }
+
         while (true)
         {
             PrintHeader();
@@ -2267,6 +2302,15 @@ class WiiLink_Patcher
             platformType_custom == Platform.Wii ? "● [bold grey]Wii[/]" : "● [bold deepskyblue1]vWii (Wii U)[/]");
 
             AnsiConsole.Write(grid);
+
+            // If user chose vWii as their platform, notify that the EULA channel will be included
+            if (platformType_custom == Platform.vWii && wiiConnect24Channels_selection.Any())
+            {
+                string eulaChannel = patcherLang == PatcherLanguage.en
+                    ? "[bold]NOTE:[/] For [bold deepskyblue1]vWii[/] users, The EULA channel will be included."
+                    : $"{localizedText?["CustomSetup"]?["summaryScreen"]?["eulaChannel"]}";
+                AnsiConsole.MarkupLine($"\n{eulaChannel}");
+            }
 
             // Print instructions
             string prompt = patcherLang == PatcherLanguage.en
@@ -2668,7 +2712,7 @@ class WiiLink_Patcher
 
         // Finished patching Everybody Votes Channel
         patchingProgress_express["evc"] = "done";
-        patchingProgress_express["finishing"] = "in_progress";
+        patchingProgress_express["cmoc"] = "in_progress";
     }
 
     // Patching Check Mii Out Channel
@@ -3562,7 +3606,7 @@ class WiiLink_Patcher
         {
             { "Windows", $"WiiLink_Patcher_Windows_{latestVersion}.exe" },
             { "Linux", RuntimeInformation.ProcessArchitecture == Architecture.Arm64 ? $"WiiLink_Patcher_Linux-arm64_{latestVersion}" : $"WiiLink_Patcher_Linux-x64_{latestVersion}" },
-            { "OSX", $"WiiLink_Patcher_macOS_{latestVersion}" }
+            { "OSX", RuntimeInformation.ProcessArchitecture == Architecture.Arm64 ? $"WiiLink_Patcher_macOS-arm64_{latestVersion}" : $"WiiLink_Patcher_macOS-x64_{latestVersion}" }
         };
 
         // Get the download URL for the latest version
@@ -3756,8 +3800,8 @@ class WiiLink_Patcher
 
     private static void CopyFolder(string sourcePath, string destinationPath)
     {
-        DirectoryInfo source = new DirectoryInfo(sourcePath);
-        DirectoryInfo destination = new DirectoryInfo(destinationPath);
+        DirectoryInfo source = new(sourcePath);
+        DirectoryInfo destination = new(destinationPath);
 
         // If the destination folder doesn't exist, create it.
         if (!destination.Exists)
@@ -3829,7 +3873,7 @@ class WiiLink_Patcher
         {
             Console.Title = $"WiiLink + RiiConnect24 Patcher {version}";
             if (DEBUG_MODE) Console.Title += $" [DEBUG MODE]";
-            if (version.Contains("T")) Console.Title += $" (Test Build)";
+            if (version.Contains('T')) Console.Title += $" (Test Build)";
         }
 
         // Set console window size to 120x30 on macOS and Linux and on Windows, check for Windows version
@@ -3850,11 +3894,11 @@ class WiiLink_Patcher
 
         // Check if the server is up
         var result = await CheckServerAsync(wiiLinkPatcherUrl);
-        if (result != (System.Net.HttpStatusCode.OK, "Successfully connected to server!"))
+        if (result != (HttpStatusCode.OK, "Successfully connected to server!"))
             ConnectionFailed(result.Item1, result.Item2);
 
         // Check latest version if not on a test build
-        if (!version.Contains("T"))
+        if (!version.Contains('T'))
             await CheckForUpdates(version);
 
         // Go to the main menu
