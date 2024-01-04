@@ -90,7 +90,7 @@ class WiiLink_Patcher
             ? "Notice"
             : $"{localizedText?["Notice"]?["noticeTitle"]}";
         string text = patcherLang == PatcherLanguage.en
-            ? "If you have any issues with the patcher or services offered by WiiLink or RiiConnect24, please report them on our [springgreen2_1 link=https://discord.gg/wiilink-750581992223146074]Discord Server[/]!"
+            ? "If you have any issues with the patcher or services offered by WiiLink or RiiConnect24, please report them on our [springgreen2_1 link=https://discord.gg/rc24]Discord Server[/]!"
             : $"{localizedText?["Notice"]?["noticeMsg"]}";
 
         var panel = new Panel($"[bold]{text}[/]")
@@ -3605,7 +3605,7 @@ class WiiLink_Patcher
             ? "It seems that either the server is down or your internet connection is not working."
             : $"{localizedText?["ServerDown"]?["serverOrInternet"]}";
         string reportIssue = patcherLang == PatcherLanguage.en
-            ? "If you are sure that your internet connection is working, please join our [link=https://discord.gg/wiilink-750581992223146074 bold springgreen2_1]Discord Server[/] and report this issue."
+            ? "If you are sure that your internet connection is working, please join our [link=https://discord.gg/rc24 bold springgreen2_1]Discord Server[/] and report this issue."
             : $"{localizedText?["ServerDown"]?["reportIssue"]}";
         AnsiConsole.MarkupLine($"{checkInternet}\n");
         AnsiConsole.MarkupLine($"{serverOrInternet}\n");
