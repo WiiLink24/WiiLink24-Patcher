@@ -13,10 +13,10 @@ using Newtonsoft.Json.Linq;
 class WiiLink_Patcher
 {
     //// Build Info ////
-    static readonly string version = "v2.0.0T RC3";
+    static readonly string version = "v2.0.0";
     static readonly string copyrightYear = DateTime.Now.Year.ToString();
-    static readonly string buildDate = "January 3st, 2024";
-    static readonly string buildTime = "4:11 PM";
+    static readonly string buildDate = "January 4st, 2024";
+    static readonly string buildTime = "12:22 PM";
     static string? sdcard = DetectSDCard;
     static readonly string wiiLinkPatcherUrl = "https://patcher.wiilink24.com";
     ////////////////////
@@ -128,20 +128,31 @@ class WiiLink_Patcher
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
-                    basePaths.Add("/media");
-                    basePaths.Add("/run/media");
+                    bool mediaExists = Directory.Exists("/media");
+                    bool runMediaExists = Directory.Exists("/run/media");
+
+                    // Check if /media exists
+                    if (mediaExists)
+                        basePaths.Add($"/media/{Environment.UserName}");
+
+                    // Check if /run/media exists
+                    if (runMediaExists)
+                        basePaths.Add($"/run/media/{Environment.UserName}");
                 }
 
                 foreach (var basePath in basePaths)
                 {
                     try
                     {
-                        var directories = Directory.GetDirectories(basePath);
-
-                        foreach (var directory in directories)
+                        if (Directory.Exists(basePath)) // Check if directory exists before getting directories
                         {
-                            if (Directory.Exists(Path.Join(directory, "apps")))
-                                return directory;
+                            var directories = Directory.GetDirectories(basePath);
+
+                            foreach (var directory in directories)
+                            {
+                                if (Directory.Exists(Path.Join(directory, "apps")))
+                                    return directory;
+                            }
                         }
                     }
                     catch (UnauthorizedAccessException)
@@ -1089,16 +1100,7 @@ class WiiLink_Patcher
                 ? "You can download everything directly to your Wii SD Card / USB Drive if you insert it before starting the patching\nprocess. Otherwise, everything will be saved in the same folder as this patcher on your computer."
                 : $"{localizedText?["SDSetup"]?["downloadToSD"]}";
 
-            // User Choices
-            string startOption = patcherLang == PatcherLanguage.en
-                ? sdcard != null ? "Start [bold]with[/] SD Card / USB Drive" : "Start [bold]without[/] SD Card / USB Drive"
-                : sdcard != null ? $"{localizedText?["SDSetup"]?["start_withSD"]}" : $"{localizedText?["SDSetup"]?["start_noSD"]}";
-            string startWithoutSDOption = patcherLang == PatcherLanguage.en
-                ? "Start [bold]without[/] SD Card / USB Drive"
-                : $"{localizedText?["SDSetup"]?["start_noSD"]}";
-            string manualDetection = patcherLang == PatcherLanguage.en
-                ? "Manually Select SD Card / USB Drive Path"
-                : $"{localizedText?["SDSetup"]?["manualDetection"]}";
+
 
             // SD card detected text
             string sdDetected = patcherLang == PatcherLanguage.en
@@ -1126,15 +1128,29 @@ class WiiLink_Patcher
                 AnsiConsole.MarkupLine($"{eulaChannel}\n");
             }
 
+            // User Choices
+            string startOption = patcherLang == PatcherLanguage.en
+                ? sdcard != null ? "Start [bold]with[/] SD Card / USB Drive" : "Start [bold]without[/] SD Card / USB Drive"
+                : sdcard != null ? $"{localizedText?["SDSetup"]?["start_withSD"]}" : $"{localizedText?["SDSetup"]?["start_noSD"]}";
+            string startWithoutSDOption = patcherLang == PatcherLanguage.en
+                ? "Start [bold]without[/] SD Card / USB Drive"
+                : $"{localizedText?["SDSetup"]?["start_noSD"]}";
+            string manualDetection = patcherLang == PatcherLanguage.en
+                ? "Manually Select SD Card / USB Drive Path\n"
+                : $"{localizedText?["SDSetup"]?["manualDetection"]}";
+
             AnsiConsole.MarkupLine($"1. {startOption}");
             AnsiConsole.MarkupLine($"2. {(sdcard != null ? startWithoutSDOption : manualDetection)}");
-            AnsiConsole.MarkupLine($"3. {(sdcard != null ? manualDetection : goBackToMainMenu)}\n");
+            AnsiConsole.MarkupLine($"3. {(sdcard != null ? manualDetection : goBackToMainMenu)}");
 
             if (sdcard != null)
+            {
                 AnsiConsole.MarkupLine($"4. {goBackToMainMenu}\n");
 
-            AnsiConsole.MarkupLine($"{sdDetected}\n");
+                AnsiConsole.MarkupLine($"{sdDetected}");
+            }
 
+            AnsiConsole.MarkupLine("");
             int choice = sdcard != null ? UserChoose("1234") : UserChoose("123");
 
             switch (choice)
@@ -1478,7 +1494,6 @@ class WiiLink_Patcher
                         break;
                 }
             }
-            AnsiConsole.MarkupLine("");
 
             // Patching Section: Patching Regional Channels
             if (installRegionalChannels)
@@ -1486,6 +1501,7 @@ class WiiLink_Patcher
                 string patchingWiiLinkChannels = patcherLang == PatcherLanguage.en
                     ? "Patching Regional Channels"
                     : $"{localizedText?["PatchingProgress"]?["patchingWiiLinkChannels"]}";
+                
                 AnsiConsole.MarkupLine($"\n[bold]{patchingWiiLinkChannels}:[/]");
                 foreach (string channel in new string[] { "wiiroom", "digicam", "demae", "kirbytv" })
                 {
@@ -1502,7 +1518,6 @@ class WiiLink_Patcher
                             break;
                     }
                 }
-                AnsiConsole.MarkupLine("");
             }
 
             // Post-Patching Section: Finishing up
@@ -1512,7 +1527,7 @@ class WiiLink_Patcher
             string finishingUp = patcherLang == PatcherLanguage.en
                 ? "Finishing up..."
                 : $"{localizedText?["PatchingProgress"]?["finishingUp"]}";
-            AnsiConsole.MarkupLine($"[bold]{postPatching}:[/]");
+            AnsiConsole.MarkupLine($"\n[bold]{postPatching}:[/]");
             switch (patchingProgress_express["finishing"])
             {
                 case "not_started":
@@ -1770,7 +1785,6 @@ class WiiLink_Patcher
                     AnsiConsole.MarkupLine($"[bold springgreen2_1]●[/] {finishingUp}");
                     break;
             }
-            AnsiConsole.MarkupLine("");
 
             // Execute the next patching function
             selectedPatchingFunctions[partCompleted]();
@@ -2787,7 +2801,7 @@ class WiiLink_Patcher
             string copyingFiles = patcherLang == PatcherLanguage.en
                 ? "Copying files to SD card, which may take a while."
                 : $"{localizedText?["FinishSDCopy"]?["copyingFiles"]}";
-            AnsiConsole.MarkupLine($" [bold][[*]] {copyingFiles}[/]\n");
+            AnsiConsole.MarkupLine($" [bold][[*]] {copyingFiles}[/]");
 
             try
             {
@@ -2896,11 +2910,35 @@ class WiiLink_Patcher
             {
                 case 1:
                     if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                        Process.Start(@"explorer.exe", sdcard ?? curDir);
+                    {
+                        var psi = new ProcessStartInfo
+                        {
+                            FileName = "explorer.exe",
+                            ArgumentList = { sdcard ?? curDir },
+                            UseShellExecute = false,
+                        };
+                        Process.Start(psi);
+                    }
                     else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                        Process.Start("xdg-open", sdcard ?? curDir);
+                    {
+                        var psi = new ProcessStartInfo
+                        {
+                            FileName = "xdg-open",
+                            ArgumentList = { sdcard ?? curDir },
+                            UseShellExecute = false,
+                        };
+                        Process.Start(psi);
+                    }
                     else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                        Process.Start("open", sdcard ?? curDir);
+                    {
+                        var psi = new ProcessStartInfo
+                        {
+                            FileName = "open",
+                            ArgumentList = { sdcard ?? curDir },
+                            UseShellExecute = false,
+                        };
+                        Process.Start(psi);
+                    }
                     break;
                 case 2:
                     MainMenu();
@@ -3432,17 +3470,36 @@ class WiiLink_Patcher
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 // Windows
-                Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
+                var psi = new ProcessStartInfo
+                {
+                    FileName = "cmd",
+                    Arguments = $"/c start {url}",
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                };
+                Process.Start(psi);
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 // Linux
-                Process.Start("xdg-open", url);
+                var psi = new ProcessStartInfo
+                {
+                    FileName = "xdg-open",
+                    Arguments = url,
+                    UseShellExecute = false,
+                };
+                Process.Start(psi);
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 // macOS
-                Process.Start("open", url);
+                var psi = new ProcessStartInfo
+                {
+                    FileName = "open",
+                    Arguments = url,
+                    UseShellExecute = false,
+                };
+                Process.Start(psi);
             }
         }
         catch (Exception ex)
@@ -3617,7 +3674,7 @@ class WiiLink_Patcher
         var executables = new Dictionary<string, string>
         {
             { "Windows", $"RC24_WiiLink_Patcher_Windows_{latestVersion}.exe" },
-            { "Linux", RuntimeInformation.ProcessArchitecture == Architecture.Arm64 
+            { "Linux", RuntimeInformation.ProcessArchitecture == Architecture.Arm64
                             ? $"RC24_WiiLink_Patcher_Linux-arm64_{latestVersion}"
                             : $"RC24_WiiLink_Patcher_Linux-x64_{latestVersion}" },
             { "OSX", RuntimeInformation.ProcessArchitecture == Architecture.Arm64
@@ -3627,7 +3684,7 @@ class WiiLink_Patcher
 
         // Get the download URL for the latest version
         string downloadUrl = $"https://github.com/WiiLink24/WiiLink24-Patcher/releases/download/{latestVersion}/";
-        
+
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && executables.ContainsKey("Windows"))
             downloadUrl += executables["Windows"];
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && executables.ContainsKey("Linux"))
