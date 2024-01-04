@@ -15,8 +15,8 @@ class WiiLink_Patcher
     //// Build Info ////
     static readonly string version = "v2.0.0T RC3";
     static readonly string copyrightYear = DateTime.Now.Year.ToString();
-    static readonly string buildDate = "January 1st, 2024";
-    static readonly string buildTime = "8:57 PM";
+    static readonly string buildDate = "January 3st, 2024";
+    static readonly string buildTime = "4:11 PM";
     static string? sdcard = DetectSDCard;
     static readonly string wiiLinkPatcherUrl = "https://patcher.wiilink24.com";
     ////////////////////
@@ -134,12 +134,19 @@ class WiiLink_Patcher
 
                 foreach (var basePath in basePaths)
                 {
-                    var directories = Directory.GetDirectories(basePath, "*", SearchOption.AllDirectories);
-
-                    foreach (var directory in directories)
+                    try
                     {
-                        if (Directory.Exists(Path.Join(directory, "apps")))
-                            return directory;
+                        var directories = Directory.GetDirectories(basePath);
+
+                        foreach (var directory in directories)
+                        {
+                            if (Directory.Exists(Path.Join(directory, "apps")))
+                                return directory;
+                        }
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        // If the user doesn't have permission to access the directory, skip it.
                     }
                 }
             }
@@ -3609,13 +3616,18 @@ class WiiLink_Patcher
         // Map operating system names to executable names
         var executables = new Dictionary<string, string>
         {
-            { "Windows", $"WiiLink_Patcher_Windows_{latestVersion}.exe" },
-            { "Linux", RuntimeInformation.ProcessArchitecture == Architecture.Arm64 ? $"WiiLink_Patcher_Linux-arm64_{latestVersion}" : $"WiiLink_Patcher_Linux-x64_{latestVersion}" },
-            { "OSX", RuntimeInformation.ProcessArchitecture == Architecture.Arm64 ? $"WiiLink_Patcher_macOS-arm64_{latestVersion}" : $"WiiLink_Patcher_macOS-x64_{latestVersion}" }
+            { "Windows", $"RC24_WiiLink_Patcher_Windows_{latestVersion}.exe" },
+            { "Linux", RuntimeInformation.ProcessArchitecture == Architecture.Arm64 
+                            ? $"RC24_WiiLink_Patcher_Linux-arm64_{latestVersion}"
+                            : $"RC24_WiiLink_Patcher_Linux-x64_{latestVersion}" },
+            { "OSX", RuntimeInformation.ProcessArchitecture == Architecture.Arm64
+                            ? $"RC24_WiiLink_Patcher_macOS-arm64_{latestVersion}"
+                            : $"RC24_WiiLink_Patcher_macOS-x64_{latestVersion}" }
         };
 
         // Get the download URL for the latest version
         string downloadUrl = $"https://github.com/WiiLink24/WiiLink24-Patcher/releases/download/{latestVersion}/";
+        
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && executables.ContainsKey("Windows"))
             downloadUrl += executables["Windows"];
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && executables.ContainsKey("Linux"))
@@ -3882,19 +3894,19 @@ class WiiLink_Patcher
         }
 
         // Set console window size to 120x30 on macOS and Linux and on Windows, check for Windows version
-        switch (RuntimeInformation.OSDescription)
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
-            case string os when os.Contains("macOS"):
+            Console.Write("\u001b[8;30;120t");
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            if (console_width < 100 || console_height < 25)
                 Console.Write("\u001b[8;30;120t");
-                break;
-            case string os when os.Contains("Linux"):
-                if (console_width < 100 || console_height < 25)
-                    Console.Write("\u001b[8;30;120t");
-                break;
-            case string os when os.Contains("Windows"):
-                if (Environment.OSVersion.Version.Major < 10)
-                    WinCompatWarning();
-                break;
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            if (Environment.OSVersion.Version.Major < 10)
+                WinCompatWarning();
         }
 
         // Check if the server is up
