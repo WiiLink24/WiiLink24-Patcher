@@ -13,10 +13,10 @@ using Newtonsoft.Json.Linq;
 class WiiLink_Patcher
 {
     //// Build Info ////
-    static readonly string version = "v2.0.0";
+    static readonly string version = "v2.0.1";
     static readonly string copyrightYear = DateTime.Now.Year.ToString();
-    static readonly string buildDate = "January 4st, 2024";
-    static readonly string buildTime = "3:00 PM";
+    static readonly string buildDate = "January 12th, 2024";
+    static readonly string buildTime = "7:14 PM";
     static string? sdcard = DetectSDCard;
     static readonly string wiiLinkPatcherUrl = "https://patcher.wiilink24.com";
     ////////////////////
@@ -648,6 +648,10 @@ class WiiLink_Patcher
         File.Move(Path.Join(titleFolder, $"tmd.{channelVersion}"), Path.Join(titleFolder, $"{titleID}.tmd"));
         File.Move(Path.Join(titleFolder, "cetk"), Path.Join(titleFolder, $"{titleID}.tik"));
 
+        // For Kirby TV Channel in particular, it needs to use a modified TMD file, so redownload it and rename it appropriately
+        if (channelName == "ktv")
+            DownloadFile($"{wiiLinkPatcherUrl}/{channelName.ToLower()}/{titleID}.tmd", Path.Join(titleFolder, $"{titleID}.tmd"), channelTitle);
+
         // Apply the delta patches to the app file
         task = $"Applying delta patch for {channelTitle}";
         foreach (var (app, patch) in appFile.Zip(patchFile, (app, patch) => (app, patch)))
@@ -698,8 +702,6 @@ class WiiLink_Patcher
 
         // Create unpack and unpack-patched folders
         Directory.CreateDirectory(titleFolder);
-
-        string fileURL = $"{wiiLinkPatcherUrl}/{channelName.ToLower()}/{titleID}";
 
         // Extract the necessary files for the channel
         task = $"Extracting stuff for {channelTitle}";
