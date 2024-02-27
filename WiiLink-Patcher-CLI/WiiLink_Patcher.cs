@@ -1883,6 +1883,9 @@ class WiiLink_Patcher
         // Download yawmME from OSC for installing WADs on the Wii
         DownloadOSCApp("yawmME");
 
+        // Download sntp from OSC for Syncing the Clock on the Wii
+        DownloadOSCApp("sntp");
+
         // Download WC24 patches if applicable
         // Nintendo Channel
         DownloadPatch("nc", $"NC_1_{wc24_reg}.delta", $"NC_1_{wc24_reg}.delta", "Nintendo Channel");
@@ -2523,6 +2526,9 @@ class WiiLink_Patcher
 
         // Downloading yawmME from OSC
         DownloadOSCApp("yawmME");
+
+        // Downloading sntp from OSC
+        DownloadOSCApp("sntp");
 
         // Install the RC24 Mail Patcher
         DownloadOSCApp("Mail-Patcher");
