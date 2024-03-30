@@ -7,16 +7,16 @@ using System.Net;
 using Newtonsoft.Json.Linq;
 
 // Author: PablosCorner and WiiLink Team
-// Project: RiiConnect24 + WiiLink Patcher (CLI Version)
-// Description: RiiConnect24 + WiiLink Patcher (CLI Version) is a command-line interface to patch and revive the exclusive Japanese Wii Channels that were shut down, along with the international WiiConnect24 Channels.
+// Project: WiiLink Patcher (CLI Version)
+// Description: WiiLink Patcher (CLI Version) is a command-line interface to patch and revive the exclusive Japanese Wii Channels that were shut down, along with the international WiiConnect24 Channels.
 
 class WiiLink_Patcher
 {
     //// Build Info ////
-    static readonly string version = "v2.0.0";
+    static readonly string version = "v2.0.2T";
     static readonly string copyrightYear = DateTime.Now.Year.ToString();
-    static readonly string buildDate = "January 4st, 2024";
-    static readonly string buildTime = "12:22 PM";
+    static readonly string buildDate = "March 29th, 2024";
+    static readonly string buildTime = "9:18 PM";
     static string? sdcard = DetectSDCard;
     static readonly string wiiLinkPatcherUrl = "https://patcher.wiilink24.com";
     ////////////////////
@@ -59,7 +59,7 @@ class WiiLink_Patcher
     static int console_height = 0;
 
     // HttpClient
-    static readonly HttpClient httpClient = new() { Timeout = TimeSpan.FromSeconds(10) };
+    static readonly HttpClient httpClient = new() { Timeout = TimeSpan.FromSeconds(30) };
     ////////////////////
 
     static void PrintHeader()
@@ -67,7 +67,7 @@ class WiiLink_Patcher
         Console.Clear();
 
         string headerText = patcherLang == PatcherLanguage.en
-            ? $"[deepskyblue1]RiiConnect24[/] + [springgreen2_1]WiiLink[/] Patcher {version} - (c) {copyrightYear} WiiLink Team"
+            ? $"[springgreen2_1]WiiLink[/] Patcher {version} - (c) {copyrightYear} WiiLink Team"
             : $"{localizedText?["Header"]}"
                 .Replace("{version}", version)
                 .Replace("{year}", copyrightYear);
@@ -90,7 +90,7 @@ class WiiLink_Patcher
             ? "Notice"
             : $"{localizedText?["Notice"]?["noticeTitle"]}";
         string text = patcherLang == PatcherLanguage.en
-            ? "If you have any issues with the patcher or services offered by WiiLink or RiiConnect24, please report them on our [springgreen2_1 link=https://discord.gg/rc24]Discord Server[/]!"
+            ? "If you have any issues with the patcher or services offered by WiiLink, please report them on our [springgreen2_1 link=https://discord.gg/wiilink]Discord Server[/]!"
             : $"{localizedText?["Notice"]?["noticeMsg"]}";
 
         var panel = new Panel($"[bold]{text}[/]")
@@ -254,10 +254,10 @@ class WiiLink_Patcher
 
         // Credits text
         string sketchDesc = patcherLang == PatcherLanguage.en
-            ? "RiiConnect24 + WiiLink Lead"
+            ? "WiiLink Lead"
             : $"{localizedText?["Credits"]?["sketchDesc"]}";
         string pablosDesc = patcherLang == PatcherLanguage.en
-            ? "RiiConnect24 + WiiLink Patcher Developer"
+            ? "WiiLink Patcher Developer"
             : $"{localizedText?["Credits"]?["pablosDesc"]}";
         string lunaDesc = patcherLang == PatcherLanguage.en
             ? "Lead Translator"
@@ -301,7 +301,7 @@ class WiiLink_Patcher
             ? "You!"
             : $"{localizedText?["Credits"]?["you"]}";
         string youRole = patcherLang == PatcherLanguage.en
-            ? "- For your continued support of WiiLink and RiiConnect24!"
+            ? "- For your continued support of WiiLink!"
             : $"{localizedText?["Credits"]?["youRole"]}";
 
         specialThanksGrid.AddRow($"  ● [bold springgreen2_1]TheShadowEevee[/]", theshadoweeveeRole);
@@ -315,9 +315,6 @@ class WiiLink_Patcher
         string wiilinkSite = patcherLang == PatcherLanguage.en
             ? "WiiLink website"
             : $"{localizedText?["Credits"]?["wiilinkSite"]}";
-        string riiconnect24Site = patcherLang == PatcherLanguage.en
-            ? "RiiConnect24 website"
-            : $"{localizedText?["Credits"]?["riiconnect24Site"]}";
         string githubRepo = patcherLang == PatcherLanguage.en
             ? "Github repository"
             : $"{localizedText?["Credits"]?["githubRepo"]}";
@@ -325,7 +322,6 @@ class WiiLink_Patcher
         var linksGrid = new Grid().AddColumn().AddColumn();
 
         linksGrid.AddRow($"[bold springgreen2_1]{wiilinkSite}[/]:", "[link]https://wiilink24.com[/]");
-        linksGrid.AddRow($"[bold springgreen2_1]{riiconnect24Site}[/]:", "[link]https://rc24.xyz[/]");
         linksGrid.AddRow($"[bold springgreen2_1]{githubRepo}[/]:", "[link]https://github.com/WiiLink24/WiiLink24-Patcher[/]");
 
         AnsiConsole.Write(linksGrid);
@@ -599,13 +595,12 @@ class WiiLink_Patcher
         string patchFolder = Path.Join(tempDir, "Patches", channelName);
 
         // Name the output WAD file
+        // Append the region to the output WAD name if it has a region
         string outputWad;
-        if (channelName == "ktv") // Use the WiiLink branding for Kirby TV Channel
+        if (channelName == "ktv" || channelRegion == null)
             outputWad = Path.Join("WAD", $"{channelTitle} (WiiLink).wad");
-        else if (channelRegion == null) // Remove the region from the output WAD name if it's null
-            outputWad = Path.Join("WAD", $"{channelTitle} (RiiConnect24).wad");
-        else // Use the RiiConnect24 branding for all other WC24 channels
-            outputWad = Path.Join("WAD", $"{channelTitle} [{channelRegion}] (RiiConnect24).wad");
+        else
+            outputWad = Path.Join("WAD", $"{channelTitle} [{channelRegion}] (WiiLink).wad");
 
         // Create unpack and unpack-patched folders
         Directory.CreateDirectory(titleFolder);
@@ -689,17 +684,13 @@ class WiiLink_Patcher
 
         // Name the output WAD file
         string outputWad;
-        if (channelRegion == null) // Remove the region from the output WAD name if it's null
-            outputWad = Path.Join("WAD", $"{channelTitle} (RiiConnect24).wad");
-        else if (channelName == "ktv") // Use the WiiLink branding for Kirby TV Channel
+        if (channelName == "ktv" || channelRegion == null)
             outputWad = Path.Join("WAD", $"{channelTitle} (WiiLink).wad");
-        else // Use the RiiConnect24 branding for all other WC24 channels
-            outputWad = Path.Join("WAD", $"{channelTitle} [{channelRegion}] (RiiConnect24).wad");
+        else
+            outputWad = Path.Join("WAD", $"{channelTitle} [{channelRegion}] (WiiLink).wad");
 
         // Create unpack and unpack-patched folders
         Directory.CreateDirectory(titleFolder);
-
-        string fileURL = $"{wiiLinkPatcherUrl}/{channelName.ToLower()}/{titleID}";
 
         // Extract the necessary files for the channel
         task = $"Extracting stuff for {channelTitle}";
@@ -842,7 +833,7 @@ class WiiLink_Patcher
         }
     }
 
-    // Ask user if they want to install RiiConnect24's WiiConnect24 services (Express Install)
+    // Ask user if they want to install WiiConnect24 services (Express Install)
     static void WiiLinkRegionalChannelsSetup()
     {
         while (true)
@@ -936,9 +927,9 @@ class WiiLink_Patcher
                 : $"{localizedText?["ExpressInstall"]?["Header"]}";
             AnsiConsole.MarkupLine($"[bold springgreen2_1]{EIHeader}[/]\n");
 
-            // Welcome the user to the Express Install of RiiConnect24 + WiiLink
+            // Welcome the user to the Express Install of WiiLink
             string welcome = patcherLang == PatcherLanguage.en
-                ? "[bold]Welcome to the Express Install of [deepskyblue1]RiiConnect24[/] + [springgreen2_1]WiiLink[/]![/]"
+                ? "[bold]Welcome to the Express Install of [springgreen2_1]WiiLink[/]![/]"
                 : $"{localizedText?["ExpressInstall"]?["WC24Setup"]?["welcome"]}";
             AnsiConsole.MarkupLine($"{welcome}\n");
 
@@ -954,7 +945,7 @@ class WiiLink_Patcher
 
             // Instructions Text
             string instructions = patcherLang == PatcherLanguage.en
-                ? "For [bold deepskyblue1]RiiConnect24[/]'s WiiConnect24 services, which region would you like to install?"
+                ? "For the WiiConnect24 services, which region would you like to install?"
                 : $"{localizedText?["ExpressInstall"]?["WC24Setup"]?["instructions"]}";
             AnsiConsole.MarkupLine($"{instructions}\n");
 
@@ -1501,7 +1492,7 @@ class WiiLink_Patcher
                 string patchingWiiLinkChannels = patcherLang == PatcherLanguage.en
                     ? "Patching Regional Channels"
                     : $"{localizedText?["PatchingProgress"]?["patchingWiiLinkChannels"]}";
-                
+
                 AnsiConsole.MarkupLine($"\n[bold]{patchingWiiLinkChannels}:[/]");
                 foreach (string channel in new string[] { "wiiroom", "digicam", "demae", "kirbytv" })
                 {
@@ -1897,7 +1888,7 @@ class WiiLink_Patcher
 
         // Everybody Votes Channel and Region Select Channel
         DownloadPatch("evc", $"EVC_1_{wc24_reg}.delta", $"EVC_1_{wc24_reg}.delta", "Everybody Votes Channel");
-        DownloadPatch("RegSel", $"RegSel_1.delta", "RegSel_1.delta", "Region Select");
+        //DownloadPatch("RegSel", $"RegSel_1.delta", "RegSel_1.delta", "Region Select");
 
         // Check Mii Out/Mii Contest Channel
         DownloadPatch("cmoc", $"CMOC_1_{wc24_reg}.delta", $"CMOC_1_{wc24_reg}.delta", "Check Mii Out Channel");
@@ -2488,17 +2479,17 @@ class WiiLink_Patcher
                 case "evc_us":
                     task = $"Downloading Everybody Votes Channel (USA)";
                     DownloadPatch("evc", $"EVC_1_USA.delta", "EVC_1_USA.delta", "Everybody Votes Channel");
-                    DownloadPatch("RegSel", "RegSel_1.delta", "RegSel_1.delta", "Region Select");
+                    //DownloadPatch("RegSel", "RegSel_1.delta", "RegSel_1.delta", "Region Select");
                     break;
                 case "evc_eu":
                     task = $"Downloading Everybody Votes Channel (PAL)";
                     DownloadPatch("evc", $"EVC_1_PAL.delta", "EVC_1_PAL.delta", "Everybody Votes Channel");
-                    DownloadPatch("RegSel", "RegSel_1.delta", "RegSel_1.delta", "Region Select");
+                    //DownloadPatch("RegSel", "RegSel_1.delta", "RegSel_1.delta", "Region Select");
                     break;
                 case "evc_jp":
                     task = $"Downloading Everybody Votes Channel (Japan)";
                     DownloadPatch("evc", $"EVC_1_Japan.delta", "EVC_1_Japan.delta", "Everybody Votes Channel");
-                    DownloadPatch("RegSel", "RegSel_1.delta", "RegSel_1.delta", "Region Select");
+                    //DownloadPatch("RegSel", "RegSel_1.delta", "RegSel_1.delta", "Region Select");
                     break;
                 case "cmoc_us":
                     task = $"Downloading Check Mii Out Channel (USA)";
@@ -2729,9 +2720,6 @@ class WiiLink_Patcher
         List<string> appNums = new() { "00000019" };
 
         PatchWC24Channel("evc", $"Everybody Votes Channel", 512, region, channelID, patches, appNums);
-
-        //// Patching Region Select for Everybody Votes Channel
-        RegSel_Patch(region);
 
         // Finished patching Everybody Votes Channel
         patchingProgress_express["evc"] = "done";
@@ -3345,7 +3333,7 @@ class WiiLink_Patcher
 
             // Main Menu text
             string welcomeMessage = patcherLang == PatcherLanguage.en
-                ? "Welcome to the [deepskyblue1]RiiConnect24[/] + [springgreen2_1]WiiLink[/] Patcher!"
+                ? "Welcome to the [springgreen2_1]WiiLink[/] Patcher!"
                 : $"{localizedText?["MainMenu"]?["welcomeMessage"]}";
 
             // Express Install text
@@ -3373,11 +3361,6 @@ class WiiLink_Patcher
                 ? "Visit the WiiLink Website"
                 : $"{localizedText?["MainMenu"]?["visitWiiLink"]}";
 
-            // Visit the RiiConnect24 website text
-            string visitRiiConnect24 = patcherLang == PatcherLanguage.en
-                ? "Visit the RiiConnect24 Website"
-                : $"{localizedText?["MainMenu"]?["visitRiiConnect24"]}";
-
             // Exit Patcher text
             string exitPatcher = patcherLang == PatcherLanguage.en
                 ? "Exit Patcher"
@@ -3387,7 +3370,7 @@ class WiiLink_Patcher
             AnsiConsole.MarkupLine($"[bold]{welcomeMessage}[/]\n");
 
             // if (version.Contains('T'))
-            //     AnsiConsole.MarkupLine($"[bold springgreen2_1]You are using a test build of the RiiConnect24 + WiiLink Patcher.[/]\n");
+            //     AnsiConsole.MarkupLine($"[bold springgreen2_1]You are using a test build of the WiiLink Patcher.[/]\n");
 
             AnsiConsole.MarkupLine($"1. {startExpressSetup}");
             AnsiConsole.MarkupLine($"2. {startCustomSetup}");
@@ -3396,9 +3379,8 @@ class WiiLink_Patcher
             AnsiConsole.MarkupLine($"4. {visitGitHub}\n");
 
             AnsiConsole.MarkupLine($"5. {visitWiiLink}");
-            AnsiConsole.MarkupLine($"6. {visitRiiConnect24}\n");
 
-            AnsiConsole.MarkupLine($"7. {exitPatcher}\n");
+            AnsiConsole.MarkupLine($"6. {exitPatcher}\n");
 
             // Detect SD Card / USB Drive text
             string SDDetectedOrNot = sdcard != null
@@ -3423,7 +3405,7 @@ class WiiLink_Patcher
             AnsiConsole.MarkupLine(manualDetection);
 
             // User chooses an option
-            int choice = UserChoose("1234567RrMm");
+            int choice = UserChoose("123456RrMm");
             switch (choice)
             {
                 case 1: // Start Express Install
@@ -3441,19 +3423,16 @@ class WiiLink_Patcher
                 case 5: // Visit WiiLink website
                     VisitWebsite("https://wiilink24.com");
                     break;
-                case 6: // Visit RiiConnect24 website
-                    VisitWebsite("https://rc24.xyz");
-                    break;
-                case 7: // Clear console and Exit app
+                case 6: // Clear console and Exit app
                     Console.Clear();
                     ExitApp();
                     break;
-                case 8: // Automatically detect SD Card path (R/r)
-                case 9:
+                case 7: // Automatically detect SD Card path (R/r)
+                case 8:
                     sdcard = DetectSDCard;
                     break;
-                case 10: // Manually select SD Card path (M/m)
-                case 11:
+                case 9: // Manually select SD Card path (M/m)
+                case 10:
                     SDCardSelect();
                     break;
                 default:
@@ -3508,11 +3487,11 @@ class WiiLink_Patcher
         }
     }
 
-    // This function checks if a server is up and running
-    static async Task<(HttpStatusCode, string)> CheckServerAsync(string serverURL, int maxRetries = 3, int retryDelayMs = 1000)
+    public static (bool, int, string) CheckServer(string serverURL)
     {
-        // URL to check server status
-        string url = $"{serverURL}/wiinoma/WiinoMa_1_English.delta";
+        // Define the URL to the connection test file and the expected response
+        string url = $"{serverURL}/connectiontest.txt";
+        string expectedResponse = "If the patcher can read this, the connection test succeeds.";
 
         PrintHeader();
 
@@ -3522,72 +3501,55 @@ class WiiLink_Patcher
             : $"{localizedText?["CheckServerStatus"]}";
         AnsiConsole.MarkupLine($"{checkingServerStatus}\n");
 
-        int retryCount = 0;
-        do
+        try
         {
-            try
-            {
-                // Send a GET request to the server
-                using var response = await httpClient.GetAsync(url);
-                if (response.IsSuccessStatusCode)
-                {
-                    // If successful, display success message and return
-                    string success = patcherLang == PatcherLanguage.en
-                        ? "Successfully connected to server!"
-                        : $"{localizedText?["CheckServerStatus"]}";
-                    AnsiConsole.MarkupLine($"[bold springgreen2_1]{success}[/]\n");
-                    await Task.Delay(1000); // Wait for 1 second
-                    return (HttpStatusCode.OK, "Successfully connected to server!");
-                }
-                else
-                {
-                    // If not successful, return the status code and reason
-                    return (response.StatusCode == default ? HttpStatusCode.InternalServerError : response.StatusCode, response.ReasonPhrase ?? "Unknown error");
-                }
-            }
-            catch (HttpRequestException ex)
-            {
-                // If an exception occurs, display error message and return
-                if (retryCount == maxRetries - 1)
-                {
-                    string failed = patcherLang == PatcherLanguage.en
-                        ? "Connection to server failed!"
-                        : $"{localizedText?["CheckServerStatus"]}";
-                    AnsiConsole.MarkupLine($"[bold red]{failed}[/]\n");
-                    return (ex.StatusCode ?? HttpStatusCode.InternalServerError, ex.Message);
-                }
-            }
-            catch (TaskCanceledException)
-            {
-                // If a timeout occurs, display error message and return
-                if (retryCount == maxRetries - 1)
-                {
-                    string timeout = patcherLang == PatcherLanguage.en
-                        ? "Connection to server timed out!"
-                        : $"{localizedText?["CheckServerStatus"]}";
-                    AnsiConsole.MarkupLine($"[bold red]{timeout}[/]\n");
-                    return (HttpStatusCode.RequestTimeout, "Connection to server timed out!");
-                }
-            }
+            // Create a new HttpClient instance and download the content of the connection test file
+            using var client = new HttpClient();
+            string responseText = client.GetStringAsync(url).Result;
 
-            // If the maximum number of retries has not been reached, wait and then retry
-            if (retryCount < maxRetries - 1)
+            // Check if the response matches the expected response
+            if (responseText.Trim() == expectedResponse)
             {
-                string retrying = patcherLang == PatcherLanguage.en
-                    ? $"Retrying in [bold]{retryDelayMs / 1000}[/] seconds..."
+                // If successful, display success message and return
+                string success = patcherLang == PatcherLanguage.en
+                    ? "Successfully connected to server!"
                     : $"{localizedText?["CheckServerStatus"]}";
-                AnsiConsole.MarkupLine($"{retrying}\n");
-                await Task.Delay(retryDelayMs);
+                AnsiConsole.MarkupLine($"[bold springgreen2_1]{success}[/]\n");
+                // Wait for 1 second before returning
+                Thread.Sleep(1000);
+
+                // If it matches, return success with status code 200
+                return (true, 200, "Successfully connected to server!");
             }
-
-            retryCount++;
-        } while (retryCount < maxRetries);
-
-        // If all retries fail, return service unavailable
-        return (HttpStatusCode.ServiceUnavailable, "Connection to server failed!");
+            else
+            {
+                // If it doesn't match, return an error with status code 400
+                return (false, 400, "Unexpected response from server!");
+            }
+        }
+        // Handle specific WebException errors
+        catch (WebException ex)
+        {
+            // If the exception has an associated HTTP response, return the status code and description
+            if (ex.Response is HttpWebResponse response)
+            {
+                return (false, (int)response.StatusCode, $"Error: {(int)response.StatusCode} - {response.StatusDescription}");
+            }
+            else
+            {
+                // If the exception doesn't have an associated HTTP response, return the exception message with status code 500
+                return (false, 500, $"Request exception: {ex.Message}");
+            }
+        }
+        // Handle any other types of exceptions
+        catch (Exception ex)
+        {
+            // Return the exception message with status code 500
+            return (false, 500, $"Unexpected exception: {ex.Message}");
+        }
     }
 
-    static void ConnectionFailed(HttpStatusCode statusCode, string msg)
+    static void ConnectionFailed(int statusCode, string errorMsg)
     {
         PrintHeader();
 
@@ -3605,7 +3567,7 @@ class WiiLink_Patcher
             ? "It seems that either the server is down or your internet connection is not working."
             : $"{localizedText?["ServerDown"]?["serverOrInternet"]}";
         string reportIssue = patcherLang == PatcherLanguage.en
-            ? "If you are sure that your internet connection is working, please join our [link=https://discord.gg/rc24 bold springgreen2_1]Discord Server[/] and report this issue."
+            ? "If you are sure that your internet connection is working, please join our [link=https://discord.gg/wiilink bold springgreen2_1]Discord Server[/] and report this issue."
             : $"{localizedText?["ServerDown"]?["reportIssue"]}";
         AnsiConsole.MarkupLine($"{checkInternet}\n");
         AnsiConsole.MarkupLine($"{serverOrInternet}\n");
@@ -3622,7 +3584,7 @@ class WiiLink_Patcher
             ? "Press any key to exit..."
             : $"{localizedText?["ServerDown"]?["exitMessage"]}";
         AnsiConsole.MarkupLine($"{statusCodeText} {statusCode}");
-        AnsiConsole.MarkupLine($"{messageText} {msg}\n");
+        AnsiConsole.MarkupLine($"{messageText} {errorMsg}\n");
 
         AnsiConsole.MarkupLine($"[bold yellow]{exitMessage}[/]");
 
@@ -3673,13 +3635,13 @@ class WiiLink_Patcher
         // Map operating system names to executable names
         var executables = new Dictionary<string, string>
         {
-            { "Windows", $"RC24_WiiLink_Patcher_Windows_{latestVersion}.exe" },
+            { "Windows", "WiiLinkPatcher_Windows.exe" },
             { "Linux", RuntimeInformation.ProcessArchitecture == Architecture.Arm64
-                            ? $"RC24_WiiLink_Patcher_Linux-arm64_{latestVersion}"
-                            : $"RC24_WiiLink_Patcher_Linux-x64_{latestVersion}" },
+                                ? "WiiLinkPatcher_Linux-arm64"
+                                : "WiiLinkPatcher_Linux-x64" },
             { "OSX", RuntimeInformation.ProcessArchitecture == Architecture.Arm64
-                            ? $"RC24_WiiLink_Patcher_macOS-arm64_{latestVersion}"
-                            : $"RC24_WiiLink_Patcher_macOS-x64_{latestVersion}" }
+                                ? "WiiLinkPatcher_macOS-arm64"
+                                : "WiiLinkPatcher_macOS-x64" }
         };
 
         // Get the download URL for the latest version
@@ -3896,7 +3858,7 @@ class WiiLink_Patcher
 
         AnsiConsole.MarkupLine("[bold red]WARNING:[/] Older version of Windows detected!\n");
 
-        AnsiConsole.MarkupLine("You are running the RiiConnect24 + WiiLink Patcher on an older version of Windows.");
+        AnsiConsole.MarkupLine("You are running the WiiLink Patcher on an older version of Windows.");
         AnsiConsole.MarkupLine("While the patcher may work, it is not guaranteed to work on this version of Windows.\n");
 
         AnsiConsole.MarkupLine("If you encounter any issues while running the patcher, we will most likely not be able to help you.\n");
@@ -3945,7 +3907,7 @@ class WiiLink_Patcher
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            Console.Title = $"RiiConnect24 + WiiLink Patcher {version}";
+            Console.Title = $"WiiLink Patcher {version}";
             if (DEBUG_MODE) Console.Title += $" [DEBUG MODE]";
             if (version.Contains('T')) Console.Title += $" (Test Build)";
         }
@@ -3967,9 +3929,10 @@ class WiiLink_Patcher
         }
 
         // Check if the server is up
-        var result = await CheckServerAsync(wiiLinkPatcherUrl);
-        if (result != (HttpStatusCode.OK, "Successfully connected to server!"))
-            ConnectionFailed(result.Item1, result.Item2);
+        // If the server is down, show the status code and error message
+        var result = CheckServer(wiiLinkPatcherUrl);
+        if (!result.Item1)
+            ConnectionFailed(result.Item2, result.Item3);
 
         // Check latest version if not on a test build
         if (!version.Contains('T'))
