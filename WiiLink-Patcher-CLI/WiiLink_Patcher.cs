@@ -15,8 +15,8 @@ class WiiLink_Patcher
     //// Build Info ////
     static readonly string version = "v2.0.2T";
     static readonly string copyrightYear = DateTime.Now.Year.ToString();
-    static readonly string buildDate = "March 29th, 2024";
-    static readonly string buildTime = "9:18 PM";
+    static readonly string buildDate = "March 30th, 2024";
+    static readonly string buildTime = "5:43 PM";
     static string? sdcard = DetectSDCard;
     static readonly string wiiLinkPatcherUrl = "https://patcher.wiilink24.com";
     ////////////////////
@@ -3376,9 +3376,9 @@ class WiiLink_Patcher
             AnsiConsole.MarkupLine($"2. {startCustomSetup}");
             AnsiConsole.MarkupLine($"3. {settings}\n");
 
-            AnsiConsole.MarkupLine($"4. {visitGitHub}\n");
+            AnsiConsole.MarkupLine($"4. {visitGitHub}");
 
-            AnsiConsole.MarkupLine($"5. {visitWiiLink}");
+            AnsiConsole.MarkupLine($"5. {visitWiiLink}\n");
 
             AnsiConsole.MarkupLine($"6. {exitPatcher}\n");
 
