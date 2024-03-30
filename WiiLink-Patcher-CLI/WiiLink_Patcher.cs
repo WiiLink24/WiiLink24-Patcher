@@ -1492,7 +1492,6 @@ class WiiLink_Patcher
                 string patchingWiiLinkChannels = patcherLang == PatcherLanguage.en
                     ? "Patching Regional Channels"
                     : $"{localizedText?["PatchingProgress"]?["patchingWiiLinkChannels"]}";
-
                 AnsiConsole.MarkupLine($"\n[bold]{patchingWiiLinkChannels}:[/]");
                 foreach (string channel in new string[] { "wiiroom", "digicam", "demae", "kirbytv" })
                 {
@@ -1871,6 +1870,9 @@ class WiiLink_Patcher
 
         // Download yawmME from OSC for installing WADs on the Wii
         DownloadOSCApp("yawmME");
+
+        // Download sntp from OSC for Syncing the Clock on the Wii
+        DownloadOSCApp("sntp");
 
         // Download WC24 patches if applicable
         // Nintendo Channel
@@ -2512,6 +2514,9 @@ class WiiLink_Patcher
 
         // Downloading yawmME from OSC
         DownloadOSCApp("yawmME");
+
+        // Downloading sntp from OSC
+        DownloadOSCApp("sntp");
 
         // Install the RC24 Mail Patcher
         DownloadOSCApp("Mail-Patcher");
