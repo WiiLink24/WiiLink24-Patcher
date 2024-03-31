@@ -11,12 +11,13 @@
     <Authors>WiiLink</Authors>
     <PackageIcon>icon.png</PackageIcon>
     <Product>WiiLink Patcher (CLI)</Product>
-    <Copyright>2023 WiiLink</Copyright>
+    <Copyright>2024 WiiLink</Copyright>
     <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
     <RuntimeIdentifiers>win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
     <PublishSingleFile>true</PublishSingleFile>
     <PublishTrimmed>true</PublishTrimmed>
     <LangVersion>latest</LangVersion>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
 
   <ItemGroup>
