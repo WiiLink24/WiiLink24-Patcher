@@ -13,7 +13,7 @@ using Newtonsoft.Json.Linq;
 class WiiLink_Patcher
 {
     //// Build Info ////
-    static readonly string version = "v2.0.2 Nightly 3312024-1624";
+    static readonly string version = "v2.0.2 Nightly 3312024-1755";
     static readonly string copyrightYear = DateTime.Now.Year.ToString();
     static readonly string buildDate = "March 30th, 2024";
     static readonly string buildTime = "5:43 PM";
