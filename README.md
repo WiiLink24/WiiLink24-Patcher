@@ -33,9 +33,36 @@ In order to troubleshoot any issues, you can use the `--debug` flag while runnin
 
 ## Compiling
 
-Clone or download the repository, and open the solution file in Visual Studio. You will need to make sure you have .NET 6.0 set up to compile it.
+---
 
-Alternatively, you can use the [dotnet](https://dotnet.microsoft.com) to compile it. You will need to have at least .NET 6.0 installed. You can compile it by running `dotnet publish -c Release -r <RID>` in the root directory of the project. You can find a list of RIDs [here](https://docs.microsoft.com/en-us/dotnet/core/rid-catalog).
+Clone or download the repository. You can compile the project using the provided build scripts:
+
+| Operating System | Build Script |
+| --- | --- |
+| Windows | `build.ps1` |
+| Linux/macOS | `build.sh` |
+
+By default, running these scripts with no arguments will compile the project for all supported platforms. If you want to build for a specific platform, append `-b` or `--build`, followed by the platform identifier:
+
+| Platform Identifier | Description |
+| --- | --- |
+| `win-x64` | Windows (64-bit) |
+| `osx-x64` | macOS (Intel, 64-bit) |
+| `osx-arm64` | macOS (Apple Silicon) |
+| `linux-x64` | Linux (64-bit) |
+| `linux-arm64` | Linux (ARM, 64-bit) |
+
+---
+
+For example, to build only for Windows, you would run `./build.ps1 -b <platform>` on Windows, or `./build.sh -b <platform>` on Linux/macOS, replacing `<platform>` with the desired platform identifier.
+
+---
+
+If you want to mark the build as a nightly build, append `-n` or `--nightly` to the build command, along with a version number, using `-v` or `--version`.
+
+For example, to build a nightly version for Windows, you would run `./build.ps1 -n -v <version>` on Windows, or `./build.sh -n -v <version>` on Linux/macOS, replacing `<version>` with the desired version number (e.g. `v100` for version 1.0.0).
+
+---
 
 ## Screenshot
 ![C# Version](https://i.imgur.com/DlH8c0V.png)
