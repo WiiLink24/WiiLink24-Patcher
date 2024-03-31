@@ -13,11 +13,11 @@ using Newtonsoft.Json.Linq;
 class WiiLink_Patcher
 {
     //// Build Info ////
-    static readonly string version = "v2.0.2T";
+    static readonly string version = "v2.0.2T 3312024-1624";
     static readonly string copyrightYear = DateTime.Now.Year.ToString();
     static readonly string buildDate = "March 30th, 2024";
     static readonly string buildTime = "5:43 PM";
-    static string? sdcard = DetectSDCard;
+    static string? sdcard = DetectRemovableDrive;
     static readonly string wiiLinkPatcherUrl = "https://patcher.wiilink24.com";
     ////////////////////
 
@@ -28,15 +28,15 @@ class WiiLink_Patcher
     static bool installRegionalChannels = false;
     static Region wc24_reg;
     static Platform platformType;
-    static Dictionary<string, string> patchingProgress_express = new();
+    static Dictionary<string, string> patchingProgress_express = [];
 
     // Custom Install variables
-    static List<string> wiiLinkChannels_selection = new();
-    static List<string> wiiConnect24Channels_selection = new();
-    static List<string> combinedChannels_selection = new();
+    static List<string> wiiLinkChannels_selection = [];
+    static List<string> wiiConnect24Channels_selection = [];
+    static List<string> combinedChannels_selection = [];
     static Platform platformType_custom;
     static bool inCompatabilityMode = false;
-    static Dictionary<string, string> patchingProgress_custom = new();
+    static Dictionary<string, string> patchingProgress_custom = [];
 
     // Misc. variables
     static string task = "";
@@ -105,60 +105,47 @@ class WiiLink_Patcher
         AnsiConsole.WriteLine();
     }
 
-    static string? DetectSDCard
+    /// <summary>
+    /// Gets the base path of the removable drive where the "apps" directory exists.
+    /// </summary>
+    /// <returns>The base path of the removable drive, or null if no removable drive with the "apps" directory is found.</returns>
+    static string? DetectRemovableDrive
     {
         get
         {
-            // Define the base paths to check for each platform
             var basePaths = new List<string>();
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                foreach (var drive in DriveInfo.GetDrives())
-                {
-                    if (Directory.Exists(Path.Join(drive.Name, "apps")))
-                        return drive.Name;
-                }
+                basePaths = DriveInfo.GetDrives()
+                    .Where(drive => drive.DriveType == DriveType.Removable)
+                    .Select(drive => drive.Name)
+                    .ToList();
             }
-            else
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                {
-                    basePaths.Add("/Volumes");
-                }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                {
-                    bool mediaExists = Directory.Exists("/media");
-                    bool runMediaExists = Directory.Exists("/run/media");
+                basePaths.Add("/Volumes");
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                if (Directory.Exists("/media")) basePaths.Add($"/media/{Environment.UserName}");
+                if (Directory.Exists("/run/media")) basePaths.Add($"/run/media/{Environment.UserName}");
+            }
 
-                    // Check if /media exists
-                    if (mediaExists)
-                        basePaths.Add($"/media/{Environment.UserName}");
-
-                    // Check if /run/media exists
-                    if (runMediaExists)
-                        basePaths.Add($"/run/media/{Environment.UserName}");
-                }
-
-                foreach (var basePath in basePaths)
+            foreach (var basePath in basePaths)
+            {
+                try
                 {
-                    try
+                    // Check if the apps directory exists on the root of the removable drive
+                    if (Directory.Exists(Path.Join(basePath, "apps")))
                     {
-                        if (Directory.Exists(basePath)) // Check if directory exists before getting directories
-                        {
-                            var directories = Directory.GetDirectories(basePath);
-
-                            foreach (var directory in directories)
-                            {
-                                if (Directory.Exists(Path.Join(directory, "apps")))
-                                    return directory;
-                            }
-                        }
+                        return basePath;
                     }
-                    catch (UnauthorizedAccessException)
-                    {
-                        // If the user doesn't have permission to access the directory, skip it.
-                    }
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    // If the user doesn't have permission to access the directory, skip it.
+                    continue;
                 }
             }
 
@@ -1550,11 +1537,7 @@ class WiiLink_Patcher
         int partCompleted = 0;
 
         // List of channels to patch
-        List<string> channelsToPatch = new();
-        foreach (string channel in wiiConnect24Channels_selection)
-            channelsToPatch.Add(channel);
-        foreach (string channel in wiiLinkChannels_selection)
-            channelsToPatch.Add(channel);
+        List<string> channelsToPatch = [.. wiiConnect24Channels_selection, .. wiiLinkChannels_selection];
 
 
         // Set up patching progress dictionary
@@ -1708,7 +1691,7 @@ class WiiLink_Patcher
                 AnsiConsole.MarkupLine($"\n[bold]{patchingWC24Channels}:[/]");
                 foreach (string wiiConnect24Channel in channelsToPatch)
                 {
-                    List<string> wiiConnect24Channels = new() { "nc_us", "nc_eu", "mnnc_jp", "forecast_us", "forecast_eu", "forecast_jp", "news_us", "news_eu", "news_jp", "evc_us", "evc_eu", "evc_jp", "cmoc_us", "cmoc_eu", "cmoc_jp" };
+                    List<string> wiiConnect24Channels = ["nc_us", "nc_eu", "mnnc_jp", "forecast_us", "forecast_eu", "forecast_jp", "news_us", "news_eu", "news_jp", "evc_us", "evc_eu", "evc_jp", "cmoc_us", "cmoc_eu", "cmoc_jp"];
                     if (wiiConnect24Channels.Contains(wiiConnect24Channel))
                     {
                         switch (patchingProgress_custom[wiiConnect24Channel])
@@ -1736,7 +1719,7 @@ class WiiLink_Patcher
                 AnsiConsole.MarkupLine($"\n[bold]{patchingWiiLinkChannels}:[/]");
                 foreach (string jpnChannel in channelsToPatch)
                 {
-                    List<string> jpnChannels = new() { "wiiroom_en", "wiinoma_jp", "digicam_en", "digicam_jp", "food_en", "demae_jp", "food_dominos", "food_deliveroo", "kirbytv" };
+                    List<string> jpnChannels = ["wiiroom_en", "wiinoma_jp", "digicam_en", "digicam_jp", "food_en", "demae_jp", "food_dominos", "food_deliveroo", "kirbytv"];
                     if (jpnChannels.Contains(jpnChannel))
                     {
                         switch (patchingProgress_custom[jpnChannel])
@@ -2590,12 +2573,12 @@ class WiiLink_Patcher
         // Generate patch list for Demae Channel
         List<KeyValuePair<string, string>> GeneratePatchList(string prefix, bool appendLang)
         {
-            return new List<KeyValuePair<string, string>>
-            {
+            return
+            [
                 new($"{prefix}_0{(appendLang ? $"_{language}" : "")}", "00000000"),
                 new($"{prefix}_1{(appendLang ? $"_{language}" : "")}", "00000001"),
                 new($"{prefix}_2{(appendLang ? $"_{language}" : "")}", "00000002")
-            };
+            ];
         }
 
         // Map DemaeVersion to patch list and folder name (Patch list, folder name)
@@ -2620,8 +2603,8 @@ class WiiLink_Patcher
     {
         task = "Patching Kirby TV Channel";
 
-        List<string> patches = new() { "KirbyTV_2" };
-        List<string> appNums = new() { "0000000e" };
+        List<string> patches = ["KirbyTV_2"];
+        List<string> appNums = ["0000000e"];
 
         PatchWC24Channel("ktv", $"Kirby TV Channel", 257, null, "0001000148434d50", patches, appNums);
 
@@ -2647,8 +2630,8 @@ class WiiLink_Patcher
         // Get the data for the current region
         var (channelID, appNum, channel_title) = regionData[region];
 
-        List<string> patches = new() { $"NC_1_{region}" };
-        List<string> appNums = new() { appNum };
+        List<string> patches = [$"NC_1_{region}"];
+        List<string> appNums = [appNum];
 
         PatchWC24Channel("nc", $"{channel_title}", 1792, region, channelID, patches, appNums);
 
@@ -2671,8 +2654,8 @@ class WiiLink_Patcher
             _ => throw new NotImplementedException(),
         };
 
-        List<string> patches = new() { "Forecast_1", "Forecast_5" };
-        List<string> appNums = new() { "0000000d", "0000000f" };
+        List<string> patches = ["Forecast_1", "Forecast_5"];
+        List<string> appNums = ["0000000d", "0000000f"];
 
         PatchWC24Channel("forecast", $"Forecast Channel", 7, region, channelID, patches, appNums);
 
@@ -2695,8 +2678,8 @@ class WiiLink_Patcher
             _ => throw new NotImplementedException(),
         };
 
-        List<string> patches = new() { "News_1" };
-        List<string> appNums = new() { "0000000b" };
+        List<string> patches = ["News_1"];
+        List<string> appNums = ["0000000b"];
 
         PatchWC24Channel("news", $"News Channel", 7, region, channelID, patches, appNums);
 
@@ -2721,8 +2704,8 @@ class WiiLink_Patcher
             _ => throw new NotImplementedException(),
         };
 
-        List<string> patches = new() { $"EVC_1_{region}" };
-        List<string> appNums = new() { "00000019" };
+        List<string> patches = [$"EVC_1_{region}"];
+        List<string> appNums = ["00000019"];
 
         PatchWC24Channel("evc", $"Everybody Votes Channel", 512, region, channelID, patches, appNums);
 
@@ -2752,8 +2735,8 @@ class WiiLink_Patcher
             _ => "Mii Contest Channel",
         };
 
-        List<string> patches = new() { $"CMOC_1_{region}" };
-        List<string> appNums = new() { "0000000c" };
+        List<string> patches = [$"CMOC_1_{region}"];
+        List<string> appNums = ["0000000c"];
 
         PatchWC24Channel("cmoc", $"{channelTitle}", 512, region, channelID, patches, appNums);
 
@@ -2776,8 +2759,8 @@ class WiiLink_Patcher
             _ => throw new NotImplementedException(),
         };
 
-        List<string> patches = new() { "RegSel_1" };
-        List<string> appNums = new() { "00000009" };
+        List<string> patches = ["RegSel_1"];
+        List<string> appNums = ["00000009"];
 
         PatchWC24Channel("RegSel", $"Region Select", 2, regSel_reg, channelID, patches, appNums);
     }
@@ -2836,7 +2819,7 @@ class WiiLink_Patcher
         combinedChannels_selection.Clear();
 
         // Detect SD card (in case the user chose to not copy files to SD card)
-        sdcard = DetectSDCard;
+        sdcard = DetectRemovableDrive;
 
         while (true)
         {
@@ -3057,6 +3040,25 @@ class WiiLink_Patcher
                 AnsiConsole.MarkupLine($"[bold red]{bootDriveError}[/]");
                 Thread.Sleep(2000);
                 continue;
+            }
+
+            // On Windows, don't allow the user to pick a drive that's not removable
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                if (sdcard_new == null)
+                    continue;
+
+                DriveInfo driveInfo = new(sdcard_new);
+                if (!driveInfo.IsReady || driveInfo.DriveType != DriveType.Removable)
+                {
+                    // Drive is not removable text
+                    string driveNotRemovableError = patcherLang == PatcherLanguage.en
+                        ? "Drive selected is not a removable drive! Please select a removable drive (e.g. SD card or USB drive)."
+                        : $"{localizedText?["SDCardSelect"]?["driveNotRemovableError"]}";
+                    AnsiConsole.MarkupLine($"[bold red]{driveNotRemovableError}[/]");
+                    Thread.Sleep(5000);
+                    continue;
+                }
             }
 
             // Check if new SD card path is the same as the old one
@@ -3434,7 +3436,7 @@ class WiiLink_Patcher
                     break;
                 case 7: // Automatically detect SD Card path (R/r)
                 case 8:
-                    sdcard = DetectSDCard;
+                    sdcard = DetectRemovableDrive;
                     break;
                 case 9: // Manually select SD Card path (M/m)
                 case 10:
