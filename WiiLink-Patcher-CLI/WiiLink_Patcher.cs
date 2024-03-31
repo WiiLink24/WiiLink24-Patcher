@@ -13,7 +13,7 @@ using Newtonsoft.Json.Linq;
 class WiiLink_Patcher
 {
     //// Build Info ////
-    static readonly string version = "v2.0.2T 3312024-1624";
+    static readonly string version = "v2.0.2 Nightly 3312024-1624";
     static readonly string copyrightYear = DateTime.Now.Year.ToString();
     static readonly string buildDate = "March 30th, 2024";
     static readonly string buildTime = "5:43 PM";
@@ -118,7 +118,7 @@ class WiiLink_Patcher
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 basePaths = DriveInfo.GetDrives()
-                    .Where(drive => drive.DriveType == DriveType.Removable)
+                    .Where(drive => drive.DriveType == DriveType.Removable && drive.IsReady)
                     .Select(drive => drive.Name)
                     .ToList();
             }
@@ -136,10 +136,25 @@ class WiiLink_Patcher
             {
                 try
                 {
-                    // Check if the apps directory exists on the root of the removable drive
-                    if (Directory.Exists(Path.Join(basePath, "apps")))
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                     {
-                        return basePath;
+                        // Check if the apps directory exists on the root of the removable drive
+                        if (Directory.Exists(Path.Join(basePath, "apps")))
+                        {
+                            return basePath;
+                        }
+                    }
+                    else
+                    {
+                        var subDirectories = Directory.EnumerateDirectories(basePath);
+                        foreach (var subDirectory in subDirectories)
+                        {
+                            // Check if the apps directory exists on the root of the removable drive
+                            if (Directory.Exists(Path.Join(subDirectory, "apps")))
+                            {
+                                return subDirectory;
+                            }
+                        }
                     }
                 }
                 catch (UnauthorizedAccessException)
@@ -3916,7 +3931,7 @@ class WiiLink_Patcher
         {
             Console.Title = $"WiiLink Patcher {version}";
             if (DEBUG_MODE) Console.Title += $" [DEBUG MODE]";
-            if (version.Contains('T')) Console.Title += $" (Test Build)";
+            if (version.Contains("Nightly")) Console.Title += $" (Test Build)";
         }
 
         // Set console window size to 120x30 on macOS and Linux and on Windows, check for Windows version
@@ -3941,8 +3956,8 @@ class WiiLink_Patcher
         if (!result.Item1)
             ConnectionFailed(result.Item2, result.Item3);
 
-        // Check latest version if not on a test build
-        if (!version.Contains('T'))
+        // Check latest version if not on a nightly build
+        if (!version.Contains("Nightly"))
             await CheckForUpdates(version);
 
         // Go to the main menu
