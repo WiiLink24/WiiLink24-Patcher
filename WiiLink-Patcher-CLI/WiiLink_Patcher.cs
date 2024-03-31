@@ -2932,6 +2932,8 @@ class WiiLink_Patcher
                     }
                     break;
                 case 2:
+                    // Check to see if removable drive is still connected
+                    sdcard = DetectRemovableDrive;
                     MainMenu();
                     break;
                 case 3:
@@ -3390,9 +3392,6 @@ class WiiLink_Patcher
 
             // Print all the text
             AnsiConsole.MarkupLine($"[bold]{welcomeMessage}[/]\n");
-
-            // if (version.Contains('T'))
-            //     AnsiConsole.MarkupLine($"[bold springgreen2_1]You are using a test build of the WiiLink Patcher.[/]\n");
 
             AnsiConsole.MarkupLine($"1. {startExpressSetup}");
             AnsiConsole.MarkupLine($"2. {startCustomSetup}");
