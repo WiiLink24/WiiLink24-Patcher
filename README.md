@@ -33,8 +33,6 @@ In order to troubleshoot any issues, you can use the `--debug` flag while runnin
 
 ## Compiling
 
----
-
 Clone or download the repository. You can compile the project using the provided build scripts:
 
 | Operating System | Build Script |
