@@ -3658,10 +3658,10 @@ class WiiLink_Patcher
         {
             { "Windows", "WiiLinkPatcher_Windows.exe" },
             { "Linux", RuntimeInformation.ProcessArchitecture == Architecture.Arm64
-                                ? "WiiLinkPatcher_Linux-arm64"
+                                ? "WiiLinkPatcher_Linux-ARM64"
                                 : "WiiLinkPatcher_Linux-x64" },
             { "OSX", RuntimeInformation.ProcessArchitecture == Architecture.Arm64
-                                ? "WiiLinkPatcher_macOS-arm64"
+                                ? "WiiLinkPatcher_macOS-ARM64"
                                 : "WiiLinkPatcher_macOS-x64" }
         };
 
