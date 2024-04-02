@@ -129,7 +129,9 @@ class WiiLink_Patcher
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 if (Directory.Exists("/media")) basePaths.Add($"/media/{Environment.UserName}");
-                if (Directory.Exists("/run/media")) basePaths.Add($"/run/media/{Environment.UserName}");
+                
+                var runMediaPath = $"/run/media/{Environment.UserName}";
+                if (Directory.Exists("/run/media") && Directory.Exists(runMediaPath)) basePaths.Add(runMediaPath);
             }
 
             foreach (var basePath in basePaths)
