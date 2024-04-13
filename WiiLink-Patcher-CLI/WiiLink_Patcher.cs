@@ -3663,16 +3663,19 @@ class WiiLink_Patcher
         // Get the latest version number from the text file
         string latestVersion = updateInfo.Split('\n')[0].Trim();
 
+        // Remove any . from the version number (v2.0.2-1 -> v202-1)
+        string versionWithoutDots = latestVersion.Replace(".", "");
+
         // Map operating system names to executable names
         var executables = new Dictionary<string, string>
         {
-            { "Windows", "WiiLinkPatcher_Windows.exe" },
+            { "Windows", $"WiiLinkPatcher_Windows_{versionWithoutDots}.exe" },
             { "Linux", RuntimeInformation.ProcessArchitecture == Architecture.Arm64
-                                ? "WiiLinkPatcher_Linux-ARM64"
-                                : "WiiLinkPatcher_Linux-x64" },
+                                ? $"WiiLinkPatcher_Linux-ARM64_{versionWithoutDots}"
+                                : $"WiiLinkPatcher_Linux-x64_{versionWithoutDots}" },
             { "OSX", RuntimeInformation.ProcessArchitecture == Architecture.Arm64
-                                ? "WiiLinkPatcher_macOS-ARM64"
-                                : "WiiLinkPatcher_macOS-x64" }
+                                ? $"WiiLinkPatcher_macOS-ARM64_{versionWithoutDots}"
+                                : $"WiiLinkPatcher_macOS-x64_{versionWithoutDots}" }
         };
 
         // Get the download URL for the latest version
