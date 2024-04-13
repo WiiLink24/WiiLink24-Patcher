@@ -648,6 +648,13 @@ class WiiLink_Patcher
         File.Move(Path.Join(titleFolder, $"tmd.{channelVersion}"), Path.Join(titleFolder, $"{titleID}.tmd"));
         File.Move(Path.Join(titleFolder, "cetk"), Path.Join(titleFolder, $"{titleID}.tik"));
 
+        // Download the patched TMD file for Kirby TV Channel to make it region-free
+        if (channelName == "ktv")
+        {
+            string tmdURL = $"{wiiLinkPatcherUrl}/{channelName.ToLower()}/{titleID}.tmd";
+            DownloadFile(tmdURL, Path.Join(titleFolder, $"{titleID}.tmd"), $"{channelTitle} .tmd");
+        }
+
         // Apply the delta patches to the app file
         task = $"Applying delta patch for {channelTitle}";
         foreach (var (app, patch) in appFile.Zip(patchFile, (app, patch) => (app, patch)))
