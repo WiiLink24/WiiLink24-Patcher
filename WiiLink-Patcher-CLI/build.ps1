@@ -32,7 +32,7 @@ function Build-For-Platform {
         }
     }
 
-    dotnet publish -c Release -r $Platform --self-contained /p:AssemblyName="WiiLinkPatcher_$PlatformName$nightlyString"
+    dotnet publish -c Release -r $Platform --self-contained /p:AssemblyName="WiiLinkPatcher_$PlatformName$versionString"
 }
 
 # Shows the help message
@@ -53,7 +53,7 @@ function Show-Help {
 }
 
 # Initialize variables
-$nightlyString = ""
+$versionString = ""
 $Global:Platforms = "win-x64", "osx-x64", "osx-arm64", "linux-x64", "linux-arm64"
 
 # Parse command line arguments
@@ -69,10 +69,6 @@ for ($i = 0; $i -lt $args.Count; $i++) {
         "-n" { $nightly = $true }
         "--nightly" { $nightly = $true }
         "-v" {
-            if (-not $nightly) {
-                Write-Error "The -v/--version option can only be used when -n/--nightly is also used"
-                exit 1
-            }
             $version = $args[++$i]
             if ($version -notmatch "^v\d+") {
                 Write-Error "Invalid version: $version. Version should start with 'v' followed by a number (e.g., v100 for version 1.0.0)"
@@ -80,10 +76,6 @@ for ($i = 0; $i -lt $args.Count; $i++) {
             }
         }
         "--version" {
-            if (-not $nightly) {
-                Write-Error "The --version option can only be used when --nightly is also used"
-                exit 1
-            }
             $version = $args[++$i]
             if ($version -notmatch "^v\d+") {
                 Write-Error "Invalid version: $version. Version should start with 'v' followed by a number (e.g., v100 for version 1.0.0)"
@@ -105,7 +97,9 @@ if ($nightly) {
         Write-Error "Version is required when nightly is specified"
         exit 1
     }
-    $nightlyString = "_Nightly_$version"
+    $versionString = "_Nightly_$version"
+} else {
+    $versionString = "_$version"
 }
 
 # Build the project for the specified platform or all supported platforms if none is specified

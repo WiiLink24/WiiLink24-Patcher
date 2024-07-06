@@ -13,10 +13,10 @@ using Newtonsoft.Json.Linq;
 class WiiLink_Patcher
 {
     //// Build Info ////
-    static readonly string version = "v2.0.2-1";
+    static readonly string version = "v2.0.3";
     static readonly string copyrightYear = DateTime.Now.Year.ToString();
-    static readonly string buildDate = "April 13th, 2024";
-    static readonly string buildTime = "4:13 PM";
+    static readonly string buildDate = "July 6th, 2024";
+    static readonly string buildTime = "11:05 AM";
     static string? sdcard = DetectRemovableDrive;
     static readonly string wiiLinkPatcherUrl = "https://patcher.wiilink24.com";
     ////////////////////
@@ -25,6 +25,7 @@ class WiiLink_Patcher
     // Express Install variables
     static Language lang;
     static DemaeVersion demaeVersion;
+    static Language wiiRoomLang;
     static bool installRegionalChannels = false;
     static Region wc24_reg;
     static Platform platformType;
@@ -49,7 +50,7 @@ class WiiLink_Patcher
 
     // Enums
     enum Region : int { USA, PAL, Japan }
-    enum Language : int { English, Japan, Russian, Catalan, Portuguese }
+    enum Language : int { English, Japan, Russian, Catalan, Portuguese, French, Italian, German, Dutch, Spanish }
     enum PatcherLanguage : int { en }
     enum DemaeVersion : int { Standard, Dominos }
     enum Platform : int { Wii, vWii }
@@ -130,7 +131,7 @@ class WiiLink_Patcher
             {
                 var mediaPath = $"/media/{Environment.UserName}";
                 if (Directory.Exists("/media") && Directory.Exists(mediaPath)) basePaths.Add(mediaPath);
-                
+
                 var runMediaPath = $"/run/media/{Environment.UserName}";
                 if (Directory.Exists("/run/media") && Directory.Exists(runMediaPath)) basePaths.Add(runMediaPath);
             }
@@ -533,8 +534,8 @@ class WiiLink_Patcher
         if (!Directory.Exists(Path.Join("WAD")))
             Directory.CreateDirectory(Path.Join("WAD"));
 
-        string spdUrl = $"{wiiLinkPatcherUrl}/spd/SPD_{platformType}.wad";
-        string spdDestinationPath = Path.Join("WAD", $"WiiLink SPD ({platformType}).wad");
+        string spdUrl = $"{wiiLinkPatcherUrl}/spd/WiiLink_SPD.wad";
+        string spdDestinationPath = Path.Join("WAD", $"WiiLink Address Settings.wad");
 
         DownloadFile(spdUrl, spdDestinationPath, "SPD");
     }
@@ -567,16 +568,33 @@ class WiiLink_Patcher
         //// Apply delta patches to the app files ////
         task = $"Applying delta patches for {channelTitle}";
 
-        // First delta patch
-        if (lang == Language.English || channelName == "Dominos")
-            ApplyPatch(File.OpenRead(Path.Join(titleFolder, $"{patchFilesDict[0].Value}.app")), File.OpenRead(Path.Join(patchFolder, $"{patchFilesDict[0].Key}.delta")), File.OpenWrite(Path.Join(tempFolder, $"{patchFilesDict[0].Value}.app")));
+        bool translated = lang == Language.English || lang == Language.Russian || lang == Language.Catalan || lang == Language.Portuguese || lang == Language.French || lang == Language.Italian || lang == Language.German || lang == Language.Dutch;
 
-        // Second delta patch
-        ApplyPatch(File.OpenRead(Path.Join(titleFolder, $"{patchFilesDict[1].Value}.app")), File.OpenRead(Path.Join(patchFolder, $"{patchFilesDict[1].Key}.delta")), File.OpenWrite(Path.Join(tempFolder, $"{patchFilesDict[1].Value}.app")));
-
-        // Third delta patch
-        if (lang == Language.English || channelName == "Dominos" || channelName == "WiinoMa")
-            ApplyPatch(File.OpenRead(Path.Join(titleFolder, $"{patchFilesDict[2].Value}.app")), File.OpenRead(Path.Join(patchFolder, $"{patchFilesDict[2].Key}.delta")), File.OpenWrite(Path.Join(tempFolder, $"{patchFilesDict[2].Value}.app")));
+        // Apply the patches
+        foreach (var patch in patchFilesDict)
+        {
+            // Check if the patch value is not null
+            if (patch.Value != null)
+            {
+                // Determine if the patch should be applied based on specific conditions
+                bool applyPatch = true;
+                if (patch.Key == patchFilesDict[0].Key)
+                {
+                    // Condition for the first delta patch
+                    applyPatch = translated || channelName == "Dominos";
+                }
+                else if (patch.Key == patchFilesDict[2].Key)
+                {
+                    // Condition for the third delta patch
+                    applyPatch = translated || channelName == "Dominos" || channelName == "WiinoMa";
+                }
+                // Apply the patch if conditions are met
+                if (applyPatch)
+                {
+                    ApplyPatch(File.OpenRead(Path.Join(titleFolder, $"{patch.Value}.app")), File.OpenRead(Path.Join(patchFolder, $"{patch.Key}.delta")), File.OpenWrite(Path.Join(tempFolder, $"{patch.Value}.app")));
+                }
+            }
+        }
 
         // Copy patched files to unpack folder
         task = $"Copying patched files for {channelTitle}";
@@ -745,7 +763,7 @@ class WiiLink_Patcher
 
             // User Choices
             string englishTranslation = patcherLang == PatcherLanguage.en
-                ? "English Translation"
+                ? "Translated (eg. English, French, etc.)"
                 : $"{localizedText?["ExpressInstall"]?["WiiLinkChannels_LangSetup"]?["englishOption"]}";
             string japanese = patcherLang == PatcherLanguage.en
                 ? "Japanese"
@@ -764,10 +782,11 @@ class WiiLink_Patcher
             {
                 case 1:
                     lang = Language.English;
-                    DemaeConfiguration();
+                    WiiRoomConfiguration();
                     break;
                 case 2:
                     lang = Language.Japan;
+                    wiiRoomLang = Language.Japan;
                     demaeVersion = DemaeVersion.Standard;
                     ChoosePlatform();
                     break;
@@ -780,6 +799,135 @@ class WiiLink_Patcher
         }
     }
 
+    // Configure Wii Room Channel (choosing language) [Express Install]
+    static void WiiRoomConfiguration()
+    {
+        while (true)
+        {
+            PrintHeader();
+
+            // Express Install Header Text
+            string EIHeader = patcherLang == PatcherLanguage.en
+                ? "Express Install"
+                : $"{localizedText?["ExpressInstall"]?["Header"]}";
+            AnsiConsole.MarkupLine($"[bold springgreen2_1]{EIHeader}[/]\n");
+
+            // Step 2A Text
+            string stepNumber = patcherLang == PatcherLanguage.en
+                ? "Step 2A"
+                : $"{localizedText?["ExpressInstall"]?["WiiRoomConfiguration"]?["stepNum"]}";
+            string step1aTitle = patcherLang == PatcherLanguage.en
+                ? "Choose Wii Room language"
+                : $"{localizedText?["ExpressInstall"]?["WiiRoomConfiguration"]?["stepTitle"]}";
+            AnsiConsole.MarkupLine($"[bold]{stepNumber}: {step1aTitle}[/]\n");
+
+            // Instructions Text
+            string instructions = patcherLang == PatcherLanguage.en
+                ? "For [bold]Wii Room[/], which language would you like to select?"
+                : $"{localizedText?["ExpressInstall"]?["WiiRoomConfiguration"]?["instructions"]}";
+            AnsiConsole.MarkupLine($"{instructions}\n");
+
+            // User Choices
+            string english = patcherLang == PatcherLanguage.en
+                ? "English"
+                : $"{localizedText?["ExpressInstall"]?["WiiRoomConfiguration"]?["english"]}";
+            string spanish = patcherLang == PatcherLanguage.en
+                ? "Español"
+                : $"{localizedText?["ExpressInstall"]?["WiiRoomConfiguration"]?["spanish"]}";
+            string french = patcherLang == PatcherLanguage.en
+                ? "Français"
+                : $"{localizedText?["ExpressInstall"]?["WiiRoomConfiguration"]?["french"]}";
+            string german = patcherLang == PatcherLanguage.en
+                ? "Deutsch"
+                : $"{localizedText?["ExpressInstall"]?["WiiRoomConfiguration"]?["german"]}";
+            string italian = patcherLang == PatcherLanguage.en
+                ? "Italiano"
+                : $"{localizedText?["ExpressInstall"]?["WiiRoomConfiguration"]?["italian"]}";
+            string dutch = patcherLang == PatcherLanguage.en
+                ? "Nederlands"
+                : $"{localizedText?["ExpressInstall"]?["WiiRoomConfiguration"]?["dutch"]}";
+            string portuguese = patcherLang == PatcherLanguage.en
+                ? "Português (Brasil)"
+                : $"{localizedText?["ExpressInstall"]?["WiiRoomConfiguration"]?["portuguese"]}";
+            string russian = patcherLang == PatcherLanguage.en
+                ? "Русский"
+                : $"{localizedText?["ExpressInstall"]?["WiiRoomConfiguration"]?["russian"]}";
+            string goBackToMainMenu = patcherLang == PatcherLanguage.en
+                ? "Go Back to Main Menu"
+                : $"{localizedText?["ExpressInstall"]?["WiiRoomConfiguration"]?["goBackToMainMenu"]}";
+
+            AnsiConsole.MarkupLine($"1. {english}");
+            AnsiConsole.MarkupLine($"2. {spanish}");
+            AnsiConsole.MarkupLine($"3. {french}");
+            AnsiConsole.MarkupLine($"4. {german}");
+            AnsiConsole.MarkupLine($"5. {italian}");
+            AnsiConsole.MarkupLine($"6. {dutch}");
+            AnsiConsole.MarkupLine($"7. {portuguese}");
+            AnsiConsole.MarkupLine($"8. {russian}\n");
+
+            AnsiConsole.MarkupLine($"9. {goBackToMainMenu}\n");
+
+            int choice = UserChoose("123456789");
+            switch (choice)
+            {
+                case 1:
+                    wiiRoomLang = Language.English;
+                    DemaeConfiguration();
+                    break;
+                case 2:
+                    wiiRoomLang = Language.Spanish;
+                    DemaeConfiguration();
+                    break;
+                case 3:
+                    wiiRoomLang = Language.French;
+                    DemaeConfiguration();
+                    break;
+                case 4:
+                    wiiRoomLang = Language.German;
+                    DemaeConfiguration();
+                    break;
+                case 5:
+                    wiiRoomLang = Language.Italian;
+                    DemaeConfiguration();
+                    break;
+                case 6:
+                    wiiRoomLang = Language.Dutch;
+                    DemaeConfiguration();
+                    break;
+                case 7:
+                    wiiRoomLang = Language.Portuguese;
+                    DemaeConfiguration();
+                    break;
+                case 8:
+                    wiiRoomLang = Language.Russian;
+                    RussianNoticeForWiiRoom();
+                    break;
+                case 9: // Go back to main menu
+                    MainMenu();
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    // If Russian is chosen, show a special message for additional instructions
+    static void RussianNoticeForWiiRoom()
+    {
+        PrintHeader();
+
+        AnsiConsole.MarkupLine("[bold yellow]NOTICE FOR RUSSIAN USERS[/]\n");
+        AnsiConsole.MarkupLine("You have selected Russian translation in the installation options.\n");
+        AnsiConsole.MarkupLine("Proper functionality is not guaranteed for systems without the Russian Wii menu.\n");
+        AnsiConsole.MarkupLine("Read the installation guide here:");
+        AnsiConsole.MarkupLine("[bold link springgreen2_1]https://wii.zazios.ru/rus_menu[/]\n");
+        AnsiConsole.MarkupLine("[italic](The guide is only available in Russian for now)[/]\n");
+
+        AnsiConsole.MarkupLine("[bold]Press any key to continue...[/]");
+        Console.ReadKey();
+
+        DemaeConfiguration();
+    }
 
     // Configure Demae Channel (if English was selected) [Express Install]
     static void DemaeConfiguration()
@@ -861,28 +1009,28 @@ class WiiLink_Patcher
             // Would you like to install WiiLink's regional channel services Text
             string wouldYouLike = patcherLang == PatcherLanguage.en
                 ? "Would you like to install [bold][springgreen2_1]WiiLink[/]'s regional channel services[/]?"
-                : $"{localizedText?["ExpressInstall"]?["WiiConnect24Setup"]?["wouldYouLike"]}";
+                : $"{localizedText?["ExpressInstall"]?["WiiLinkSetup"]?["wouldYouLike"]}";
             AnsiConsole.MarkupLine($"{wouldYouLike}\n");
 
             // Services that would be installed Text
             string toBeInstalled = patcherLang == PatcherLanguage.en
                 ? "Services that would be installed:"
-                : $"{localizedText?["ExpressInstall"]?["WiiConnect24Setup"]?["toBeInstalled"]}";
+                : $"{localizedText?["ExpressInstall"]?["WiiLinkSetup"]?["toBeInstalled"]}";
             AnsiConsole.MarkupLine($"{toBeInstalled}\n");
 
             // Channel Names
             string wiiRoom = patcherLang == PatcherLanguage.en
                 ? "Wii Room [bold](Wii no Ma)[/]"
-                : $"{localizedText?["ExpressInstall"]?["WiiConnect24Setup"]?["NintendoChannel"]}";
+                : $"{localizedText?["ExpressInstall"]?["WiiLinkSetup"]?["WiiRoom"]}";
             string photoPrints = patcherLang == PatcherLanguage.en
                 ? "Photo Prints Channel [bold](Digicam Print Channel)[/]"
-                : $"{localizedText?["ExpressInstall"]?["WiiConnect24Setup"]?["ForecastChannel"]}";
+                : $"{localizedText?["ExpressInstall"]?["WiiLinkSetup"]?["PhotoPrints"]}";
             string foodChannel = patcherLang == PatcherLanguage.en
                 ? "Food Channel [bold](Demae Channel)[/]"
-                : $"{localizedText?["ExpressInstall"]?["WiiConnect24Setup"]?["NewsChannel"]}";
+                : $"{localizedText?["ExpressInstall"]?["WiiLinkSetup"]?["FoodChannel"]}";
             string kirbyTV = patcherLang == PatcherLanguage.en
                 ? "Kirby TV Channel"
-                : $"{localizedText?["ExpressInstall"]?["WiiConnect24Setup"]?["EverybodyVotesChannel"]}";
+                : $"{localizedText?["ExpressInstall"]?["WiiLinkSetup"]?["KirbyTV"]}";
 
             AnsiConsole.MarkupLine($"  ● {wiiRoom}");
             AnsiConsole.MarkupLine($"  ● {photoPrints}");
@@ -892,10 +1040,10 @@ class WiiLink_Patcher
             // Yes or No Text
             string yes = patcherLang == PatcherLanguage.en
                 ? "Yes"
-                : $"{localizedText?["ExpressInstall"]?["WiiConnect24Setup"]?["yes"]}";
+                : $"{localizedText?["ExpressInstall"]?["WiiLinkSetup"]?["yes"]}";
             string no = patcherLang == PatcherLanguage.en
                 ? "No"
-                : $"{localizedText?["ExpressInstall"]?["WiiConnect24Setup"]?["no"]}";
+                : $"{localizedText?["ExpressInstall"]?["WiiLinkSetup"]?["no"]}";
 
             Console.WriteLine($"1. {yes}");
             Console.WriteLine($"2. {no}\n");
@@ -903,7 +1051,7 @@ class WiiLink_Patcher
             // Go Back to Main Menu Text
             string goBackToMainMenu = patcherLang == PatcherLanguage.en
                 ? "Go Back to Main Menu"
-                : $"{localizedText?["ExpressInstall"]?["WiiConnect24Setup"]?["goBackToMainMenu"]}";
+                : $"{localizedText?["ExpressInstall"]?["WiiLinkSetup"]?["goBackToMainMenu"]}";
             Console.WriteLine($"3. {goBackToMainMenu}\n");
 
             int choice = UserChoose("123");
@@ -963,13 +1111,13 @@ class WiiLink_Patcher
 
             // User Choices
             string northAmerica = patcherLang == PatcherLanguage.en
-                ? "North America"
+                ? "North America (NTSC-U)"
                 : $"{localizedText?["ExpressInstall"]?["WC24Setup"]?["northAmerica"]}";
             string pal = patcherLang == PatcherLanguage.en
-                ? "PAL"
+                ? "Europe (PAL)"
                 : $"{localizedText?["ExpressInstall"]?["WC24Setup"]?["pal"]}";
             string japan = patcherLang == PatcherLanguage.en
-                ? "Japan"
+                ? "Japan (NTSC-J)"
                 : $"{localizedText?["ExpressInstall"]?["WC24Setup"]?["japan"]}";
             string goBackToMainMenu = patcherLang == PatcherLanguage.en
                 ? "Go Back to Main Menu"
@@ -1318,10 +1466,10 @@ class WiiLink_Patcher
             : $"{localizedText?["ChannelNames"]?[$"{lang}]?[${(lang == Language.English ? "food" : "demae")}"]} [bold]({lang})[/] [bold][[{demaeVerTxt}]][/]";
 
         string wiiroom_title = patcherLang == PatcherLanguage.en // Wii no Ma
-            ? lang == Language.English
-                ? "Wii Room [bold](English)[/]"
+            ? wiiRoomLang != Language.Japan
+                ? $"Wii Room [bold]({wiiRoomLang})[/]"
                 : "Wii no Ma [bold](Japanese)[/]"
-            : $"{localizedText?["ChannelNames"]?[$"{lang}"]?[$"{(lang == Language.English ? "wiiRoom" : "wiiNoMa")}"]} [bold]({lang})[/]";
+            : $"{localizedText?["ChannelNames"]?[$"{wiiRoomLang}"]?[$"{(wiiRoomLang != Language.Japan ? "wiiRoom" : "wiiNoMa")}"]} [bold]({wiiRoomLang})[/]";
 
         string digicam_title = patcherLang == PatcherLanguage.en // Digicam Print Channel
             ? lang == Language.English
@@ -1384,7 +1532,7 @@ class WiiLink_Patcher
         // Add other patching functions if applicable
         if (installRegionalChannels)
         {
-            patching_functions.Add(() => WiiRoom_Patch(lang));
+            patching_functions.Add(() => WiiRoom_Patch(wiiRoomLang));
             patching_functions.Add(() => Digicam_Patch(lang));
             patching_functions.Add(() => Demae_Patch(lang, demaeVersion));
             patching_functions.Add(KirbyTV_Patch);
@@ -1577,6 +1725,13 @@ class WiiLink_Patcher
         {
             { "wiiroom_en", "Wii Room [bold](English)[/]" },
             { "wiinoma_jp", "Wii no Ma [bold](Japanese)[/]" },
+            { "wiiroom_es", "Wii Room [bold](Spanish)[/]" },
+            { "wiiroom_fr", "Wii Room [bold](French)[/]" },
+            { "wiiroom_de", "Wii Room [bold](German)[/]" },
+            { "wiiroom_it", "Wii Room [bold](Italian)[/]" },
+            { "wiiroom_du", "Wii Room [bold](Dutch)[/]" },
+            { "wiiroom_ptbr", "Wii Room [bold](Portuguese)[/]" },
+            { "wiiroom_ru", "Wii Room [bold](Russian)[/]" },
             { "digicam_en", "Photo Prints Channel [bold](English)[/]" },
             { "digicam_jp", "Digicam Print Channel [bold](Japanese)[/]" },
             { "food_en", "Food Channel [bold](Standard) [[English]][/]" },
@@ -1604,7 +1759,14 @@ class WiiLink_Patcher
         var channelPatchingFunctions = new Dictionary<string, Action>()
         {
             { "wiiroom_en", () => WiiRoom_Patch(Language.English) },
+            { "wiiroom_es", () => WiiRoom_Patch(Language.Spanish) },
             { "wiinoma_jp", () => WiiRoom_Patch(Language.Japan) },
+            { "wiiroom_fr", () => WiiRoom_Patch(Language.French) },
+            { "wiiroom_de", () => WiiRoom_Patch(Language.German) },
+            { "wiiroom_it", () => WiiRoom_Patch(Language.Italian) },
+            { "wiiroom_du", () => WiiRoom_Patch(Language.Dutch) },
+            { "wiiroom_ptbr", () => WiiRoom_Patch(Language.Portuguese) },
+            { "wiiroom_ru", () => WiiRoom_Patch(Language.Russian) },
             { "digicam_en", () => Digicam_Patch(Language.English) },
             { "digicam_jp", () => Digicam_Patch(Language.Japan) },
             { "food_en", () => Demae_Patch(Language.English, DemaeVersion.Standard) },
@@ -1744,7 +1906,7 @@ class WiiLink_Patcher
                 AnsiConsole.MarkupLine($"\n[bold]{patchingWiiLinkChannels}:[/]");
                 foreach (string jpnChannel in channelsToPatch)
                 {
-                    List<string> jpnChannels = ["wiiroom_en", "wiinoma_jp", "digicam_en", "digicam_jp", "food_en", "demae_jp", "food_dominos", "food_deliveroo", "kirbytv"];
+                    List<string> jpnChannels = ["wiiroom_en", "wiiroom_es", "wiiroom_fr", "wiinoma_jp", "wiiroom_de", "wiiroom_it", "wiiroom_du", "wiiroom_ptbr", "wiiroom_ru", "digicam_en", "digicam_jp", "food_en", "demae_jp", "food_dominos", "kirbytv"];
                     if (jpnChannels.Contains(jpnChannel))
                     {
                         switch (patchingProgress_custom[jpnChannel])
@@ -1826,7 +1988,7 @@ class WiiLink_Patcher
         task = "Downloading patches";
 
         // Download SPD if English is selected
-        if (lang == Language.English)
+        if (lang != Language.Japan)
             DownloadSPD(platformType);
         else
         {
@@ -1838,11 +2000,36 @@ class WiiLink_Patcher
 
         if (installRegionalChannels)
         {
-            // Wii no Ma (Wii Room)
-            if (lang == Language.English)
-                DownloadPatch("WiinoMa", $"WiinoMa_0_{lang}.delta", $"WiinoMa_0_{lang}.delta", "Wii no Ma");
-            DownloadPatch("WiinoMa", $"WiinoMa_1_{lang}.delta", $"WiinoMa_1_{lang}.delta", "Wii no Ma");
-            DownloadPatch("WiinoMa", $"WiinoMa_2_{lang}.delta", $"WiinoMa_2_{lang}.delta", "Wii no Ma");
+            // Wii no Ma (Wii Room) //
+            DownloadPatch("WiinoMa", $"WiinoMa_0_Universal.delta", $"WiinoMa_0_Universal.delta", "Wii no Ma");
+
+            bool notRussianOrPortuguese = wiiRoomLang != Language.Russian && wiiRoomLang != Language.Portuguese;
+            if (notRussianOrPortuguese)
+                DownloadPatch("WiinoMa", $"WiinoMa_1_Universal.delta", $"WiinoMa_1_Universal.delta", "Wii no Ma");
+            else
+                DownloadPatch("WiinoMa", $"WiinoMa_1_{wiiRoomLang}.delta", $"WiinoMa_1_{wiiRoomLang}.delta", "Wii no Ma");
+
+            // For all languages, including Japanese, use their respective patches for 2
+            DownloadPatch("WiinoMa", $"WiinoMa_2_{wiiRoomLang}.delta", $"WiinoMa_2_{wiiRoomLang}.delta", "Wii no Ma");
+
+            // Special handling for Portuguese, (patches 3, 4, and D)
+            if (wiiRoomLang == Language.Portuguese)
+            {
+                DownloadPatch("WiinoMa", $"WiinoMa_3_{Language.Portuguese}.delta", $"WiinoMa_3_{Language.Portuguese}.delta", "Wii no Ma");
+                DownloadPatch("WiinoMa", $"WiinoMa_4_{Language.Portuguese}.delta", $"WiinoMa_4_{Language.Portuguese}.delta", "Wii no Ma");
+                DownloadPatch("WiinoMa", $"WiinoMa_D_{Language.Portuguese}.delta", $"WiinoMa_D_{Language.Portuguese}.delta", "Wii no Ma");
+            }
+
+            // Special handling for Russian, (patches 3, 4, 9, C, D and E)
+            if (wiiRoomLang == Language.Russian)
+            {
+                DownloadPatch("WiinoMa", $"WiinoMa_3_{Language.Russian}.delta", $"WiinoMa_3_{Language.Russian}.delta", "Wii no Ma");
+                DownloadPatch("WiinoMa", $"WiinoMa_4_{Language.Russian}.delta", $"WiinoMa_4_{Language.Russian}.delta", "Wii no Ma");
+                DownloadPatch("WiinoMa", $"WiinoMa_9_{Language.Russian}.delta", $"WiinoMa_9_{Language.Russian}.delta", "Wii no Ma");
+                DownloadPatch("WiinoMa", $"WiinoMa_C_{Language.Russian}.delta", $"WiinoMa_C_{Language.Russian}.delta", "Wii no Ma");
+                DownloadPatch("WiinoMa", $"WiinoMa_D_{Language.Russian}.delta", $"WiinoMa_D_{Language.Russian}.delta", "Wii no Ma");
+                DownloadPatch("WiinoMa", $"WiinoMa_E_{Language.Russian}.delta", $"WiinoMa_E_{Language.Russian}.delta", "Wii no Ma");
+            }
 
             // Photo Prints Channel / Digicam Print Channel
             if (lang == Language.English)
@@ -1904,7 +2091,7 @@ class WiiLink_Patcher
         DownloadPatch("cmoc", $"CMOC_1_{wc24_reg}.delta", $"CMOC_1_{wc24_reg}.delta", "Check Mii Out Channel");
 
         // Download ww-43db-patcher for vWii if applicable
-        if (platformType == Platform.vWii)
+/*         if (platformType == Platform.vWii)
         {
             DownloadOSCApp("ww-43db-patcher");
 
@@ -1919,7 +2106,7 @@ class WiiLink_Patcher
 
             DownloadWC24Channel("EULA", "EULA", 3, wc24_reg, EULATitleID);
 
-        }
+        } */
 
         // Install the RC24 Mail Patcher
         DownloadOSCApp("Mail-Patcher");
@@ -1946,6 +2133,13 @@ class WiiLink_Patcher
         var wiiLinkChannelMap = new Dictionary<string, string>()
         {
             { "Wii Room [bold](English)[/]", "wiiroom_en" },
+            { "Wii Room [bold](Spanish)[/]", "wiiroom_es"},
+            { "Wii Room [bold](French)[/]","wiiroom_fr" },
+            { "Wii Room [bold](Deutsch)[/]", "wiiroom_de" },
+            { "Wii Room [bold](Italiano)[/]", "wiiroom_it" },
+            { "Wii Room [bold](Nederlands)[/]", "wiiroom_du" },
+            { "Wii Room [bold](Português)[/]", "wiiroom_ptbr" },
+            { "Wii Room [bold](Русский)[/]", "wiiroom_ru" },
             { "Wii no Ma [bold](Japanese)[/]", "wiinoma_jp" },
             { "Photo Prints Channel [bold](English)[/]", "digicam_en" },
             { "Digicam Print Channel [bold](Japanese)[/]", "digicam_jp" },
@@ -2233,6 +2427,13 @@ class WiiLink_Patcher
         var wiiLinkChannelMap = new Dictionary<string, string>()
         {
             { "wiiroom_en", "● Wii Room [bold](English)[/]" },
+            { "wiiroom_es", "● Wii Room [bold](Spanish)[/]"},
+            { "wiiroom_fr", "● Wii Room [bold](French)[/]" },
+            { "wiiroom_de", "● Wii Room [bold](Deutsch)[/]" },
+            { "wiiroom_it", "● Wii Room [bold](Italiano)[/]" },
+            { "wiiroom_du", "● Wii Room [bold](Nederlands)[/]" },
+            { "wiiroom_ptbr", "● Wii Room [bold](Português)[/]" },
+            { "wiiroom_ru", "● Wii Room [bold](Русский)[/]" },
             { "wiinoma_jp", "● Wii no Ma [bold](Japanese)[/]" },
             { "digicam_en", "● Photo Prints Channel [bold](English)[/]" },
             { "digicam_jp", "● Digicam Print Channel [bold](Japanese)[/]" },
@@ -2336,6 +2537,15 @@ class WiiLink_Patcher
                 AnsiConsole.MarkupLine($"\n{eulaChannel}");
             }
 
+            // If user chose Russian Wii Room, provide extra instructions
+            if (combinedChannels_selection.Contains("wiiroom_ru"))
+            {
+                AnsiConsole.MarkupLine("\n[bold yellow]NOTICE FOR RUSSIAN USERS[/]\n");
+                AnsiConsole.MarkupLine("Proper functionality is not guaranteed for systems without the Russian Wii menu.\n");
+                AnsiConsole.MarkupLine("Read the installation guide here (Russian only for now):");
+                AnsiConsole.MarkupLine("[bold link springgreen2_1]https://wii.zazios.ru/rus_menu[/]");
+            }
+
             // Print instructions
             string prompt = patcherLang == PatcherLanguage.en
                 ? "Are you sure you want to install these selected channels?"
@@ -2372,7 +2582,7 @@ class WiiLink_Patcher
                     CustomInstall_WiiLinkChannels_Setup();
                     break;
                 case 3: // No, go back to main menu
-
+                    combinedChannels_selection.Clear();
                     MainMenu();
                     break;
                 default:
@@ -2386,14 +2596,14 @@ class WiiLink_Patcher
     {
         task = "Downloading selected patches";
 
-        // Download SPD if English is selected for WiiLink channels (or if Demae Domino's is selected)
-        if (wiiLinkChannels_selection.Any(channel => channel.Contains("_en")) || wiiLinkChannels_selection.Contains("food_"))
+        // Download SPD if any of the following channels are selected
+        if (wiiLinkChannels_selection.Any(channel => channel.Contains("food_en") || channel.Contains("food_dominos") || channel.Contains("digicam_en")))
             DownloadSPD(platformType_custom);
         else
             Directory.CreateDirectory("WAD");
 
         // Download ww-43db-patcher for vWii if applicable
-        if (platformType_custom == Platform.vWii)
+/*         if (platformType_custom == Platform.vWii)
         {
             DownloadOSCApp("ww-43db-patcher");
 
@@ -2415,22 +2625,75 @@ class WiiLink_Patcher
                     DownloadWC24Channel("EULA", "EULA", 3, region, titleID);
                 }
             }
-        }
+        } */
 
         // Download patches for selected WiiLink channels
+        // !! The English patches are the base patches (0 and 1) for the translated patches, patches 2 and up will change the language !! //
         foreach (string channel in channelSelection)
         {
             switch (channel)
             {
                 case "wiiroom_en":
                     task = "Downloading Wii Room (English)";
-                    DownloadPatch("WiinoMa", $"WiinoMa_0_English.delta", "WiinoMa_0_English.delta", "Wii Room");
-                    DownloadPatch("WiinoMa", $"WiinoMa_1_English.delta", "WiinoMa_1_English.delta", "Wii Room");
+                    DownloadPatch("WiinoMa", $"WiinoMa_0_Universal.delta", "WiinoMa_0_Universal.delta", "Wii Room");
+                    DownloadPatch("WiinoMa", $"WiinoMa_1_Universal.delta", "WiinoMa_1_Universal.delta", "Wii Room");
                     DownloadPatch("WiinoMa", $"WiinoMa_2_English.delta", "WiinoMa_2_English.delta", "Wii Room");
+                    break;
+                case "wiiroom_es":
+                    task = "Downloading Wii Room (Español)";
+                    DownloadPatch("WiinoMa", $"WiinoMa_0_Universal.delta", "WiinoMa_0_Universal.delta", "Wii Room");
+                    DownloadPatch("WiinoMa", $"WiinoMa_1_Universal.delta", "WiinoMa_1_Universal.delta", "Wii Room");
+                    DownloadPatch("WiinoMa", $"WiinoMa_2_Spanish.delta", "WiinoMa_2_Spanish.delta", "Wii Room");
+                    break;
+                case "wiiroom_fr":
+                    task = "Downloading Wii Room (Français)";
+                    DownloadPatch("WiinoMa", $"WiinoMa_0_Universal.delta", "WiinoMa_0_Universal.delta", "Wii Room");
+                    DownloadPatch("WiinoMa", $"WiinoMa_1_Universal.delta", "WiinoMa_1_Universal.delta", "Wii Room");
+                    DownloadPatch("WiinoMa", $"WiinoMa_2_French.delta", "WiinoMa_2_French.delta", "Wii Room");
+                    break;
+                case "wiiroom_de":
+                    task = "Downloading Wii Room (Deutsch)";
+                    DownloadPatch("WiinoMa", $"WiinoMa_0_Universal.delta", "WiinoMa_0_Universal.delta", "Wii Room");
+                    DownloadPatch("WiinoMa", $"WiinoMa_1_Universal.delta", "WiinoMa_1_Universal.delta", "Wii Room");
+                    DownloadPatch("WiinoMa", $"WiinoMa_2_German.delta", "WiinoMa_2_German.delta", "Wii Room");
+                    break;
+                case "wiiroom_it":
+                    task = "Downloading Wii Room (Italiano)";
+                    DownloadPatch("WiinoMa", $"WiinoMa_0_Universal.delta", "WiinoMa_0_Universal.delta", "Wii Room");
+                    DownloadPatch("WiinoMa", $"WiinoMa_1_Universal.delta", "WiinoMa_1_Universal.delta", "Wii Room");
+                    DownloadPatch("WiinoMa", $"WiinoMa_2_Italian.delta", "WiinoMa_2_Italian.delta", "Wii Room");
+                    break;
+                case "wiiroom_du":
+                    task = "Downloading Wii Room (Nederlands)";
+                    DownloadPatch("WiinoMa", $"WiinoMa_0_Universal.delta", "WiinoMa_0_Universal.delta", "Wii Room");
+                    DownloadPatch("WiinoMa", $"WiinoMa_1_Universal.delta", "WiinoMa_1_Universal.delta", "Wii Room");
+                    DownloadPatch("WiinoMa", $"WiinoMa_2_Dutch.delta", "WiinoMa_2_Dutch.delta", "Wii Room");
+                    break;
+                case "wiiroom_ptbr":
+                    task = "Downloading Wii Room (Português-Brasil)";
+                    DownloadPatch("WiinoMa", $"WiinoMa_0_Universal.delta", "WiinoMa_0_Universal.delta", "Wii Room");
+                    DownloadPatch("WiinoMa", $"WiinoMa_1_Portuguese.delta", "WiinoMa_1_Portuguese.delta", "Wii Room");
+                    DownloadPatch("WiinoMa", $"WiinoMa_2_Portuguese.delta", "WiinoMa_2_Portuguese.delta", "Wii Room");
+                    DownloadPatch("WiinoMa", $"WiinoMa_3_Portuguese.delta", "WiinoMa_3_Portuguese.delta", "Wii Room");
+                    DownloadPatch("WiinoMa", $"WiinoMa_4_Portuguese.delta", "WiinoMa_4_Portuguese.delta", "Wii Room");
+                    DownloadPatch("WiinoMa", $"WiinoMa_D_Portuguese.delta", "WiinoMa_D_Portuguese.delta", "Wii Room");
+                    break;
+                case "wiiroom_ru":
+                    task = "Downloading Wii Room (Русский)";
+                    DownloadPatch("WiinoMa", $"WiinoMa_0_Universal.delta", "WiinoMa_0_Universal.delta", "Wii Room");
+                    DownloadPatch("WiinoMa", $"WiinoMa_1_Russian.delta", "WiinoMa_1_Russian.delta", "Wii Room");
+                    DownloadPatch("WiinoMa", $"WiinoMa_2_Russian.delta", "WiinoMa_2_Russian.delta", "Wii Room");
+                    DownloadPatch("WiinoMa", $"WiinoMa_3_Russian.delta", "WiinoMa_3_Russian.delta", "Wii Room");
+                    DownloadPatch("WiinoMa", $"WiinoMa_4_Russian.delta", "WiinoMa_4_Russian.delta", "Wii Room");
+                    DownloadPatch("WiinoMa", $"WiinoMa_9_Russian.delta", "WiinoMa_9_Russian.delta", "Wii Room");
+                    DownloadPatch("WiinoMa", $"WiinoMa_C_Russian.delta", "WiinoMa_C_Russian.delta", "Wii Room");
+                    DownloadPatch("WiinoMa", $"WiinoMa_D_Russian.delta", "WiinoMa_D_Russian.delta", "Wii Room");
+                    DownloadPatch("WiinoMa", $"WiinoMa_E_Russian.delta", "WiinoMa_E_Russian.delta", "Wii Room");
                     break;
                 case "wiinoma_jp":
                     task = "Downloading Wii no Ma (Japan)";
-                    DownloadPatch("WiinoMa", $"WiinoMa_1_Japan.delta", "WiinoMa_1_Japan.delta", "Wii no Ma");
+                    DownloadPatch("WiinoMa", $"WiinoMa_0_Universal.delta", "WiinoMa_0_Universal.delta", "Wii no Ma");
+                    DownloadPatch("WiinoMa", $"WiinoMa_1_Universal.delta", "WiinoMa_1_Universal.delta", "Wii no Ma");
                     DownloadPatch("WiinoMa", $"WiinoMa_2_Japan.delta", "WiinoMa_2_Japan.delta", "Wii no Ma");
                     break;
                 case "digicam_en":
@@ -2535,19 +2798,48 @@ class WiiLink_Patcher
     {
         task = "Patching Wii no Ma";
 
-        // Dictionary for which files to patch
-        var wiiRoomPatchList = new List<KeyValuePair<string, string>>()
+        // Patches 00 and 01 are universal (except 01 for Russian and Portuguese), 02 has language-specific patches
+        // Russian has patches 01, 02, 03, 04, 09, 0C, 0D, and 0E
+        // Portuguese has patches 01, 02, 03, 04, and 0D
+
+        bool notRussianOrPortuguese = language != Language.Russian && language != Language.Portuguese;
+
+        // Generate patch list for Wii Room
+        var wiiRoomPatchList = new List<KeyValuePair<string, string>>
         {
-            new($"WiinoMa_0_{language}", "00000000"),
-            new($"WiinoMa_1_{language}", "00000001"),
+            new("WiinoMa_0_Universal", "00000000"),
+            new($"WiinoMa_1_{(notRussianOrPortuguese ? "Universal" : language)}", "00000001"),
             new($"WiinoMa_2_{language}", "00000002")
         };
 
-        // If English, change channel title to "Wii Room"
+        switch (language)
+        {
+            case Language.Russian:
+                wiiRoomPatchList.AddRange(
+                [
+                    new KeyValuePair<string, string>("WiinoMa_3_Russian", "00000003"),
+                    new KeyValuePair<string, string>("WiinoMa_4_Russian", "00000004"),
+                    new KeyValuePair<string, string>("WiinoMa_9_Russian", "00000009"),
+                    new KeyValuePair<string, string>("WiinoMa_C_Russian", "0000000C"),
+                    new KeyValuePair<string, string>("WiinoMa_D_Russian", "0000000D"),
+                    new KeyValuePair<string, string>("WiinoMa_E_Russian", "0000000E")
+                ]);
+                break;
+            case Language.Portuguese:
+                wiiRoomPatchList.AddRange(
+                [
+                    new KeyValuePair<string, string>("WiinoMa_3_Portuguese", "00000003"),
+                    new KeyValuePair<string, string>("WiinoMa_4_Portuguese", "00000004"),
+                    new KeyValuePair<string, string>("WiinoMa_D_Portuguese", "0000000D")
+                ]);
+                break;
+        }
+
+        // Name the channel based on the language chosen
         string channelTitle = language switch
         {
-            Language.English => "Wii Room",
-            _ => "Wii no Ma"
+            Language.Japan => "Wii no Ma",
+            _ => "Wii Room"
         };
 
         PatchRegionalChannel("WiinoMa", channelTitle, "000100014843494a", wiiRoomPatchList, lang: language);
@@ -2793,10 +3085,10 @@ class WiiLink_Patcher
     // Finish SD Copy
     static void FinishSDCopy()
     {
-        // Copying files to SD card
+        // Copying files to SD card and user is not running the patcher on the removable drive
         task = "Copying files to SD card";
 
-        if (sdcard != null)
+        if (sdcard != null && curDir != sdcard)
         {
             // Copying files to SD card
             string copyingFiles = patcherLang == PatcherLanguage.en
@@ -2881,7 +3173,7 @@ class WiiLink_Patcher
 
             // Please proceed text
             string pleaseProceed = patcherLang == PatcherLanguage.en
-                ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://www.wiilink24.com/guide/install/#section-ii---installing-wads[/]"
+                ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://www.wiilink24.com/guide/install/#section-ii---installing-wads-and-patching-mail[/]"
                 : $"{localizedText?["Finished"]?["pleaseProceed"]}";
             AnsiConsole.MarkupLine($"{pleaseProceed}\n");
 
@@ -3350,7 +3642,7 @@ class WiiLink_Patcher
         string tempPath = Path.Join(tempDir);
         if (Directory.Exists(tempPath))
         {
-            string[] foldersToDelete = { "Patches", "Unpack", "Unpack_Patched" };
+            string[] foldersToDelete = ["Patches", "Unpack", "Unpack_Patched"];
             foreach (string folder in foldersToDelete)
             {
                 string folderPath = Path.Join(tempPath, folder);
@@ -3659,6 +3951,14 @@ class WiiLink_Patcher
             Thread.Sleep(5000);
             return;
         }
+        // Timeout error
+        catch (TaskCanceledException ex)
+        {
+            AnsiConsole.MarkupLine($"[bold red]Error:[/] {ex.Message}");
+            AnsiConsole.MarkupLine($"[bold yellow]Skipping update check...[/]");
+            Thread.Sleep(5000);
+            return;
+        }
 
         // Get the latest version number from the text file
         string latestVersion = updateInfo.Split('\n')[0].Trim();
@@ -3924,7 +4224,7 @@ class WiiLink_Patcher
         Environment.Exit(0);
     }
 
-    static async System.Threading.Tasks.Task Main(string[] args)
+    static async Task Main(string[] args)
     {
         // Check for debugging flag
         bool debugArgExists = Array.Exists(args, element => element.ToLower() == "--debug");
@@ -3943,7 +4243,7 @@ class WiiLink_Patcher
         {
             Console.Title = $"WiiLink Patcher {version}";
             if (DEBUG_MODE) Console.Title += $" [DEBUG MODE]";
-            if (version.Contains("Nightly")) Console.Title += $" (Test Build)";
+            if (version.Contains("Nightly") || version.Contains("RC")) Console.Title += $" (Test Build)";
         }
 
         // Set console window size to 120x30 on macOS and Linux and on Windows, check for Windows version
@@ -3968,8 +4268,8 @@ class WiiLink_Patcher
         if (!result.Item1)
             ConnectionFailed(result.Item2, result.Item3);
 
-        // Check latest version if not on a nightly build
-        if (!version.Contains("Nightly"))
+        // Check latest version if not on a nightly build or release candidate
+        if (!version.Contains("Nightly") && !version.Contains("RC"))
             await CheckForUpdates(version);
 
         // Go to the main menu

@@ -39,11 +39,11 @@ function build_for_platform {
         ;;
     esac
     
-    dotnet publish -c Release -r "$1" --self-contained /p:AssemblyName="WiiLinkPatcher_$platform$nightlyString"
+    dotnet publish -c Release -r "$1" --self-contained /p:AssemblyName="WiiLinkPatcher_$platform$versionString"
 }
 
 # Initialize variables
-nightlyString=""
+versionString=""
 platforms=("win-x64" "osx-x64" "osx-arm64" "linux-x64" "linux-arm64")
 
 # Parse command line arguments
@@ -69,10 +69,6 @@ while (( "$#" )); do
             shift
         ;;
         -v|--version)
-            if [ "$nightly" = false ]; then
-                echo "The -v/--version option can only be used when -n/--nightly is also used"
-                exit 1
-            fi
             if [[ $2 =~ ^v[0-9]+ ]]; then
                 version="$2"
                 shift 2
@@ -116,7 +112,9 @@ if [ "$nightly" == "true" ]; then
         echo "Version is required when nightly is specified"
         exit 1
     fi
-    nightlyString="_Nightly_$version"
+    versionString="_Nightly_$version"
+else
+    versionString="_$version"
 fi
 
 # Build the project for the specified platform or all supported platforms if none is specified
