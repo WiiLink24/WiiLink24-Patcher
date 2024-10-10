@@ -5,6 +5,7 @@ using Spectre.Console;
 using libWiiSharp;
 using System.Net;
 using Newtonsoft.Json.Linq;
+using System.IO.Compression;
 
 // Author: PablosCorner and WiiLink Team
 // Project: WiiLink Patcher (CLI Version)
@@ -53,7 +54,7 @@ class WiiLink_Patcher
     enum Language : int { English, Japan, Russian, Catalan, Portuguese, French, Italian, German, Dutch, Spanish }
     enum PatcherLanguage : int { en }
     enum DemaeVersion : int { Standard, Dominos }
-    enum Platform : int { Wii, vWii }
+    enum Platform : int { Wii, vWii, Dolphin }
 
     // Get current console window size
     static int console_width = 0;
@@ -1184,21 +1185,25 @@ class WiiLink_Patcher
 
             // User Choices
             string wii = patcherLang == PatcherLanguage.en
-                ? "Wii [bold](or Dolphin Emulator)[/]"
+                ? "Wii [bold][/]"
                 : $"{localizedText?["ExpressInstall"]?["ChoosePlatform"]?["wii"]}";
             string vWii = patcherLang == PatcherLanguage.en
                 ? "vWii [bold](Wii U)[/]"
                 : $"{localizedText?["ExpressInstall"]?["ChoosePlatform"]?["vWii"]}";
+            string Dolphin = patcherLang == PatcherLanguage.en
+                ? "Dolphin Emulator[bold][/]"
+                : $"{localizedText?["ExpressInstall"]?["ChoosePlatform"]?["dolphin"]}";
             string goBackToMainMenu = patcherLang == PatcherLanguage.en
                 ? "Go Back to Main Menu"
                 : $"{localizedText?["ExpressInstall"]?["ChoosePlatform"]?["goBackToMainMenu"]}";
 
             AnsiConsole.MarkupLine($"1. {wii}");
-            AnsiConsole.MarkupLine($"2. {vWii}\n");
+            AnsiConsole.MarkupLine($"2. {vWii}");
+            AnsiConsole.MarkupLine($"3. {Dolphin}\n");
 
-            AnsiConsole.MarkupLine($"3. {goBackToMainMenu}\n");
+            AnsiConsole.MarkupLine($"4. {goBackToMainMenu}\n");
 
-            int choice = UserChoose("123");
+            int choice = UserChoose("1234");
             switch (choice)
             {
                 case 1:
@@ -1209,7 +1214,12 @@ class WiiLink_Patcher
                     platformType = Platform.vWii;
                     SDSetup();
                     break;
-                case 3: // Go back to main menu
+                case 3:
+                    platformType = Platform.Dolphin;
+                        sdcard = null;
+                        WADFolderCheck(false);
+                    break;
+                case 4: // Go back to main menu
                     MainMenu();
                     break;
                 default:
@@ -2063,11 +2073,15 @@ class WiiLink_Patcher
             DownloadPatch("ktv", $"ktv_2.delta", "KirbyTV_2.delta", "Kirby TV Channel");
         }
 
-        // Download yawmME from OSC for installing WADs on the Wii
-        DownloadOSCApp("yawmME");
+        if (platformType != Platform.Dolphin) {
+            // Download yawmME from OSC for installing WADs on the Wii
+            DownloadOSCApp("yawmME");
+        }
 
-        // Download sntp from OSC for Syncing the Clock on the Wii
-        DownloadOSCApp("sntp");
+        if (platformType == Platform.Wii) {
+            // Download sntp from OSC for Syncing the Clock on the Wii
+            DownloadOSCApp("sntp");
+        }
 
         // Download WC24 patches if applicable
         // Nintendo Channel
@@ -2081,7 +2095,16 @@ class WiiLink_Patcher
         DownloadPatch("news", $"News_1.delta", $"News_1.delta", "News Channel");
 
         // Download AnyGlobe_Changer from OSC for use with the Forecast Channel
-        DownloadOSCApp("AnyGlobe_Changer");
+        if (platformType != Platform.Dolphin) {
+            DownloadOSCApp("AnyGlobe_Changer");
+        }
+        else { // Download AnyGlobe_Changer v1.0 from GitHub instead as later releases don't work with Dolphin
+            task = $"Downloading AnyGlobe_Changer";
+            string appPath = Path.Join(tempDir, "AGC");
+            Directory.CreateDirectory(appPath);
+            DownloadFile($"https://github.com/fishguy6564/AnyGlobe-Changer/releases/download/1.0/AnyGlobe.Changer.zip", Path.Join(appPath, "AGC.zip"), "AnyGlobe_Changer");
+            ZipFile.ExtractToDirectory(Path.Join(appPath, "AGC.zip"), "./");
+        }
 
         // Everybody Votes Channel and Region Select Channel
         DownloadPatch("evc", $"EVC_1_{wc24_reg}.delta", $"EVC_1_{wc24_reg}.delta", "Everybody Votes Channel");
@@ -2108,8 +2131,10 @@ class WiiLink_Patcher
 
         } */
 
+        if (platformType != Platform.Dolphin) {
         // Install the RC24 Mail Patcher
         DownloadOSCApp("Mail-Patcher");
+        }
 
         // Downloading stuff is finished!
         patchingProgress_express["downloading"] = "done";
