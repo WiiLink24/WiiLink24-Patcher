@@ -3185,18 +3185,20 @@ class WiiLink_Patcher
             }
             else
             {
-                // Please connect text
-                string connectDrive = patcherLang == PatcherLanguage.en
-                    ? "Please connect your Wii SD Card / USB Drive and copy the [u]WAD[/] and [u]apps[/] folders to the root (main folder) of your SD Card / USB Drive."
-                    : $"{localizedText?["Finished"]?["withoutSD/USB"]?["connectDrive"]}";
-                AnsiConsole.MarkupLine($"{connectDrive}\n");
+                if (platformType != Platform.Dolphin) {
+                    // Please connect text
+                    string connectDrive = patcherLang == PatcherLanguage.en
+                        ? "Please connect your Wii SD Card / USB Drive and copy the [u]WAD[/] and [u]apps[/] folders to the root (main folder) of your SD Card / USB Drive."
+                        : $"{localizedText?["Finished"]?["withoutSD/USB"]?["connectDrive"]}";
+                    AnsiConsole.MarkupLine($"{connectDrive}\n");
 
-                // Open the folder text
-                string canFindFolders = patcherLang == PatcherLanguage.en
-                    ? "You can find these folders in the [u]{curDir}[/] folder of your computer."
-                    : $"{localizedText?["Finished"]?["canFindFolders"]}";
-                canFindFolders = canFindFolders.Replace("{curDir}", curDir);
-                AnsiConsole.MarkupLine($"{canFindFolders}\n");
+                    // Open the folder text
+                    string canFindFolders = patcherLang == PatcherLanguage.en
+                        ? "You can find these folders in the [u]{curDir}[/] folder of your computer."
+                        : $"{localizedText?["Finished"]?["canFindFolders"]}";
+                    canFindFolders = canFindFolders.Replace("{curDir}", curDir);
+                    AnsiConsole.MarkupLine($"{canFindFolders}\n");
+                }
             }
 
             // Please proceed text
