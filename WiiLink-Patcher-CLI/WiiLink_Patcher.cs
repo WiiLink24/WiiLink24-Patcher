@@ -14,10 +14,10 @@ using System.IO.Compression;
 class WiiLink_Patcher
 {
     //// Build Info ////
-    static readonly string version = "v2.0.3";
+    static readonly string version = "v2.0.4";
     static readonly string copyrightYear = DateTime.Now.Year.ToString();
-    static readonly string buildDate = "July 6th, 2024";
-    static readonly string buildTime = "11:05 AM";
+    static readonly string buildDate = "October 11th, 2024";
+    static readonly string buildTime = "3:24 PM";
     static string? sdcard = DetectRemovableDrive;
     static readonly string wiiLinkPatcherUrl = "https://patcher.wiilink24.com";
     ////////////////////
@@ -2098,25 +2098,25 @@ class WiiLink_Patcher
         if (platformType != Platform.Dolphin) {
             DownloadOSCApp("AnyGlobe_Changer");
         }
-        else { // Download AnyGlobe_Changer v1.0 from GitHub instead as later releases don't work with Dolphin
+        else if (!Directory.Exists("./apps/AnyGlobe Changer")) { // Download AnyGlobe_Changer v1.0 from GitHub instead as later releases don't work with Dolphin
             task = $"Downloading AnyGlobe_Changer";
             string appPath = Path.Join(tempDir, "AGC");
             Directory.CreateDirectory(appPath);
             DownloadFile($"https://github.com/fishguy6564/AnyGlobe-Changer/releases/download/1.0/AnyGlobe.Changer.zip", Path.Join(appPath, "AGC.zip"), "AnyGlobe_Changer");
             ZipFile.ExtractToDirectory(Path.Join(appPath, "AGC.zip"), "./");
+            Directory.Delete(appPath, true);
         }
 
         // Everybody Votes Channel and Region Select Channel
         DownloadPatch("evc", $"EVC_1_{wc24_reg}.delta", $"EVC_1_{wc24_reg}.delta", "Everybody Votes Channel");
-        //DownloadPatch("RegSel", $"RegSel_1.delta", "RegSel_1.delta", "Region Select");
+        DownloadPatch("RegSel", $"RegSel_1.delta", "RegSel_1.delta", "Region Select");
 
         // Check Mii Out/Mii Contest Channel
         DownloadPatch("cmoc", $"CMOC_1_{wc24_reg}.delta", $"CMOC_1_{wc24_reg}.delta", "Check Mii Out Channel");
 
         // Download ww-43db-patcher for vWii if applicable
-/*         if (platformType == Platform.vWii)
-        {
-            DownloadOSCApp("ww-43db-patcher");
+        if (platformType == Platform.vWii) {
+            // DownloadOSCApp("ww-43db-patcher");
 
             // Also download EULA for each region for vWii users
             string EULATitleID = wc24_reg switch
@@ -2129,7 +2129,7 @@ class WiiLink_Patcher
 
             DownloadWC24Channel("EULA", "EULA", 3, wc24_reg, EULATitleID);
 
-        } */
+        }
 
         if (platformType != Platform.Dolphin) {
         // Install the RC24 Mail Patcher
@@ -2777,17 +2777,17 @@ class WiiLink_Patcher
                 case "evc_us":
                     task = $"Downloading Everybody Votes Channel (USA)";
                     DownloadPatch("evc", $"EVC_1_USA.delta", "EVC_1_USA.delta", "Everybody Votes Channel");
-                    //DownloadPatch("RegSel", "RegSel_1.delta", "RegSel_1.delta", "Region Select");
+                    DownloadPatch("RegSel", "RegSel_1.delta", "RegSel_1.delta", "Region Select");
                     break;
                 case "evc_eu":
                     task = $"Downloading Everybody Votes Channel (PAL)";
                     DownloadPatch("evc", $"EVC_1_PAL.delta", "EVC_1_PAL.delta", "Everybody Votes Channel");
-                    //DownloadPatch("RegSel", "RegSel_1.delta", "RegSel_1.delta", "Region Select");
+                    DownloadPatch("RegSel", "RegSel_1.delta", "RegSel_1.delta", "Region Select");
                     break;
                 case "evc_jp":
                     task = $"Downloading Everybody Votes Channel (Japan)";
                     DownloadPatch("evc", $"EVC_1_Japan.delta", "EVC_1_Japan.delta", "Everybody Votes Channel");
-                    //DownloadPatch("RegSel", "RegSel_1.delta", "RegSel_1.delta", "Region Select");
+                    DownloadPatch("RegSel", "RegSel_1.delta", "RegSel_1.delta", "Region Select");
                     break;
                 case "cmoc_us":
                     task = $"Downloading Check Mii Out Channel (USA)";
@@ -3030,7 +3030,7 @@ class WiiLink_Patcher
         patchingProgress_express["evc"] = "in_progress";
     }
 
-    // Patching Everybody Votes Channel and Region Select
+    // Patching Everybody Votes Channel
     static void EVC_Patch(Region region)
     {
 
@@ -3050,6 +3050,9 @@ class WiiLink_Patcher
         List<string> appNums = ["00000019"];
 
         PatchWC24Channel("evc", $"Everybody Votes Channel", 512, region, channelID, patches, appNums);
+
+        //// Patching Region Select for Everybody Votes Channel
+        RegSel_Patch(region);
 
         // Finished patching Everybody Votes Channel
         patchingProgress_express["evc"] = "done";
