@@ -359,6 +359,21 @@ class WiiLink_Patcher
         DownloadFile($"https://hbb1.oscwii.org/api/v3/contents/{appName}/icon.png", Path.Join(appPath, "icon.png"), appName);
     }
 
+    static public void DownloadAGC()
+    {
+        if (platformType != Platform.Dolphin) {
+            DownloadOSCApp("AnyGlobe_Changer");
+        }
+        else if (!Directory.Exists("./apps/AnyGlobe Changer")) { // Download AnyGlobe_Changer v1.0 from GitHub instead as later releases don't work with Dolphin
+            task = $"Downloading AnyGlobe_Changer";
+            string appPath = Path.Join(tempDir, "AGC");
+            Directory.CreateDirectory(appPath);
+            DownloadFile($"https://github.com/fishguy6564/AnyGlobe-Changer/releases/download/1.0/AnyGlobe.Changer.zip", Path.Join(appPath, "AGC.zip"), "AnyGlobe_Changer");
+            ZipFile.ExtractToDirectory(Path.Join(appPath, "AGC.zip"), "./");
+            Directory.Delete(appPath, true);
+        }
+    }
+
     /// <summary>
     /// Downloads a file from the specified URL to the specified destination with the specified name.
     /// </summary>
@@ -2095,17 +2110,7 @@ class WiiLink_Patcher
         DownloadPatch("news", $"News_1.delta", $"News_1.delta", "News Channel");
 
         // Download AnyGlobe_Changer from OSC for use with the Forecast Channel
-        if (platformType != Platform.Dolphin) {
-            DownloadOSCApp("AnyGlobe_Changer");
-        }
-        else if (!Directory.Exists("./apps/AnyGlobe Changer")) { // Download AnyGlobe_Changer v1.0 from GitHub instead as later releases don't work with Dolphin
-            task = $"Downloading AnyGlobe_Changer";
-            string appPath = Path.Join(tempDir, "AGC");
-            Directory.CreateDirectory(appPath);
-            DownloadFile($"https://github.com/fishguy6564/AnyGlobe-Changer/releases/download/1.0/AnyGlobe.Changer.zip", Path.Join(appPath, "AGC.zip"), "AnyGlobe_Changer");
-            ZipFile.ExtractToDirectory(Path.Join(appPath, "AGC.zip"), "./");
-            Directory.Delete(appPath, true);
-        }
+        DownloadAGC();
 
         // Everybody Votes Channel and Region Select Channel
         DownloadPatch("evc", $"EVC_1_{wc24_reg}.delta", $"EVC_1_{wc24_reg}.delta", "Everybody Votes Channel");
@@ -2133,7 +2138,7 @@ class WiiLink_Patcher
 
         if (platformType != Platform.Dolphin) {
         // Install the RC24 Mail Patcher
-        DownloadOSCApp("Mail-Patcher");
+            DownloadOSCApp("Mail-Patcher");
         }
 
         // Downloading stuff is finished!
@@ -2403,13 +2408,17 @@ class WiiLink_Patcher
 
             // Print Console Platform options
             string onWii = patcherLang == PatcherLanguage.en
-                ? "[bold grey]Wii[/]"
+                ? "[bold]Wii[/]"
                 : $"{localizedText?["CustomSetup"]?["ConsolePlatform_Setup"]?["onWii"]}";
             string onvWii = patcherLang == PatcherLanguage.en
-                ? "[bold deepskyblue1]vWii (Wii U)[/]"
+                ? "[bold]vWii (Wii U)[/]"
                 : $"{localizedText?["CustomSetup"]?["ConsolePlatform_Setup"]?["onvWii"]}";
+            string onDolphin = patcherLang == PatcherLanguage.en
+                ? "[bold]Dolphin Emulator[/]"
+                : $"{localizedText?["CustomSetup"]?["ConsolePlatform_Setup"]?["onDolphin"]}";
             AnsiConsole.MarkupLine($"[bold]1.[/] {onWii}");
-            AnsiConsole.MarkupLine($"[bold]2.[/] {onvWii}\n");
+            AnsiConsole.MarkupLine($"[bold]2.[/] {onvWii}");
+            AnsiConsole.MarkupLine($"[bold]3.[/] {onDolphin}\n");
 
             // Print instructions
             string platformInstructions = patcherLang == PatcherLanguage.en
@@ -2417,7 +2426,7 @@ class WiiLink_Patcher
                 : $"{localizedText?["CustomSetup"]?["ConsolePlatform_Setup"]?["platformInstructions"]}";
             AnsiConsole.MarkupLine($"[grey]{platformInstructions}[/]\n");
 
-            int choice = UserChoose("12");
+            int choice = UserChoose("123");
 
             // Use a switch statement to handle user's SPD version selection
             switch (choice)
@@ -2431,10 +2440,17 @@ class WiiLink_Patcher
                     break;
                 case 1:
                     platformType_custom = Platform.Wii;
+                    platformType = Platform.Wii;
                     CustomInstall_SummaryScreen(showSPD: true);
                     break;
                 case 2:
                     platformType_custom = Platform.vWii;
+                    platformType = Platform.vWii;
+                    CustomInstall_SummaryScreen(showSPD: true);
+                    break;
+                case 3:
+                    platformType_custom = Platform.Dolphin;
+                    platformType = Platform.Dolphin;
                     CustomInstall_SummaryScreen(showSPD: true);
                     break;
                 default:
@@ -2548,8 +2564,12 @@ class WiiLink_Patcher
 
             grid.AddRow($"[bold deepskyblue1]{wiiConnect24Channels}[/]", $"[bold springgreen2_1]{regionalChannels}[/]", $"[bold]{consoleVersion}[/]");
 
-            grid.AddRow(string.Join("\n", selectedWiiConnect24Channels), string.Join("\n", selectedRegionalChannels),
-            platformType_custom == Platform.Wii ? "● [bold grey]Wii[/]" : "● [bold deepskyblue1]vWii (Wii U)[/]");
+            if (platformType_custom == Platform.Wii)
+                grid.AddRow(string.Join("\n", selectedWiiConnect24Channels), string.Join("\n", selectedRegionalChannels),"● [bold]Wii[/]");
+            else if (platformType_custom == Platform.vWii)
+                grid.AddRow(string.Join("\n", selectedWiiConnect24Channels), string.Join("\n", selectedRegionalChannels),"● [bold]vWii (Wii U)[/]");
+            else
+                grid.AddRow(string.Join("\n", selectedWiiConnect24Channels), string.Join("\n", selectedRegionalChannels),"● [bold]Dolphin Emulator[/]");
 
             AnsiConsole.Write(grid);
 
@@ -2600,8 +2620,15 @@ class WiiLink_Patcher
             switch (choice)
             {
                 case 1: // Yes
-                    SDSetup(isCustomSetup: true);
-                    break;
+                    if (platformType_custom != Platform.Dolphin){
+                        SDSetup(isCustomSetup: true);
+                        break;
+                    }
+                    else {
+                        sdcard = null;
+                        WADFolderCheck(true);
+                        break;
+                    }
                 case 2: // No, start over
                     combinedChannels_selection.Clear();
                     CustomInstall_WiiLinkChannels_Setup();
@@ -2628,9 +2655,9 @@ class WiiLink_Patcher
             Directory.CreateDirectory("WAD");
 
         // Download ww-43db-patcher for vWii if applicable
-/*         if (platformType_custom == Platform.vWii)
+        if (platformType_custom == Platform.vWii)
         {
-            DownloadOSCApp("ww-43db-patcher");
+            // DownloadOSCApp("ww-43db-patcher");
 
             // Download the below if any WiiConnect24 channels are selected
             if (wiiConnect24Channels_selection.Any())
@@ -2650,7 +2677,7 @@ class WiiLink_Patcher
                     DownloadWC24Channel("EULA", "EULA", 3, region, titleID);
                 }
             }
-        } */
+        }
 
         // Download patches for selected WiiLink channels
         // !! The English patches are the base patches (0 and 1) for the translated patches, patches 2 and up will change the language !! //
@@ -2766,7 +2793,7 @@ class WiiLink_Patcher
                     task = "Downloading Forecast Channel";
                     DownloadPatch("forecast", $"Forecast_1.delta", "Forecast_1.delta", "Forecast Channel");
                     DownloadPatch("forecast", $"Forecast_5.delta", "Forecast_5.delta", "Forecast Channel");
-                    DownloadOSCApp("AnyGlobe_Changer"); // Download AnyGlobe_Changer from OSC for use with the Forecast Channel
+                    DownloadAGC(); // Download AnyGlobe_Changer from OSC for use with the Forecast Channel
                     break;
                 case "news_us":
                 case "news_eu":
@@ -2808,14 +2835,16 @@ class WiiLink_Patcher
             }
         }
 
+        if (platformType_custom != Platform.Dolphin) {
         // Downloading yawmME from OSC
-        DownloadOSCApp("yawmME");
-
-        // Downloading sntp from OSC
-        DownloadOSCApp("sntp");
-
+            DownloadOSCApp("yawmME");
         // Install the RC24 Mail Patcher
-        DownloadOSCApp("Mail-Patcher");
+            DownloadOSCApp("Mail-Patcher");
+        }
+
+        if (platformType_custom == Platform.Wii)
+        // Downloading sntp from OSC
+            DownloadOSCApp("sntp");
     }
 
     // Patching Wii no Ma
