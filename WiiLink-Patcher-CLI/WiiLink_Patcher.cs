@@ -3200,10 +3200,24 @@ class WiiLink_Patcher
             }
 
             // Please proceed text
-            string pleaseProceed = patcherLang == PatcherLanguage.en
-                ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://www.wiilink24.com/guide/install/#section-ii---installing-wads-and-patching-mail[/]"
-                : $"{localizedText?["Finished"]?["pleaseProceed"]}";
-            AnsiConsole.MarkupLine($"{pleaseProceed}\n");
+            if ( platformType == Platform.Wii ) {
+                string pleaseProceed = patcherLang == PatcherLanguage.en
+                    ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://www.wiilink24.com/guide/wii/#section-ii---installing-wads-and-patching-wii-mail[/]"
+                    : $"{localizedText?["Finished"]?["pleaseProceed"]}";
+                AnsiConsole.MarkupLine($"{pleaseProceed}\n");
+            }
+            else if ( platformType == Platform.vWii ) {
+                string pleaseProceed = patcherLang == PatcherLanguage.en
+                    ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://www.wiilink24.com/guide/vwii/#section-iii---installing-wads-and-patching-wii-mail[/]"
+                    : $"{localizedText?["Finished"]?["pleaseProceed"]}";
+                AnsiConsole.MarkupLine($"{pleaseProceed}\n");
+            }
+            else {
+                string pleaseProceed = patcherLang == PatcherLanguage.en
+                    ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://www.wiilink24.com/guide/dolphin/#section-ii---installing-wads[/]"
+                    : $"{localizedText?["Finished"]?["pleaseProceed"]}";
+                AnsiConsole.MarkupLine($"{pleaseProceed}\n");
+            }
 
             // What would you like to do now text
             string whatWouldYouLikeToDo = patcherLang == PatcherLanguage.en
