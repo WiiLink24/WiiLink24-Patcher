@@ -16,8 +16,8 @@ class WiiLink_Patcher
     //// Build Info ////
     static readonly string version = "v2.0.4";
     static readonly string copyrightYear = DateTime.Now.Year.ToString();
-    static readonly string buildDate = "October 11th, 2024";
-    static readonly string buildTime = "3:24 PM";
+    static readonly string buildDate = "November 25th, 2024";
+    static readonly string buildTime = "4:45 PM";
     static string? sdcard = DetectRemovableDrive;
     static readonly string wiiLinkPatcherUrl = "https://patcher.wiilink24.com";
     ////////////////////
@@ -61,7 +61,7 @@ class WiiLink_Patcher
     static int console_height = 0;
 
     // HttpClient
-    static readonly HttpClient httpClient = new() { Timeout = TimeSpan.FromSeconds(30) };
+    static readonly HttpClient httpClient = new() { Timeout = TimeSpan.FromMinutes(1) };
     ////////////////////
 
     static void PrintHeader()
@@ -364,10 +364,12 @@ class WiiLink_Patcher
     /// </summary>
     static public void DownloadAGC()
     {
-        if (platformType != Platform.Dolphin) {
+        if (platformType != Platform.Dolphin)
+        {
             DownloadOSCApp("AnyGlobe_Changer");
         }
-        else if (!Directory.Exists("./apps/AnyGlobe Changer")) {
+        else if (!Directory.Exists("./apps/AnyGlobe Changer"))
+        {
             task = $"Downloading AnyGlobe_Changer";
             string appPath = Path.Join(tempDir, "AGC");
             Directory.CreateDirectory(appPath);
@@ -388,6 +390,7 @@ class WiiLink_Patcher
     {
         task = $"Downloading {name}";
         curCmd = $"DownloadFile({URL}, {dest}, {name})";
+        
         if (DEBUG_MODE)
             AnsiConsole.MarkupLine($"[springgreen2_1]Downloading [bold]{name}[/] from [bold]{URL}[/] to [bold]{dest}[/][/]...");
 
@@ -409,19 +412,25 @@ class WiiLink_Patcher
                 ErrorScreen(statusCode, $"Failed to download [bold]{name}[/] from [bold]{URL}[/] to [bold]{dest}[/]");
             }
         }
-        catch (Exception e)
+        // Timeout exception
+        catch (TaskCanceledException)
+        {
+            if (!noError)
+            {
+                AnsiConsole.MarkupLine($"[bold red]ERROR:[/] Failed to download [bold]{name}[/] from [bold]{URL}[/] to [bold]{dest}[/]: Request timed out (1 minute)");
+                AnsiConsole.MarkupLine("Press any key to try again...");
+                Console.ReadKey(true);
+                DownloadFile(URL, dest, name);
+            }
+        }
+        catch (HttpRequestException e)
         {
             if (!noError)
             {
                 AnsiConsole.MarkupLine($"[bold red]ERROR:[/] {e.Message}");
-                // If the exception is a WebException, display the status code of the response.
-                if (e is WebException we && we.Response is HttpWebResponse response)
-                {
-                    int statusCode = (int)response.StatusCode;
-                    AnsiConsole.MarkupLine($"Status code: {statusCode}");
-                }
                 AnsiConsole.MarkupLine("Press any key to try again...");
                 Console.ReadKey(true);
+                DownloadFile(URL, dest, name);
             }
         }
     }
@@ -1234,8 +1243,8 @@ class WiiLink_Patcher
                     break;
                 case 3:
                     platformType = Platform.Dolphin;
-                        sdcard = null;
-                        WADFolderCheck(false);
+                    sdcard = null;
+                    WADFolderCheck(false);
                     break;
                 case 4: // Go back to main menu
                     MainMenu();
@@ -2091,12 +2100,14 @@ class WiiLink_Patcher
             DownloadPatch("ktv", $"ktv_2.delta", "KirbyTV_2.delta", "Kirby TV Channel");
         }
 
-        if (platformType != Platform.Dolphin) {
+        if (platformType != Platform.Dolphin)
+        {
             // Download yawmME from OSC for installing WADs on the Wii
             DownloadOSCApp("yawmME");
         }
 
-        if (platformType == Platform.Wii) {
+        if (platformType == Platform.Wii)
+        {
             // Download sntp from OSC for Syncing the Clock on the Wii
             DownloadOSCApp("sntp");
         }
@@ -2123,7 +2134,8 @@ class WiiLink_Patcher
         DownloadPatch("cmoc", $"CMOC_1_{wc24_reg}.delta", $"CMOC_1_{wc24_reg}.delta", "Check Mii Out Channel");
 
         // Download ww-43db-patcher for vWii if applicable
-        if (platformType == Platform.vWii) {
+        if (platformType == Platform.vWii)
+        {
             // DownloadOSCApp("ww-43db-patcher");
 
             // Also download EULA for each region for vWii users
@@ -2139,8 +2151,9 @@ class WiiLink_Patcher
 
         }
 
-        if (platformType != Platform.Dolphin) {
-        // Install the RC24 Mail Patcher
+        if (platformType != Platform.Dolphin)
+        {
+            // Install the RC24 Mail Patcher
             DownloadOSCApp("Mail-Patcher");
         }
 
@@ -2568,11 +2581,11 @@ class WiiLink_Patcher
             grid.AddRow($"[bold deepskyblue1]{wiiConnect24Channels}[/]", $"[bold springgreen2_1]{regionalChannels}[/]", $"[bold]{consoleVersion}[/]");
 
             if (platformType_custom == Platform.Wii)
-                grid.AddRow(string.Join("\n", selectedWiiConnect24Channels), string.Join("\n", selectedRegionalChannels),"● [bold]Wii[/]");
+                grid.AddRow(string.Join("\n", selectedWiiConnect24Channels), string.Join("\n", selectedRegionalChannels), "● [bold]Wii[/]");
             else if (platformType_custom == Platform.vWii)
-                grid.AddRow(string.Join("\n", selectedWiiConnect24Channels), string.Join("\n", selectedRegionalChannels),"● [bold]vWii (Wii U)[/]");
+                grid.AddRow(string.Join("\n", selectedWiiConnect24Channels), string.Join("\n", selectedRegionalChannels), "● [bold]vWii (Wii U)[/]");
             else
-                grid.AddRow(string.Join("\n", selectedWiiConnect24Channels), string.Join("\n", selectedRegionalChannels),"● [bold]Dolphin Emulator[/]");
+                grid.AddRow(string.Join("\n", selectedWiiConnect24Channels), string.Join("\n", selectedRegionalChannels), "● [bold]Dolphin Emulator[/]");
 
             AnsiConsole.Write(grid);
 
@@ -2623,11 +2636,13 @@ class WiiLink_Patcher
             switch (choice)
             {
                 case 1: // Yes
-                    if (platformType_custom != Platform.Dolphin){
+                    if (platformType_custom != Platform.Dolphin)
+                    {
                         SDSetup(isCustomSetup: true);
                         break;
                     }
-                    else {
+                    else
+                    {
                         sdcard = null;
                         WADFolderCheck(true);
                         break;
@@ -2838,15 +2853,16 @@ class WiiLink_Patcher
             }
         }
 
-        if (platformType_custom != Platform.Dolphin) {
-        // Downloading yawmME from OSC
+        if (platformType_custom != Platform.Dolphin)
+        {
+            // Downloading yawmME from OSC
             DownloadOSCApp("yawmME");
-        // Install the RC24 Mail Patcher
+            // Install the RC24 Mail Patcher
             DownloadOSCApp("Mail-Patcher");
         }
 
         if (platformType_custom == Platform.Wii)
-        // Downloading sntp from OSC
+            // Downloading sntp from OSC
             DownloadOSCApp("sntp");
     }
 
@@ -3217,7 +3233,8 @@ class WiiLink_Patcher
             }
             else
             {
-                if (platformType != Platform.Dolphin) {
+                if (platformType != Platform.Dolphin)
+                {
                     // Please connect text
                     string connectDrive = patcherLang == PatcherLanguage.en
                         ? "Please connect your Wii SD Card / USB Drive and copy the [u]WAD[/] and [u]apps[/] folders to the root (main folder) of your SD Card / USB Drive."
@@ -3234,19 +3251,22 @@ class WiiLink_Patcher
             }
 
             // Please proceed text
-            if ( platformType == Platform.Wii ) {
+            if (platformType == Platform.Wii)
+            {
                 string pleaseProceed = patcherLang == PatcherLanguage.en
                     ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://www.wiilink24.com/guide/wii/#section-ii---installing-wads-and-patching-wii-mail[/]"
                     : $"{localizedText?["Finished"]?["pleaseProceed"]}";
                 AnsiConsole.MarkupLine($"{pleaseProceed}\n");
             }
-            else if ( platformType == Platform.vWii ) {
+            else if (platformType == Platform.vWii)
+            {
                 string pleaseProceed = patcherLang == PatcherLanguage.en
                     ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://www.wiilink24.com/guide/vwii/#section-iii---installing-wads-and-patching-wii-mail[/]"
                     : $"{localizedText?["Finished"]?["pleaseProceed"]}";
                 AnsiConsole.MarkupLine($"{pleaseProceed}\n");
             }
-            else {
+            else
+            {
                 string pleaseProceed = patcherLang == PatcherLanguage.en
                     ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://www.wiilink24.com/guide/dolphin/#section-ii---installing-wads[/]"
                     : $"{localizedText?["Finished"]?["pleaseProceed"]}";
