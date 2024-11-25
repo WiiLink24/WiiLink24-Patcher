@@ -359,12 +359,15 @@ class WiiLink_Patcher
         DownloadFile($"https://hbb1.oscwii.org/api/v3/contents/{appName}/icon.png", Path.Join(appPath, "icon.png"), appName);
     }
 
+    /// <summary>
+    /// Downloads AnyGlobe Changer from OSC or GitHub, depending on platform, as the latest OSC release doesn't work with Dolphin.
+    /// </summary>
     static public void DownloadAGC()
     {
         if (platformType != Platform.Dolphin) {
             DownloadOSCApp("AnyGlobe_Changer");
         }
-        else if (!Directory.Exists("./apps/AnyGlobe Changer")) { // Download AnyGlobe_Changer v1.0 from GitHub instead as later releases don't work with Dolphin
+        else if (!Directory.Exists("./apps/AnyGlobe Changer")) {
             task = $"Downloading AnyGlobe_Changer";
             string appPath = Path.Join(tempDir, "AGC");
             Directory.CreateDirectory(appPath);
