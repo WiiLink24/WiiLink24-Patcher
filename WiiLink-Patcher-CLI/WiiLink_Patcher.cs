@@ -2893,9 +2893,9 @@ class WiiLink_Patcher
                     new KeyValuePair<string, string>("WiinoMa_3_Russian", "00000003"),
                     new KeyValuePair<string, string>("WiinoMa_4_Russian", "00000004"),
                     new KeyValuePair<string, string>("WiinoMa_9_Russian", "00000009"),
-                    new KeyValuePair<string, string>("WiinoMa_C_Russian", "0000000C"),
-                    new KeyValuePair<string, string>("WiinoMa_D_Russian", "0000000D"),
-                    new KeyValuePair<string, string>("WiinoMa_E_Russian", "0000000E")
+                    new KeyValuePair<string, string>("WiinoMa_C_Russian", "0000000c"),
+                    new KeyValuePair<string, string>("WiinoMa_D_Russian", "0000000d"),
+                    new KeyValuePair<string, string>("WiinoMa_E_Russian", "0000000e")
                 ]);
                 break;
             case Language.Portuguese:
@@ -2903,7 +2903,7 @@ class WiiLink_Patcher
                 [
                     new KeyValuePair<string, string>("WiinoMa_3_Portuguese", "00000003"),
                     new KeyValuePair<string, string>("WiinoMa_4_Portuguese", "00000004"),
-                    new KeyValuePair<string, string>("WiinoMa_D_Portuguese", "0000000D")
+                    new KeyValuePair<string, string>("WiinoMa_D_Portuguese", "0000000d")
                 ]);
                 break;
         }
