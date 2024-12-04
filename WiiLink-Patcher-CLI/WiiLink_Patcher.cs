@@ -14,9 +14,9 @@ using System.IO.Compression;
 class WiiLink_Patcher
 {
     //// Build Info ////
-    static readonly string version = "v2.0.4";
+    static readonly string version = "v2.0.4a";
     static readonly string copyrightYear = DateTime.Now.Year.ToString();
-    static readonly string buildDate = "November 26th, 2024";
+    static readonly string buildDate = "November 29th, 2024";
     static readonly string buildTime = "5:04 PM";
     static string? sdcard = DetectRemovableDrive;
     static readonly string wiiLinkPatcherUrl = "https://patcher.wiilink24.com";
@@ -390,7 +390,7 @@ class WiiLink_Patcher
     {
         task = $"Downloading {name}";
         curCmd = $"DownloadFile({URL}, {dest}, {name})";
-        
+
         if (DEBUG_MODE)
             AnsiConsole.MarkupLine($"[springgreen2_1]Downloading [bold]{name}[/] from [bold]{URL}[/] to [bold]{dest}[/][/]...");
 
@@ -3085,7 +3085,8 @@ class WiiLink_Patcher
         //// Patching Everybody Votes Channel
         task = "Patching Everybody Votes Channel";
 
-        // Properly set Everybody Votes Channel titleID
+
+        // Properly set Everybody Votes Channel titleID and appNum based on region
         string channelID = region switch
         {
             Region.USA => "0001000148414a45",
@@ -3093,9 +3094,14 @@ class WiiLink_Patcher
             Region.Japan => "0001000148414a4a",
             _ => throw new NotImplementedException(),
         };
-
+        string appNum = region switch
+        {
+            Region.Japan => "00000018",
+            _ => "00000019",
+        };
+        
         List<string> patches = [$"EVC_1_{region}"];
-        List<string> appNums = ["00000019"];
+        List<string> appNums = new List<string> { appNum };
 
         PatchWC24Channel("evc", $"Everybody Votes Channel", 512, region, channelID, patches, appNums);
 
