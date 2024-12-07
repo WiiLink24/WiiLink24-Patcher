@@ -3240,32 +3240,6 @@ class WiiLink_Patcher
         PatchWC24Channel("RegSel", $"Region Select", 2, regSel_reg, channelID, patches, appNums);
     }
 
-    // Patching Wii Speak
-    static void WiiSpeak_Patch(Region region)
-    {
-        task = "Patching Wii Speak Channel";
-
-        // Define a dictionary to map Region to channelID, appNum, and channel_title
-        Dictionary<Region, (string channelID, string appNum, string channel_title)> regionData = new()
-        {
-            { Region.USA, ("0001000148415445", "0000002c", "Nintendo Channel") },
-            { Region.PAL, ("0001000148415450", "0000002d", "Nintendo Channel") },
-            { Region.Japan, ("000100014841544a", "0000003e", "Minna no Nintendo Channel") },
-        };
-
-        // Get the data for the current region
-        var (channelID, appNum, channel_title) = regionData[region];
-
-        List<string> patches = [$"NC_1_{region}"];
-        List<string> appNums = [appNum];
-
-        PatchWC24Channel("nc", $"{channel_title}", 1792, region, channelID, patches, appNums);
-
-        // Finished patching Nintendo Channel
-        patchingProgress_express["nc"] = "done";
-        patchingProgress_express["forecast"] = "in_progress";
-    }
-
     // Finish SD Copy
     static void FinishSDCopy()
     {
