@@ -1836,8 +1836,8 @@ class WiiLink_Patcher
             { "ws_us", () => DownloadWC24Channel("ws_us", "Wii Speak Channel", 512, Region.USA, "0001000148434645") },
             { "ws_eu", () => DownloadWC24Channel("ws_eu", "Wii Speak Channel", 512, Region.PAL, "0001000148434650") },
             { "ws_jp", () => DownloadWC24Channel("ws_jp", "Wii Speak Channel", 512, Region.Japan, "000100014843464A") },
-            { "tatc_eu", () => DownloadWC24Channel("tatc_eu", "Today and Tomorrow Channel", 512, Region.PAL, "0001000148415650") },
-            { "tatc_jp", () => DownloadWC24Channel("tatc_jp", "Today and Tomorrow Channel", 512, Region.Japan, "000100014841564A") },
+            { "tatc_eu", () => TodayTomorrow_Download(Region.PAL) },
+            { "tatc_jp", () => TodayTomorrow_Download(Region.Japan) },
             { "scr", () => DownloadOSCApp("system-channel-restorer")}
         };
 
@@ -3238,6 +3238,31 @@ class WiiLink_Patcher
         List<string> appNums = ["00000009"];
 
         PatchWC24Channel("RegSel", $"Region Select", 2, regSel_reg, channelID, patches, appNums);
+    }
+
+    // Downloading Today and Tomorrow Channel
+    static void TodayTomorrow_Download(Region regSel_reg)
+    {
+        task = "Downloading Today and Tomorrow Channel";
+        
+        string titleFolder = Path.Join(tempDir, "Unpack");
+        if (!Directory.Exists(titleFolder))
+            Directory.CreateDirectory(titleFolder);
+
+        // Properly set Today and Tomorrow Channel titleID based on region
+        string channelID = regSel_reg switch
+        {
+            Region.PAL => "0001000148415650",
+            Region.Japan => "000100014841564A",
+            _ => throw new NotImplementedException(),
+        };
+
+        if (regSel_reg == Region.PAL)
+        {
+            DownloadFile("https://patcher.rc24.xyz/update/RiiConnect24-Patcher/v1/AdditionalChannels_Patches/TodayandTomorrowChannel/Europe.cetk", titleFolder, "cetk");
+        }
+
+        DownloadWC24Channel("tatc", "Today and Tomorrow Channel", 512, regSel_reg, channelID);
     }
 
     // Finish SD Copy
