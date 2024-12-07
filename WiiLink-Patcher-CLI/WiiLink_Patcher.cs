@@ -35,6 +35,8 @@ class WiiLink_Patcher
     // Custom Install variables
     static List<string> wiiLinkChannels_selection = [];
     static List<string> wiiConnect24Channels_selection = [];
+    static List<string> extraChannels_selection = [];
+
     static List<string> combinedChannels_selection = [];
     static Platform platformType_custom;
     static bool inCompatabilityMode = false;
@@ -1747,7 +1749,7 @@ class WiiLink_Patcher
         int partCompleted = 0;
 
         // List of channels to patch
-        List<string> channelsToPatch = [.. wiiConnect24Channels_selection, .. wiiLinkChannels_selection];
+        List<string> channelsToPatch = [.. wiiConnect24Channels_selection, .. wiiLinkChannels_selection, .. extraChannels_selection];
 
 
         // Set up patching progress dictionary
@@ -1789,7 +1791,13 @@ class WiiLink_Patcher
             { "cmoc_us", "Check Mii Out Channel [bold](USA)[/]" },
             { "cmoc_eu", "Mii Contest Channel [bold](Europe)[/]" },
             { "cmoc_jp", "Mii Contest Channel [bold](Japan)[/]" },
-            { "kirbytv", "Kirby TV Channel" }
+            { "kirbytv", "Kirby TV Channel" },
+            { "ws_us", "Wii Speak Channel [bold](USA)[/]" },
+            { "ws_eu", "Wii Speak Channel [bold](Europe)[/]" },
+            { "ws_jp", "Wii Speak Channel [bold](Japan)[/]" },
+            { "tatc_eu", "Today and Tomorrow Channel [bold](Europe)[/]" },
+            { "tatc_jp", "Today and Tomorrow Channel [bold](Japan)[/]" },
+            { "scr", "system-channel-restorer" }
         };
 
         // Setup patching process arrays based on the selected channels
@@ -1824,7 +1832,13 @@ class WiiLink_Patcher
             { "evc_jp", () => EVC_Patch(Region.Japan) },
             { "cmoc_us", () => CheckMiiOut_Patch(Region.USA) },
             { "cmoc_eu", () => CheckMiiOut_Patch(Region.PAL) },
-            { "cmoc_jp", () => CheckMiiOut_Patch(Region.Japan) }
+            { "cmoc_jp", () => CheckMiiOut_Patch(Region.Japan) },
+            { "ws_us", () => DownloadWC24Channel("ws_us", "Wii Speak Channel", 512, Region.USA, "0001000148434645") },
+            { "ws_eu", () => DownloadWC24Channel("ws_eu", "Wii Speak Channel", 512, Region.PAL, "0001000148434650") },
+            { "ws_jp", () => DownloadWC24Channel("ws_jp", "Wii Speak Channel", 512, Region.Japan, "000100014843464A") },
+            { "tatc_eu", () => DownloadWC24Channel("tatc_eu", "Today and Tomorrow Channel", 512, Region.PAL, "0001000148415650") },
+            { "tatc_jp", () => DownloadWC24Channel("tatc_jp", "Today and Tomorrow Channel", 512, Region.Japan, "000100014841564A") },
+            { "scr", () => DownloadOSCApp("system-channel-restorer")}
         };
 
         // Create a list of patching functions to execute
@@ -1956,6 +1970,33 @@ class WiiLink_Patcher
                                 break;
                             case "done":
                                 AnsiConsole.MarkupLine($"[bold springgreen2_1]●[/] {channelMap[jpnChannel]}");
+                                break;
+                        }
+                    }
+                }
+            }
+
+            if (extraChannels_selection.Count > 0)
+            {
+                string patchingExtraChannels = patcherLang == PatcherLanguage.en
+                    ? "Patching Extra Channels"
+                    : $"{localizedText?["PatchingProgress"]?["patchingExtraChannels"]}";
+                AnsiConsole.MarkupLine($"\n[bold]{patchingExtraChannels}:[/]");
+                foreach (string extraChannel in channelsToPatch)
+                {
+                    List<string> extraChannels = ["ws_us", "ws_eu", "ws_jp", "tatc_eu", "tatc_jp", "scr"];
+                    if (extraChannels.Contains(extraChannel))
+                    {
+                        switch (patchingProgress_custom[extraChannel])
+                        {
+                            case "not_started":
+                                AnsiConsole.MarkupLine($"○ {channelMap[extraChannel]}");
+                                break;
+                            case "in_progress":
+                                AnsiConsole.MarkupLine($"[slowblink yellow]●[/] {channelMap[extraChannel]}");
+                                break;
+                            case "done":
+                                AnsiConsole.MarkupLine($"[bold springgreen2_1]●[/] {channelMap[extraChannel]}");
                                 break;
                         }
                     }
@@ -2215,8 +2256,19 @@ class WiiLink_Patcher
             { "Mii Contest Channel [bold](Japan)[/]", "cmoc_jp" }
         };
 
+        // Define a dictionary to map the extra channel names to easy-to-read format
+        var extraChannelMap = new Dictionary<string, string>()
+        {
+            { "Wii Speak Channel [bold](USA)[/]", "ws_us" },
+            { "Wii Speak Channel [bold](Europe)[/]", "ws_eu" },
+            { "Wii Speak Channel [bold](Japan)[/]", "ws_jp" },
+            { "Today and Tomorrow Channel [bold](Europe)[/]", "tatc_eu" },
+            { "Today and Tomorrow Channel [bold](Japan)[/]", "tatc_jp" },
+            { "system-channel-restorer", "scr" }
+        };
+
         // Merge the two dictionaries into one
-        var channelMap = wc24ChannelMap.Concat(wiiLinkChannelMap).ToDictionary(x => x.Key, x => x.Value);
+        var channelMap = wc24ChannelMap.Concat(wiiLinkChannelMap.Concat(extraChannelMap)).ToDictionary(x => x.Key, x => x.Value);
 
         // Initialize selection list to "Not selected" using LINQ
         if (combinedChannels_selection.Count == 0) // Only do this
@@ -2356,6 +2408,8 @@ class WiiLink_Patcher
                             wiiLinkChannels_selection.Add(channel);
                         else if (wc24ChannelMap.ContainsValue(channel) && !wiiConnect24Channels_selection.Contains(channel))
                             wiiConnect24Channels_selection.Add(channel);
+                        else if (extraChannelMap.ContainsValue(channel) && !extraChannels_selection.Contains(channel))
+                            extraChannels_selection.Add(channel);
                     }
                     // If selection is empty, display error message
                     if (!channelMap.Values.Any(combinedChannels_selection.Contains))
@@ -2541,6 +2595,24 @@ class WiiLink_Patcher
                 selectedWiiConnect24Channels.Add(modifiedChannel);
         }
 
+        // Convert extra channel names to proper names
+        var extraChannelMap = new Dictionary<string, string>()
+        {
+            { "ws_us", "Wii Speak Channel [bold](USA)[/]" },
+            { "ws_eu", "Wii Speak Channel [bold](Europe)[/]" },
+            { "ws_jp", "Wii Speak Channel [bold](Japan)[/]" },
+            { "tatc_eu", "Today and Tomorrow Channel [bold](Europe)[/]" },
+            { "tatc_jp", "Today and Tomorrow Channel [bold](Japan)[/]" },
+            { "scr", "system-channel-restorer" }
+        };
+
+        var selectedExtraChannels = new List<string>();
+        foreach (string channel in combinedChannels_selection)
+        {
+            if (extraChannelMap.TryGetValue(channel, out string? modifiedChannel))
+                selectedExtraChannels.Add(modifiedChannel);
+        }
+
         if (!selectedRegionalChannels.Any())
             selectedRegionalChannels.Add("● [grey]N/A[/]");
         if (!selectedWiiConnect24Channels.Any())
@@ -2572,20 +2644,24 @@ class WiiLink_Patcher
             string wiiConnect24Channels = patcherLang == PatcherLanguage.en
                 ? "WiiConnect24 Channels:"
                 : $"{localizedText?["CustomSetup"]?["summaryScreen"]?["wiiConnect24Channels"]}";
+            string extraChannels = patcherLang == PatcherLanguage.en
+                ? "Extra Channels:"
+                : $"{localizedText?["CustomSetup"]?["summaryScreen"]?["extraChannels"]}";
             string consoleVersion = patcherLang == PatcherLanguage.en
                 ? "Console Platform:"
                 : $"{localizedText?["CustomSetup"]?["summaryScreen"]?["ConsoleVersion"]}";
 
             grid.AddColumn();
+            grid.AddColumn();
 
-            grid.AddRow($"[bold deepskyblue1]{wiiConnect24Channels}[/]", $"[bold springgreen2_1]{regionalChannels}[/]", $"[bold]{consoleVersion}[/]");
+            grid.AddRow($"[bold deepskyblue1]{wiiConnect24Channels}[/]", $"[bold springgreen2_1]{regionalChannels}[/]", $"[bold]{extraChannels}[/]", $"[bold]{consoleVersion}[/]");
 
             if (platformType_custom == Platform.Wii)
-                grid.AddRow(string.Join("\n", selectedWiiConnect24Channels), string.Join("\n", selectedRegionalChannels), "● [bold]Wii[/]");
+                grid.AddRow(string.Join("\n", selectedWiiConnect24Channels), string.Join("\n", selectedRegionalChannels), string.Join("\n", selectedExtraChannels), "● [bold]Wii[/]");
             else if (platformType_custom == Platform.vWii)
-                grid.AddRow(string.Join("\n", selectedWiiConnect24Channels), string.Join("\n", selectedRegionalChannels), "● [bold]vWii (Wii U)[/]");
+                grid.AddRow(string.Join("\n", selectedWiiConnect24Channels), string.Join("\n", selectedRegionalChannels), string.Join("\n", selectedExtraChannels), "● [bold]vWii (Wii U)[/]");
             else
-                grid.AddRow(string.Join("\n", selectedWiiConnect24Channels), string.Join("\n", selectedRegionalChannels), "● [bold]Dolphin Emulator[/]");
+                grid.AddRow(string.Join("\n", selectedWiiConnect24Channels), string.Join("\n", selectedRegionalChannels), string.Join("\n", selectedExtraChannels), "● [bold]Dolphin Emulator[/]");
 
             AnsiConsole.Write(grid);
 
@@ -3164,6 +3240,32 @@ class WiiLink_Patcher
         PatchWC24Channel("RegSel", $"Region Select", 2, regSel_reg, channelID, patches, appNums);
     }
 
+    // Patching Wii Speak
+    static void WiiSpeak_Patch(Region region)
+    {
+        task = "Patching Wii Speak Channel";
+
+        // Define a dictionary to map Region to channelID, appNum, and channel_title
+        Dictionary<Region, (string channelID, string appNum, string channel_title)> regionData = new()
+        {
+            { Region.USA, ("0001000148415445", "0000002c", "Nintendo Channel") },
+            { Region.PAL, ("0001000148415450", "0000002d", "Nintendo Channel") },
+            { Region.Japan, ("000100014841544a", "0000003e", "Minna no Nintendo Channel") },
+        };
+
+        // Get the data for the current region
+        var (channelID, appNum, channel_title) = regionData[region];
+
+        List<string> patches = [$"NC_1_{region}"];
+        List<string> appNums = [appNum];
+
+        PatchWC24Channel("nc", $"{channel_title}", 1792, region, channelID, patches, appNums);
+
+        // Finished patching Nintendo Channel
+        patchingProgress_express["nc"] = "done";
+        patchingProgress_express["forecast"] = "in_progress";
+    }
+
     // Finish SD Copy
     static void FinishSDCopy()
     {
@@ -3212,11 +3314,6 @@ class WiiLink_Patcher
 
     static void Finished()
     {
-        // Clear all lists (just in case it's Custom Setup)
-        wiiLinkChannels_selection.Clear();
-        wiiConnect24Channels_selection.Clear();
-        combinedChannels_selection.Clear();
-
         // Detect SD card (in case the user chose to not copy files to SD card)
         sdcard = DetectRemovableDrive;
 
@@ -3278,6 +3375,20 @@ class WiiLink_Patcher
                     : $"{localizedText?["Finished"]?["pleaseProceed"]}";
                 AnsiConsole.MarkupLine($"{pleaseProceed}\n");
             }
+            
+            if (extraChannels_selection.Contains("ws_eu") || extraChannels_selection.Contains("ws_us") || extraChannels_selection.Contains("ws_jp"))
+            {
+                string wiiWarePatch = patcherLang == PatcherLanguage.en
+                    ? "To use the [bold]Wii Speak Channel[/] online, you'll need to patch it for use with Wiimmfi. You can find the WiiWare patcher at [bold springgreen2_1 link]https://github.com/RiiConnect24/WiiWare-Patcher/releases/tag/v2.2.2[/]"
+                    : $"{localizedText?["Finished"]?["wiiWarePatch"]}";
+                AnsiConsole.MarkupLine($"{wiiWarePatch}\n");
+            }
+
+            // Clear all lists (just in case it's Custom Setup)
+            wiiLinkChannels_selection.Clear();
+            wiiConnect24Channels_selection.Clear();
+            extraChannels_selection.Clear();
+            combinedChannels_selection.Clear();
 
             // What would you like to do now text
             string whatWouldYouLikeToDo = patcherLang == PatcherLanguage.en
