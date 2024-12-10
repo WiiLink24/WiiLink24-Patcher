@@ -1797,7 +1797,10 @@ class WiiLink_Patcher
             { "ws_jp", "Wii Speak Channel [bold](Japan)[/]" },
             { "tatc_eu", "Today and Tomorrow Channel [bold](Europe)[/]" },
             { "tatc_jp", "Today and Tomorrow Channel [bold](Japan)[/]" },
-            { "scr", "system-channel-restorer" }
+            { "pc", "Photo Channel 1.1" },
+            { "ic_us", "Internet Channel [bold](USA)[/]" },
+            { "ic_eu", "Internet Channel [bold](Europe)[/]" },
+            { "ic_jp", "Internet Channel [bold](Japan)[/]" }
         };
 
         // Setup patching process arrays based on the selected channels
@@ -1838,7 +1841,10 @@ class WiiLink_Patcher
             { "ws_jp", () => DownloadWC24Channel("ws_jp", "Wii Speak Channel", 512, Region.Japan, "000100014843464A") },
             { "tatc_eu", () => TodayTomorrow_Download(Region.PAL) },
             { "tatc_jp", () => TodayTomorrow_Download(Region.Japan) },
-            { "scr", () => DownloadOSCApp("system-channel-restorer")}
+            { "pc", () => DownloadWC24Channel("pc", "Photo Channel 1.1", 3, null, "0001000248415941") },
+            { "ic_us", () => DownloadWC24Channel("ic_us", "Internet Channel", 1024, Region.USA, "0001000148414445") },
+            { "ic_eu", () => DownloadWC24Channel("ic_eu", "Internet Channel", 512, Region.PAL, "0001000148414450") },
+            { "ic_jp", () => DownloadWC24Channel("ic_jp", "Internet Channel", 512, Region.Japan, "000100014841444A") }
         };
 
         // Create a list of patching functions to execute
@@ -1984,7 +1990,7 @@ class WiiLink_Patcher
                 AnsiConsole.MarkupLine($"\n[bold]{patchingExtraChannels}:[/]");
                 foreach (string extraChannel in channelsToPatch)
                 {
-                    List<string> extraChannels = ["ws_us", "ws_eu", "ws_jp", "tatc_eu", "tatc_jp", "scr"];
+                    List<string> extraChannels = ["ws_us", "ws_eu", "ws_jp", "tatc_eu", "tatc_jp", "pc", "ic_us", "ic_eu", "ic_jp"];
                     if (extraChannels.Contains(extraChannel))
                     {
                         switch (patchingProgress_custom[extraChannel])
@@ -2264,7 +2270,10 @@ class WiiLink_Patcher
             { "Wii Speak Channel [bold](Japan)[/]", "ws_jp" },
             { "Today and Tomorrow Channel [bold](Europe)[/]", "tatc_eu" },
             { "Today and Tomorrow Channel [bold](Japan)[/]", "tatc_jp" },
-            { "system-channel-restorer", "scr" }
+            { "Photo Channel 1.1", "pc" },
+            { "Internet Channel [bold](USA)[/]", "ic_us" },
+            { "Internet Channel [bold](Europe)[/]", "ic_eu" },
+            { "Internet Channel [bold](Japan)[/]", "ic_jp" }
         };
 
         // Merge the two dictionaries into one
@@ -2598,12 +2607,15 @@ class WiiLink_Patcher
         // Convert extra channel names to proper names
         var extraChannelMap = new Dictionary<string, string>()
         {
-            { "ws_us", "Wii Speak Channel [bold](USA)[/]" },
-            { "ws_eu", "Wii Speak Channel [bold](Europe)[/]" },
-            { "ws_jp", "Wii Speak Channel [bold](Japan)[/]" },
-            { "tatc_eu", "Today and Tomorrow Channel [bold](Europe)[/]" },
-            { "tatc_jp", "Today and Tomorrow Channel [bold](Japan)[/]" },
-            { "scr", "system-channel-restorer" }
+            { "ws_us", "● Wii Speak Channel [bold](USA)[/]" },
+            { "ws_eu", "● Wii Speak Channel [bold](Europe)[/]" },
+            { "ws_jp", "● Wii Speak Channel [bold](Japan)[/]" },
+            { "tatc_eu", "● Today and Tomorrow Channel [bold](Europe)[/]" },
+            { "tatc_jp", "● Today and Tomorrow Channel [bold](Japan)[/]" },
+            { "pc", "● Photo Channel 1.1" },
+            { "ic_us", "● Internet Channel [bold](USA)[/]" },
+            { "ic_eu", "● Internet Channel [bold](Europe)[/]" },
+            { "ic_jp", "● Internet Channel [bold](Japan)[/]" }
         };
 
         var selectedExtraChannels = new List<string>();
@@ -2743,7 +2755,7 @@ class WiiLink_Patcher
         task = "Downloading selected patches";
 
         // Download SPD if any of the following channels are selected
-        if (wiiLinkChannels_selection.Any(channel => channel.Contains("food_en") || channel.Contains("food_dominos") || channel.Contains("digicam_en")))
+        if (wiiLinkChannels_selection.Any(channel => channel.Contains("food_en") || channel.Contains("food_dominos") || channel.Contains("digicam_en") || channel.Contains("wiiroom_en") || channel.Contains("wiiroom_es") || channel.Contains("wiiroom_fr") || channel.Contains("wiiroom_de") || channel.Contains("wiiroom_it") || channel.Contains("wiiroom_du") || channel.Contains("wiiroom_ptbr") || channel.Contains("wiiroom_ru")))
             DownloadSPD(platformType_custom);
         else
             Directory.CreateDirectory("WAD");
@@ -3241,7 +3253,7 @@ class WiiLink_Patcher
     }
 
     // Downloading Today and Tomorrow Channel
-    static void TodayTomorrow_Download(Region regSel_reg)
+    static void TodayTomorrow_Download(Region todayTomorrow_reg)
     {
         task = "Downloading Today and Tomorrow Channel";
         
@@ -3250,19 +3262,19 @@ class WiiLink_Patcher
             Directory.CreateDirectory(titleFolder);
 
         // Properly set Today and Tomorrow Channel titleID based on region
-        string channelID = regSel_reg switch
+        string channelID = todayTomorrow_reg switch
         {
             Region.PAL => "0001000148415650",
             Region.Japan => "000100014841564A",
             _ => throw new NotImplementedException(),
         };
 
-        if (regSel_reg == Region.PAL)
+        if (todayTomorrow_reg == Region.PAL)
         {
-            DownloadFile("https://patcher.rc24.xyz/update/RiiConnect24-Patcher/v1/AdditionalChannels_Patches/TodayandTomorrowChannel/Europe.cetk", titleFolder, "cetk");
+            DownloadFile("https://patcher.rc24.xyz/update/RiiConnect24-Patcher/v1/AdditionalChannels_Patches/TodayandTomorrowChannel/Europe.cetk", Path.Join(titleFolder, "cetk"), "cetk");
         }
 
-        DownloadWC24Channel("tatc", "Today and Tomorrow Channel", 512, regSel_reg, channelID);
+        DownloadWC24Channel("tatc", "Today and Tomorrow Channel", 512, todayTomorrow_reg, channelID);
     }
 
     // Finish SD Copy
