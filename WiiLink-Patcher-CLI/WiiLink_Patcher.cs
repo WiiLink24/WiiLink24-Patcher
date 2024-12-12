@@ -752,15 +752,46 @@ class WiiLink_Patcher
         // Create unpack and unpack-patched folders
         Directory.CreateDirectory(titleFolder);
 
+        string fileURL = $"{wiiLinkPatcherUrl}/{channelName.ToLower()}/{titleID}";
+
+        // Define the URLs and file paths
+        var files = new Dictionary<string, string>
+        {
+            {".cert", Path.Join(titleFolder, $"{titleID}.cert")},
+            {".tmd", Path.Join(titleFolder, $"tmd.{channelVersion}")},
+            {".tik", Path.Join(titleFolder, "cetk")}
+        };
+
+        // Download the necessary files for the channel
+        task = $"Downloading necessary files for {channelTitle}";
+
+        // Download the files
+        foreach (var file in files)
+        {
+            string url = $"{fileURL}{file.Key}";
+            try // Try to download the file
+            {
+                DownloadFile(url, file.Value, $"{channelTitle} {file.Key}", noError: true);
+            }
+            catch (Exception)
+            {
+                // File doesn't exist, move on to the next one
+                continue;
+            }
+        }
+
         // Extract the necessary files for the channel
         task = $"Extracting stuff for {channelTitle}";
-        DownloadNUS(titleID, titleFolder, channelVersion.ToString());
+        DownloadNUS(titleID, titleFolder, channelVersion.ToString(), true);
 
         // Rename the extracted files
         task = $"Renaming files for {channelTitle}";
+        File.Move(Path.Join(titleFolder, $"tmd.{channelVersion}"), Path.Join(titleFolder, $"{titleID}.tmd"));
+        File.Move(Path.Join(titleFolder, "cetk"), Path.Join(titleFolder, $"{titleID}.tik"));
 
-        // Move resulting WAD to output folder
-        File.Move(Path.Join(titleFolder, $"{titleID}v{channelVersion}.wad"), outputWad);
+        // Repack the title into a WAD file
+        task = $"Repacking the title for {channelTitle}";
+        PackWAD(titleFolder, outputWad);
 
         // Delete the unpack folder
         Directory.Delete(titleFolder, true);
@@ -1836,15 +1867,15 @@ class WiiLink_Patcher
             { "cmoc_us", () => CheckMiiOut_Patch(Region.USA) },
             { "cmoc_eu", () => CheckMiiOut_Patch(Region.PAL) },
             { "cmoc_jp", () => CheckMiiOut_Patch(Region.Japan) },
-            { "ws_us", () => DownloadWC24Channel("ws_us", "Wii Speak Channel", 512, Region.USA, "0001000148434645") },
-            { "ws_eu", () => DownloadWC24Channel("ws_eu", "Wii Speak Channel", 512, Region.PAL, "0001000148434650") },
-            { "ws_jp", () => DownloadWC24Channel("ws_jp", "Wii Speak Channel", 512, Region.Japan, "000100014843464A") },
-            { "tatc_eu", () => TodayTomorrow_Download(Region.PAL) },
-            { "tatc_jp", () => TodayTomorrow_Download(Region.Japan) },
+            { "ws_us", () => DownloadWC24Channel("ws", "Wii Speak Channel", 512, Region.USA, "0001000148434645") },
+            { "ws_eu", () => DownloadWC24Channel("ws", "Wii Speak Channel", 512, Region.PAL, "0001000148434650") },
+            { "ws_jp", () => DownloadWC24Channel("ws", "Wii Speak Channel", 512, Region.Japan, "000100014843464A") },
+            { "tatc_eu", () => DownloadWC24Channel("tatc", "Today and Tomorrow Channel", 512, Region.PAL, "0001000148415650") },
+            { "tatc_jp", () => DownloadWC24Channel("tatc", "Today and Tomorrow Channel", 512, Region.Japan, "000100014841564A") },
             { "pc", () => DownloadWC24Channel("pc", "Photo Channel 1.1", 3, null, "0001000248415941") },
-            { "ic_us", () => DownloadWC24Channel("ic_us", "Internet Channel", 1024, Region.USA, "0001000148414445") },
-            { "ic_eu", () => DownloadWC24Channel("ic_eu", "Internet Channel", 512, Region.PAL, "0001000148414450") },
-            { "ic_jp", () => DownloadWC24Channel("ic_jp", "Internet Channel", 512, Region.Japan, "000100014841444A") }
+            { "ic_us", () => DownloadWC24Channel("ic", "Internet Channel", 1024, Region.USA, "0001000148414445") },
+            { "ic_eu", () => DownloadWC24Channel("ic", "Internet Channel", 1024, Region.PAL, "0001000148414450") },
+            { "ic_jp", () => DownloadWC24Channel("ic", "Internet Channel", 1024, Region.Japan, "000100014841444A") }
         };
 
         // Create a list of patching functions to execute
@@ -3250,31 +3281,6 @@ class WiiLink_Patcher
         List<string> appNums = ["00000009"];
 
         PatchWC24Channel("RegSel", $"Region Select", 2, regSel_reg, channelID, patches, appNums);
-    }
-
-    // Downloading Today and Tomorrow Channel
-    static void TodayTomorrow_Download(Region todayTomorrow_reg)
-    {
-        task = "Downloading Today and Tomorrow Channel";
-        
-        string titleFolder = Path.Join(tempDir, "Unpack");
-        if (!Directory.Exists(titleFolder))
-            Directory.CreateDirectory(titleFolder);
-
-        // Properly set Today and Tomorrow Channel titleID based on region
-        string channelID = todayTomorrow_reg switch
-        {
-            Region.PAL => "0001000148415650",
-            Region.Japan => "000100014841564A",
-            _ => throw new NotImplementedException(),
-        };
-
-        if (todayTomorrow_reg == Region.PAL)
-        {
-            DownloadFile("https://patcher.rc24.xyz/update/RiiConnect24-Patcher/v1/AdditionalChannels_Patches/TodayandTomorrowChannel/Europe.cetk", Path.Join(titleFolder, "cetk"), "cetk");
-        }
-
-        DownloadWC24Channel("tatc", "Today and Tomorrow Channel", 512, todayTomorrow_reg, channelID);
     }
 
     // Finish SD Copy
