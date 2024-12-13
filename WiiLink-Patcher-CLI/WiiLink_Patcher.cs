@@ -14,10 +14,10 @@ using System.IO.Compression;
 class WiiLink_Patcher
 {
     //// Build Info ////
-    static readonly string version = "v2.0.4a";
+    static readonly string version = "v2.0.5";
     static readonly string copyrightYear = DateTime.Now.Year.ToString();
-    static readonly string buildDate = "November 29th, 2024";
-    static readonly string buildTime = "5:04 PM";
+    static readonly string buildDate = "December 13th, 2024";
+    static readonly string buildTime = "4:00 PM";
     static string? sdcard = DetectRemovableDrive;
     static readonly string wiiLinkPatcherUrl = "https://patcher.wiilink24.com";
     ////////////////////
@@ -1838,13 +1838,13 @@ class WiiLink_Patcher
             { "cmoc_jp", () => CheckMiiOut_Patch(Region.Japan) },
             { "ws_us", () => DownloadWC24Channel("ws", "Wii Speak Channel", 512, Region.USA, "0001000148434645") },
             { "ws_eu", () => DownloadWC24Channel("ws", "Wii Speak Channel", 512, Region.PAL, "0001000148434650") },
-            { "ws_jp", () => DownloadWC24Channel("ws", "Wii Speak Channel", 512, Region.Japan, "000100014843464A") },
+            { "ws_jp", () => DownloadWC24Channel("ws", "Wii Speak Channel", 512, Region.Japan, "000100014843464a") },
             { "tatc_eu", () => TodayTomorrow_Download(Region.PAL) },
             { "tatc_jp", () => TodayTomorrow_Download(Region.Japan) },
             { "pc", () => DownloadWC24Channel("pc", "Photo Channel 1.1", 3, null, "0001000248415941") },
             { "ic_us", () => DownloadWC24Channel("ic", "Internet Channel", 1024, Region.USA, "0001000148414445") },
             { "ic_eu", () => DownloadWC24Channel("ic", "Internet Channel", 1024, Region.PAL, "0001000148414450") },
-            { "ic_jp", () => DownloadWC24Channel("ic", "Internet Channel", 1024, Region.Japan, "000100014841444A") }
+            { "ic_jp", () => DownloadWC24Channel("ic", "Internet Channel", 1024, Region.Japan, "000100014841444a") }
         };
 
         // Create a list of patching functions to execute
@@ -2753,13 +2753,13 @@ class WiiLink_Patcher
                 ? "Step 1"
                 : $"{localizedText?["CustomSetup"]?["wiiLinkChannels_Setup"]?["stepNum"]}";
             string stepTitle = patcherLang == PatcherLanguage.en
-                ? "Select Extra channel(s) to install"
+                ? "Select extra channel(s) to install"
                 : $"{localizedText?["installExtras"]?["extraChannels_Setup"]?["stepTitle"]}";
             AnsiConsole.MarkupLine($"[bold]{stepNum}:[/] {stepTitle}\n");
 
-            // Display Extra channel selection menu
+            // Display extra channel selection menu
             string selectExtraChns = patcherLang == PatcherLanguage.en
-                ? "Select Extra channel(s) to install:"
+                ? "Select extra channel(s) to install:"
                 : $"{localizedText?["CustomSetup"]?["extraChannels_Setup"]?["selectExtraChns"]}";
             AnsiConsole.MarkupLine($"[bold]{selectExtraChns}[/]\n");
             var grid = new Grid();
@@ -3673,7 +3673,7 @@ class WiiLink_Patcher
                 Directory.Delete(titleFolder, true);
                 break;
             case Region.Japan:
-                DownloadWC24Channel("tatc", "Today and Tomorrow Channel", 512, todayTomorrow_reg, "000100014841564A");
+                DownloadWC24Channel("tatc", "Today and Tomorrow Channel", 512, todayTomorrow_reg, "000100014841564a");
                 break;
             default:
                 throw new NotImplementedException();
