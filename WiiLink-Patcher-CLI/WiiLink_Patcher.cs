@@ -14,10 +14,10 @@ using System.IO.Compression;
 class WiiLink_Patcher
 {
     //// Build Info ////
-    static readonly string version = "v2.0.5";
+    static readonly string version = "v2.0.5 Nightly";
     static readonly string copyrightYear = DateTime.Now.Year.ToString();
     static readonly string buildDate = "December 13th, 2024";
-    static readonly string buildTime = "4:00 PM";
+    static readonly string buildTime = "4:31 PM";
     static string? sdcard = DetectRemovableDrive;
     static readonly string wiiLinkPatcherUrl = "https://patcher.wiilink24.com";
     ////////////////////
@@ -3615,61 +3615,42 @@ class WiiLink_Patcher
         switch(todayTomorrow_reg)
         {
             case Region.PAL:
-                // Define the necessary paths and filenames
                 string titleFolder = Path.Join(tempDir, "Unpack");
-
-                // Create WAD folder in current directory if it doesn't exist
-                if (!Directory.Exists(Path.Join("WAD")))
-                    Directory.CreateDirectory(Path.Join("WAD"));
-
-                // Name the output WAD file
                 string outputWad = Path.Join("WAD", "Today and Tomorrow Channel [Europe] (WiiLink).wad");
-
-                // Create unpack and unpack-patched folders
+                
+                Directory.CreateDirectory("WAD");
                 Directory.CreateDirectory(titleFolder);
-
-                string fileURL = $"{wiiLinkPatcherUrl}/tatc/0001000148415650";
-
-                // Define the URLs and file paths
-                var files = new Dictionary<string, string>
+    
+                string baseId = "0001000148415650";
+                string fileURL = $"{wiiLinkPatcherUrl}/tatc/{baseId}";
+                Dictionary<string, string> files = new()
                 {
-                    {".cert", Path.Join(titleFolder, "0001000148415650.cert")},
-                    {".tmd", Path.Join(titleFolder, "tmd.512")},
-                    {".tik", Path.Join(titleFolder, "cetk")}
+                    [".cert"] = Path.Join(titleFolder, $"{baseId}.cert"),
+                    [".tmd"] = Path.Join(titleFolder, "tmd.512"),
+                    [".tik"] = Path.Join(titleFolder, "cetk")
                 };
-
-                // Download the necessary files for the channel
-                task = $"Downloading necessary files for Today and Tomorrow Channel";
-
-                // Download the files
-                foreach (var file in files)
+    
+                task = "Downloading necessary files for Today and Tomorrow Channel";
+                Parallel.ForEach(files, file =>
                 {
-                    string url = $"{fileURL}{file.Key}";
-                    try // Try to download the file
+                    try
                     {
-                        DownloadFile(url, file.Value, $"Today and Tomorrow Channel {file.Key}", noError: true);
+                        DownloadFile($"{fileURL}{file.Key}", file.Value, 
+                            $"Today and Tomorrow Channel {file.Key}", noError: true);
                     }
-                    catch (Exception)
-                    {
-                        // File doesn't exist, move on to the next one
-                        continue;
-                    }
-                }
-
-                // Extract the necessary files for the channel
+                    catch { } // File doesn't exist, move on
+                });
+    
                 task = "Extracting stuff for Today and Tomorrow Channel";
-                DownloadNUS("0001000148415650", titleFolder, "512", true);
-
-                // Rename the extracted files
+                DownloadNUS(baseId, titleFolder, "512", true);
+    
                 task = "Renaming files for Today and Tomorrow Channel";
-                File.Move(Path.Join(titleFolder, "tmd.512"), Path.Join(titleFolder, "0001000148415650.tmd"));
-                File.Move(Path.Join(titleFolder, "cetk"), Path.Join(titleFolder,$"0001000148415650.tik"));
-
-                // Repack the title into a WAD file
+                File.Move(Path.Join(titleFolder, "tmd.512"), Path.Join(titleFolder, $"{baseId}.tmd"));
+                File.Move(Path.Join(titleFolder, "cetk"), Path.Join(titleFolder, $"{baseId}.tik"));
+    
                 task = "Repacking the title for Today and Tomorrow Channel";
                 PackWAD(titleFolder, outputWad);
-
-                // Delete the unpack folder
+                
                 Directory.Delete(titleFolder, true);
                 break;
             case Region.Japan:
@@ -3677,7 +3658,7 @@ class WiiLink_Patcher
                 break;
             default:
                 throw new NotImplementedException();
-        };
+        }
     }
 
     // Finish SD Copy
