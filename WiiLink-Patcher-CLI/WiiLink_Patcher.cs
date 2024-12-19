@@ -1573,7 +1573,7 @@ class WiiLink_Patcher
         {
             patching_functions.Add(() => WiiRoom_Patch(wiiRoomLang));
             patching_functions.Add(() => Digicam_Patch(lang));
-            patching_functions.Add(() => Demae_Patch(lang, demaeVersion));
+            patching_functions.Add(() => Demae_Patch(lang, demaeVersion, wc24_reg));
             patching_functions.Add(KirbyTV_Patch);
         }
 
@@ -1773,7 +1773,8 @@ class WiiLink_Patcher
             { "wiiroom_ru", "Wii Room [bold](Russian)[/]" },
             { "digicam_en", "Photo Prints Channel [bold](English)[/]" },
             { "digicam_jp", "Digicam Print Channel [bold](Japanese)[/]" },
-            { "food_en", "Food Channel [bold](Standard) [[English]][/]" },
+            { "food_us", "Food Channel [bold](Standard) (USA) [[English]][/]" },
+            { "food_eu", "Food Channel [bold](Standard) (Europe) [[English]][/]" },
             { "demae_jp", "Demae Channel [bold](Standard) [[Japanese]][/]" },
             { "food_dominos", "Food Channel [bold](Dominos) [[English]][/]" },
             { "nc_us", "Nintendo Channel [bold](USA)[/]" },
@@ -1817,9 +1818,10 @@ class WiiLink_Patcher
             { "wiiroom_ru", () => WiiRoom_Patch(Language.Russian) },
             { "digicam_en", () => Digicam_Patch(Language.English) },
             { "digicam_jp", () => Digicam_Patch(Language.Japan) },
-            { "food_en", () => Demae_Patch(Language.English, DemaeVersion.Standard) },
-            { "demae_jp", () => Demae_Patch(Language.Japan, DemaeVersion.Standard) },
-            { "food_dominos", () => Demae_Patch(Language.English, DemaeVersion.Dominos) },
+            { "food_us", () => Demae_Patch(Language.English, DemaeVersion.Standard, Region.USA) },
+            { "food_eu", () => Demae_Patch(Language.English, DemaeVersion.Standard, Region.PAL) },
+            { "demae_jp", () => Demae_Patch(Language.Japan, DemaeVersion.Standard, Region.Japan) },
+            { "food_dominos", () => Demae_Patch(Language.English, DemaeVersion.Dominos, Region.USA) },
             { "kirbytv", KirbyTV_Patch },
             { "nc_us", () => NC_Patch(Region.USA) },
             { "nc_eu", () => NC_Patch(Region.PAL) },
@@ -1963,7 +1965,7 @@ class WiiLink_Patcher
                 AnsiConsole.MarkupLine($"\n[bold]{patchingWiiLinkChannels}:[/]");
                 foreach (string jpnChannel in channelsToPatch)
                 {
-                    List<string> jpnChannels = ["wiiroom_en", "wiiroom_es", "wiiroom_fr", "wiinoma_jp", "wiiroom_de", "wiiroom_it", "wiiroom_du", "wiiroom_ptbr", "wiiroom_ru", "digicam_en", "digicam_jp", "food_en", "demae_jp", "food_dominos", "kirbytv"];
+                    List<string> jpnChannels = ["wiiroom_en", "wiiroom_es", "wiiroom_fr", "wiinoma_jp", "wiiroom_de", "wiiroom_it", "wiiroom_du", "wiiroom_ptbr", "wiiroom_ru", "digicam_en", "digicam_jp", "food_us", "food_eu", "demae_jp", "food_dominos", "kirbytv"];
                     if (jpnChannels.Contains(jpnChannel))
                     {
                         switch (patchingProgress_custom[jpnChannel])
@@ -2236,7 +2238,8 @@ class WiiLink_Patcher
             { "Wii no Ma [bold](Japanese)[/]", "wiinoma_jp" },
             { "Photo Prints Channel [bold](English)[/]", "digicam_en" },
             { "Digicam Print Channel [bold](Japanese)[/]", "digicam_jp" },
-            { "Food Channel [bold](Standard) [[English]][/]", "food_en" },
+            { "Food Channel [bold](Standard) (USA) [[English]][/]", "food_us" },
+            { "Food Channel [bold](Standard) (Europe) [[English]][/]", "food_eu" },
             { "Demae Channel [bold](Standard) [[Japanese]][/]", "demae_jp" },
             { "Food Channel [bold](Dominos) [[English]][/]", "food_dominos" },
             { "Kirby TV Channel", "kirbytv" }
@@ -2541,7 +2544,8 @@ class WiiLink_Patcher
             { "wiinoma_jp", "● Wii no Ma [bold](Japanese)[/]" },
             { "digicam_en", "● Photo Prints Channel [bold](English)[/]" },
             { "digicam_jp", "● Digicam Print Channel [bold](Japanese)[/]" },
-            { "food_en", "● Food Channel [bold](Standard) [[English]][/]" },
+            { "food_us", "● Food Channel [bold](Standard) (USA) [[English]][/]" },
+            { "food_eu", "● Food Channel [bold](Standard) (Europe) [[English]][/]" },
             { "demae_jp", "● Demae Channel [bold](Standard) [[Japanese]][/]" },
             { "food_dominos", "● Food Channel [bold](Dominos) [[English]][/]" },
             { "kirbytv", "● Kirby TV Channel" }
@@ -2652,6 +2656,14 @@ class WiiLink_Patcher
                 AnsiConsole.MarkupLine("Proper functionality is not guaranteed for systems without the Russian Wii menu.\n");
                 AnsiConsole.MarkupLine("Read the installation guide here (Russian only for now):");
                 AnsiConsole.MarkupLine("[bold link springgreen2_1]https://wii.zazios.ru/rus_menu[/]");
+            }
+
+            if (combinedChannels_selection.Contains("food_dominos"))
+            {
+                string internetNotice = patcherLang == PatcherLanguage.en
+                    ? "[bold]NOTE:[/] For [bold]Food Channel (Dominos)[/] users, the Internet Channel will be included to allow you to track your order."
+                    : $"{localizedText?["CustomSetup"]?["summaryScreen"]?["internetNotice"]}";
+                AnsiConsole.MarkupLine($"\n{internetNotice}");
             }
 
             // Print instructions
@@ -2856,8 +2868,7 @@ class WiiLink_Patcher
                 case -2: // Backspace
                     // Clear selection list
                     wiiLinkChannels_selection.Clear();
-                    wiiConnect24Channels_selection.Clear();
-                    combinedChannels_selection.Clear();
+                    extraChannels_selection.Clear();
                     MainMenu();
                     break;
                 case 0: // Enter
@@ -3110,7 +3121,7 @@ class WiiLink_Patcher
         task = "Downloading selected patches";
 
         // Download SPD if any of the following channels are selected
-        if (wiiLinkChannels_selection.Any(channel => channel.Contains("food_en") || channel.Contains("food_dominos") || channel.Contains("digicam_en") || channel.Contains("wiiroom_en") || channel.Contains("wiiroom_es") || channel.Contains("wiiroom_fr") || channel.Contains("wiiroom_de") || channel.Contains("wiiroom_it") || channel.Contains("wiiroom_du") || channel.Contains("wiiroom_ptbr") || channel.Contains("wiiroom_ru")))
+        if (wiiLinkChannels_selection.Any(channel => channel.Contains("food_us") || channel.Contains("food_eu") || channel.Contains("food_dominos") || channel.Contains("digicam_en") || channel.Contains("wiiroom_en") || channel.Contains("wiiroom_es") || channel.Contains("wiiroom_fr") || channel.Contains("wiiroom_de") || channel.Contains("wiiroom_it") || channel.Contains("wiiroom_du") || channel.Contains("wiiroom_ptbr") || channel.Contains("wiiroom_ru")))
             DownloadSPD(platformType_custom);
         else
             Directory.CreateDirectory("WAD");
@@ -3219,7 +3230,13 @@ class WiiLink_Patcher
                     task = "Downloading Digicam Print Channel (Japan)";
                     DownloadPatch("Digicam", $"Digicam_1_Japan.delta", "Digicam_1_Japan.delta", "Digicam Print Channel");
                     break;
-                case "food_en":
+                case "food_us":
+                    task = "Downloading Food Channel (English)";
+                    DownloadPatch("Demae", $"Demae_0_English.delta", "Demae_0_English.delta", "Food Channel (Standard)");
+                    DownloadPatch("Demae", $"Demae_1_English.delta", "Demae_1_English.delta", "Food Channel (Standard)");
+                    DownloadPatch("Demae", $"Demae_2_English.delta", "Demae_2_English.delta", "Food Channel (Standard)");
+                    break;
+                case "food_eu":
                     task = "Downloading Food Channel (English)";
                     DownloadPatch("Demae", $"Demae_0_English.delta", "Demae_0_English.delta", "Food Channel (Standard)");
                     DownloadPatch("Demae", $"Demae_1_English.delta", "Demae_1_English.delta", "Food Channel (Standard)");
@@ -3392,7 +3409,7 @@ class WiiLink_Patcher
     }
 
     // Patching Demae Channel
-    static void Demae_Patch(Language language, DemaeVersion demaeVersion)
+    static void Demae_Patch(Language language, DemaeVersion demaeVersion, Region region)
     {
         // Assign channel title based on language chosen
         string channelTitle = language switch
@@ -3425,6 +3442,18 @@ class WiiLink_Patcher
         var (demaePatchList, folderName) = demaeData[demaeVersion];
 
         PatchRegionalChannel(folderName, $"{channelTitle} ({demaeVersion})", "000100014843484a", demaePatchList, lang: language);
+
+        if (demaeVersion == DemaeVersion.Dominos)
+        {
+            string channelID = region switch
+            {
+                Region.USA => "0001000148414445",
+                Region.PAL => "0001000148414450",
+                Region.Japan => "000100014841444a",
+                _ => throw new NotImplementedException(),
+            };
+            DownloadWC24Channel("ic", "Internet Channel", 1024, region, channelID);
+        }
 
         // Finished patching Demae Channel
         patchingProgress_express["demae"] = "done";
@@ -4738,6 +4767,7 @@ class WiiLink_Patcher
         // Clear regional and WiiConnect24 channel selections if they exist
         wiiLinkChannels_selection.Clear();
         wiiConnect24Channels_selection.Clear();
+        extraChannels_selection.Clear();
 
         PrintHeader();
 
