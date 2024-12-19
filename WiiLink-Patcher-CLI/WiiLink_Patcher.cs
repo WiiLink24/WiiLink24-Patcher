@@ -2200,11 +2200,8 @@ class WiiLink_Patcher
 
         }
 
-        if (platformType != Platform.Dolphin)
-        {
-            // Install the RC24 Mail Patcher
-            DownloadOSCApp("Mail-Patcher");
-        }
+        // Install the WiiLink Mail Patcher
+        DownloadOSCApp("Mail-Patcher");
 
         // Downloading stuff is finished!
         patchingProgress_express["downloading"] = "done";
@@ -3317,13 +3314,12 @@ class WiiLink_Patcher
         {
             // Downloading yawmME from OSC
             DownloadOSCApp("yawmME");
-            // Install the RC24 Mail Patcher
-            DownloadOSCApp("Mail-Patcher");
-        }
-
-        if (platformType_custom == Platform.Wii)
             // Downloading sntp from OSC
             DownloadOSCApp("sntp");
+        }            
+
+        // Install the WiiLink Mail Patcher
+        DownloadOSCApp("Mail-Patcher");
     }
 
     // Patching Wii no Ma
