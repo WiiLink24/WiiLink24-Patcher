@@ -14,10 +14,10 @@ using System.IO.Compression;
 class WiiLink_Patcher
 {
     //// Build Info ////
-    static readonly string version = "v2.0.5 Nightly";
+    static readonly string version = "v2.0.5 RC2";
     static readonly string copyrightYear = DateTime.Now.Year.ToString();
-    static readonly string buildDate = "December 13th, 2024";
-    static readonly string buildTime = "4:31 PM";
+    static readonly string buildDate = "December 20th, 2024";
+    static readonly string buildTime = "9:14 PM";
     static string? sdcard = DetectRemovableDrive;
     static readonly string wiiLinkPatcherUrl = "https://patcher.wiilink24.com";
     ////////////////////
@@ -3774,26 +3774,46 @@ class WiiLink_Patcher
             }
 
             // Please proceed text
-            if (platformType == Platform.Wii)
+            if (extraChannels_selection.Count == 0)
             {
-                string pleaseProceed = patcherLang == PatcherLanguage.en
-                    ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://wiilink.ca/guide/wii/#section-ii---installing-wads-and-patching-wii-mail[/]"
-                    : $"{localizedText?["Finished"]?["pleaseProceed"]}";
-                AnsiConsole.MarkupLine($"{pleaseProceed}\n");
-            }
-            else if (platformType == Platform.vWii)
-            {
-                string pleaseProceed = patcherLang == PatcherLanguage.en
-                    ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://wiilink.ca/guide/vwii/#section-iii---installing-wads-and-patching-wii-mail[/]"
-                    : $"{localizedText?["Finished"]?["pleaseProceed"]}";
-                AnsiConsole.MarkupLine($"{pleaseProceed}\n");
+                if (platformType == Platform.Wii)
+                {
+                    string pleaseProceed = patcherLang == PatcherLanguage.en
+                        ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://wiilink.ca/guide/wii/#section-ii---installing-wads-and-patching-wii-mail[/]"
+                        : $"{localizedText?["Finished"]?["pleaseProceedWii"]}";
+                    AnsiConsole.MarkupLine($"{pleaseProceed}\n");
+                }
+                else if (platformType == Platform.vWii)
+                {
+                    string pleaseProceed = patcherLang == PatcherLanguage.en
+                        ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://wiilink.ca/guide/vwii/#section-iii---installing-wads-and-patching-wii-mail[/]"
+                        : $"{localizedText?["Finished"]?["pleaseProceedvWii"]}";
+                    AnsiConsole.MarkupLine($"{pleaseProceed}\n");
+                }
+                else
+                {
+                    string pleaseProceed = patcherLang == PatcherLanguage.en
+                        ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://wiilink.ca/guide/dolphin/#section-ii---installing-wads[/]"
+                        : $"{localizedText?["Finished"]?["pleaseProceedDolphin"]}";
+                    AnsiConsole.MarkupLine($"{pleaseProceed}\n");
+                }
             }
             else
             {
-                string pleaseProceed = patcherLang == PatcherLanguage.en
-                    ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://wiilink.ca/guide/dolphin/#section-ii---installing-wads[/]"
-                    : $"{localizedText?["Finished"]?["pleaseProceed"]}";
-                AnsiConsole.MarkupLine($"{pleaseProceed}\n");
+                if (platformType == Platform.Dolphin)
+                {
+                    string installWad = patcherLang == PatcherLanguage.en
+                        ? "Please proceed with installing the WADs through the Dolphin interface (Tools > Install WAD...)"
+                        : $"{localizedText?["Finished"]?["installWadDolphin"]}";
+                    AnsiConsole.MarkupLine($"{installWad}\n");
+                }
+                else
+                {
+                    string installWad = patcherLang == PatcherLanguage.en
+                        ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://wii.hacks.guide/yawmme[/]"
+                        : $"{localizedText?["Finished"]?["installWadYawmme"]}";
+                    AnsiConsole.MarkupLine($"{installWad}\n");
+                }
             }
             
             if (extraChannels_selection.Contains("ws_eu") || extraChannels_selection.Contains("ws_us") || extraChannels_selection.Contains("ws_jp"))
@@ -3803,12 +3823,6 @@ class WiiLink_Patcher
                     : $"{localizedText?["Finished"]?["wiiWarePatch"]}";
                 AnsiConsole.MarkupLine($"{wiiWarePatch}\n");
             }
-
-            // Clear all lists (just in case it's Custom Setup)
-            wiiLinkChannels_selection.Clear();
-            wiiConnect24Channels_selection.Clear();
-            extraChannels_selection.Clear();
-            combinedChannels_selection.Clear();
 
             // What would you like to do now text
             string whatWouldYouLikeToDo = patcherLang == PatcherLanguage.en
@@ -3867,6 +3881,11 @@ class WiiLink_Patcher
                     }
                     break;
                 case 2:
+                    // Clear all lists (just in case it's Custom Setup)
+                    wiiLinkChannels_selection.Clear();
+                    wiiConnect24Channels_selection.Clear();
+                    extraChannels_selection.Clear();
+                    combinedChannels_selection.Clear();
                     // Check to see if removable drive is still connected
                     sdcard = DetectRemovableDrive;
                     MainMenu();
