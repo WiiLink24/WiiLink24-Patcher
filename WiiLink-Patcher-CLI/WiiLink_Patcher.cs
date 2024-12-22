@@ -268,6 +268,9 @@ class WiiLink_Patcher
         string pablosDesc = patcherLang == PatcherLanguage.en
             ? "WiiLink Patcher Developer"
             : $"{localizedText?["Credits"]?["pablosDesc"]}";
+        string harryDesc = patcherLang == PatcherLanguage.en
+            ? "WiiLink Patcher Developer"
+            : $"{localizedText?["Credits"]?["harryDesc"]}";
         string lunaDesc = patcherLang == PatcherLanguage.en
             ? "Lead Translator"
             : $"{localizedText?["Credits"]?["lunaDesc"]}";
@@ -280,6 +283,7 @@ class WiiLink_Patcher
 
         creditGrid.AddRow(new Text("Sketch", new Style(Color.SpringGreen2_1, null, Decoration.Bold)).RightJustified(), new Text(sketchDesc, new Style(null, null, Decoration.Bold)));
         creditGrid.AddRow(new Text("PablosCorner", new Style(Color.SpringGreen2_1, null, Decoration.Bold)).RightJustified(), new Text(pablosDesc, new Style(null, null, Decoration.Bold)));
+        creditGrid.AddRow(new Text("AyeItsHarry", new Style(Color.SpringGreen2_1, null, Decoration.Bold)).RightJustified(), new Text(harryDesc, new Style(null, null, Decoration.Bold)));
         creditGrid.AddRow(new Text("Luna", new Style(Color.SpringGreen2_1, null, Decoration.Bold)).RightJustified(), new Text(lunaDesc, new Style(null, null, Decoration.Bold)));
         creditGrid.AddRow(new Text(leathlWiiDatabase, new Style(Color.SpringGreen2_1, null, Decoration.Bold)).RightJustified(), new Text(leathlWiiDatabaseDesc, new Style(null, null, Decoration.Bold)));
         creditGrid.AddRow(new Text("SnowflakePowered", new Style(Color.SpringGreen2_1, null, Decoration.Bold)).RightJustified(), new Text("VCDiff", new Style(null, null, Decoration.Bold)));
