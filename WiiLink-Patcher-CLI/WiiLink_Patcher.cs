@@ -14,10 +14,10 @@ using System.IO.Compression;
 class WiiLink_Patcher
 {
     //// Build Info ////
-    static readonly string version = "v2.0.5 RC2";
+    static readonly string version = "v2.0.5";
     static readonly string copyrightYear = DateTime.Now.Year.ToString();
     static readonly string buildDate = "December 20th, 2024";
-    static readonly string buildTime = "9:14 PM";
+    static readonly string buildTime = "6:12 PM";
     static string? sdcard = DetectRemovableDrive;
     static readonly string wiiLinkPatcherUrl = "https://patcher.wiilink24.com";
     ////////////////////
@@ -376,14 +376,14 @@ class WiiLink_Patcher
             return;
             
         // Dolphin users need v1.0 of AnyGlobe Changer, as the latest OSC release doesn't work with Dolphin, for some reason.
-        task = $"Downloading AnyGlobe_Changer";
-        string appPath = Path.Join(tempDir, "AGC");
-        Directory.CreateDirectory(appPath);
+            task = $"Downloading AnyGlobe_Changer";
+            string appPath = Path.Join(tempDir, "AGC");
+            Directory.CreateDirectory(appPath);
         DownloadFile($"https://github.com/fishguy6564/AnyGlobe-Changer/releases/download/1.0/AnyGlobe.Changer.zip", 
                      Path.Join(appPath, "AGC.zip"), 
                      "AnyGlobe_Changer");
-        ZipFile.ExtractToDirectory(Path.Join(appPath, "AGC.zip"), "./");
-        Directory.Delete(appPath, true);
+            ZipFile.ExtractToDirectory(Path.Join(appPath, "AGC.zip"), "./");
+            Directory.Delete(appPath, true);
     }
 
     /// <summary>
@@ -2148,7 +2148,7 @@ class WiiLink_Patcher
 
             // Downloading Get Console ID (for Demae Domino's) from OSC
             if (demaeVersion == DemaeVersion.Dominos)
-                DownloadOSCApp("GetConsoleID");
+                DownloadOSCApp("WiiLink_Account_Linker");
 
             // Kirby TV Channel (only if user chose to install it)
             DownloadPatch("ktv", $"ktv_2.delta", "KirbyTV_2.delta", "Kirby TV Channel");
@@ -3253,7 +3253,7 @@ class WiiLink_Patcher
                     DownloadPatch("Dominos", $"Dominos_0.delta", "Dominos_0.delta", "Food Channel (Domino's)");
                     DownloadPatch("Dominos", $"Dominos_1.delta", "Dominos_1.delta", "Food Channel (Domino's)");
                     DownloadPatch("Dominos", $"Dominos_2.delta", "Dominos_2.delta", "Food Channel (Domino's)");
-                    DownloadOSCApp("GetConsoleID");
+                    DownloadOSCApp("WiiLink_Account_Linker");
                     break;
                 case "nc_us":
                     task = "Downloading Nintendo Channel (USA)";
