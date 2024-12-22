@@ -2138,21 +2138,18 @@ class WiiLink_Patcher
             {
                 case DemaeVersion.Standard:
                     if (lang == Language.English)
-                        DownloadPatch("Demae", $"Demae_0_{lang}.delta", $"Demae_0_{lang}.delta", "Demae Channel (Standard)");
-                    DownloadPatch("Demae", $"Demae_1_{lang}.delta", $"Demae_1_{lang}.delta", "Demae Channel (Standard)");
+                        DownloadPatch("Demae", $"Demae_0_{lang}.delta", $"Demae_0_{lang}.delta", "Food Channel (Standard)");
+                    DownloadPatch("Demae", $"Demae_1_{lang}.delta", $"Demae_1_{lang}.delta", "Food Channel (Standard)");
                     if (lang == Language.English)
-                        DownloadPatch("Demae", $"Demae_2_{lang}.delta", $"Demae_2_{lang}.delta", "Demae Channel (Standard)");
+                        DownloadPatch("Demae", $"Demae_2_{lang}.delta", $"Demae_2_{lang}.delta", "Food Channel (Standard)");
                     break;
                 case DemaeVersion.Dominos:
-                    DownloadPatch("Dominos", $"Dominos_0.delta", "Dominos_0.delta", "Demae Channel (Dominos)");
-                    DownloadPatch("Dominos", $"Dominos_1.delta", "Dominos_1.delta", "Demae Channel (Dominos)");
-                    DownloadPatch("Dominos", $"Dominos_2.delta", "Dominos_2.delta", "Demae Channel (Dominos)");
+                    DownloadPatch("Dominos", $"Dominos_0.delta", "Dominos_0.delta", "Food Channel (Dominos)");
+                    DownloadPatch("Dominos", $"Dominos_1.delta", "Dominos_1.delta", "Food Channel (Dominos)");
+                    DownloadPatch("Dominos", $"Dominos_2.delta", "Dominos_2.delta", "Food Channel (Dominos)");
+                    DownloadOSCApp("WiiLink_Account_Linker");
                     break;
             }
-
-            // Downloading Get Console ID (for Demae Domino's) from OSC
-            if (demaeVersion == DemaeVersion.Dominos)
-                DownloadOSCApp("WiiLink_Account_Linker");
 
             // Kirby TV Channel (only if user chose to install it)
             DownloadPatch("ktv", $"ktv_2.delta", "KirbyTV_2.delta", "Kirby TV Channel");
