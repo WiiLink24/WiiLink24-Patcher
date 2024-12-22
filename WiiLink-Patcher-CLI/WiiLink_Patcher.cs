@@ -365,6 +365,22 @@ class WiiLink_Patcher
         DownloadFile($"https://hbb1.oscwii.org/api/v3/contents/{appName}/icon.png", Path.Join(appPath, "icon.png"), appName);
     }
 
+    // <summary>
+    /// Downloads WiiLink Account Linker from Patcher Server
+    /// </summary>
+    static public void DownloadLinker()
+    {
+        task = "Downloading WiiLink Account Linker";
+        string appPath = Path.Join("apps", "WiiLinkAccountLinker");
+
+        if (!Directory.Exists(appPath))
+            Directory.CreateDirectory(appPath);
+
+        DownloadFile($"{wiiLinkPatcherUrl}/linker/boot.dol", Path.Join(appPath, "boot.dol"), "WiiLink Account Linker");
+        DownloadFile($"{wiiLinkPatcherUrl}/linker/meta.xml", Path.Join(appPath, "meta.xml"), "WiiLink Account Linker");
+        DownloadFile($"{wiiLinkPatcherUrl}/linker/icon.png", Path.Join(appPath, "icon.png"), "WiiLink Account Linker");
+    }
+
     /// <summary>
     /// Downloads AnyGlobe Changer from OSC or GitHub, depending on platform, as the latest OSC release doesn't work with Dolphin.
     /// </summary>
@@ -2147,11 +2163,11 @@ class WiiLink_Patcher
                     DownloadPatch("Dominos", $"Dominos_0.delta", "Dominos_0.delta", "Food Channel (Dominos)");
                     DownloadPatch("Dominos", $"Dominos_1.delta", "Dominos_1.delta", "Food Channel (Dominos)");
                     DownloadPatch("Dominos", $"Dominos_2.delta", "Dominos_2.delta", "Food Channel (Dominos)");
-                    DownloadOSCApp("WiiLink_Account_Linker");
+                    DownloadLinker();
                     break;
             }
 
-            // Kirby TV Channel (only if user chose to install it)
+            // Kirby TV Channel
             DownloadPatch("ktv", $"ktv_2.delta", "KirbyTV_2.delta", "Kirby TV Channel");
         }
 
@@ -2167,7 +2183,7 @@ class WiiLink_Patcher
             DownloadOSCApp("sntp");
         }
 
-        // Download WC24 patches if applicable
+        // Download WC24 patches
         // Nintendo Channel
         DownloadPatch("nc", $"NC_1_{wc24_reg}.delta", $"NC_1_{wc24_reg}.delta", "Nintendo Channel");
 
@@ -3254,7 +3270,7 @@ class WiiLink_Patcher
                     DownloadPatch("Dominos", $"Dominos_0.delta", "Dominos_0.delta", "Food Channel (Domino's)");
                     DownloadPatch("Dominos", $"Dominos_1.delta", "Dominos_1.delta", "Food Channel (Domino's)");
                     DownloadPatch("Dominos", $"Dominos_2.delta", "Dominos_2.delta", "Food Channel (Domino's)");
-                    DownloadOSCApp("WiiLink_Account_Linker");
+                    DownloadLinker();
                     break;
                 case "nc_us":
                     task = "Downloading Nintendo Channel (USA)";
