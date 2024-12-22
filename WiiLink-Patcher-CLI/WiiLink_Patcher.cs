@@ -369,16 +369,21 @@ class WiiLink_Patcher
         if (platformType != Platform.Dolphin)
         {
             DownloadOSCApp("AnyGlobe_Changer");
+            return;
         }
-        else if (!Directory.Exists("./apps/AnyGlobe Changer"))
-        {
-            task = $"Downloading AnyGlobe_Changer";
-            string appPath = Path.Join(tempDir, "AGC");
-            Directory.CreateDirectory(appPath);
-            DownloadFile($"https://github.com/fishguy6564/AnyGlobe-Changer/releases/download/1.0/AnyGlobe.Changer.zip", Path.Join(appPath, "AGC.zip"), "AnyGlobe_Changer");
-            ZipFile.ExtractToDirectory(Path.Join(appPath, "AGC.zip"), "./");
-            Directory.Delete(appPath, true);
-        }
+        
+        if (Directory.Exists("./apps/AnyGlobe Changer"))
+            return;
+            
+        // Dolphin users need v1.0 of AnyGlobe Changer, as the latest OSC release doesn't work with Dolphin, for some reason.
+        task = $"Downloading AnyGlobe_Changer";
+        string appPath = Path.Join(tempDir, "AGC");
+        Directory.CreateDirectory(appPath);
+        DownloadFile($"https://github.com/fishguy6564/AnyGlobe-Changer/releases/download/1.0/AnyGlobe.Changer.zip", 
+                     Path.Join(appPath, "AGC.zip"), 
+                     "AnyGlobe_Changer");
+        ZipFile.ExtractToDirectory(Path.Join(appPath, "AGC.zip"), "./");
+        Directory.Delete(appPath, true);
     }
 
     /// <summary>
