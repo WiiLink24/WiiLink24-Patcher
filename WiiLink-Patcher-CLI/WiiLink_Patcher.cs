@@ -14,10 +14,10 @@ using System.IO.Compression;
 class WiiLink_Patcher
 {
     //// Build Info ////
-    static readonly string version = "v2.0.5";
+    static readonly string version = "v2.0.6 Nightly";
     static readonly string copyrightYear = DateTime.Now.Year.ToString();
-    static readonly string buildDate = "December 20th, 2024";
-    static readonly string buildTime = "6:12 PM";
+    static readonly string buildDate = "December 23rd, 2024";
+    static readonly string buildTime = "3:54 PM";
     static string? sdcard = DetectRemovableDrive;
     static readonly string wiiLinkPatcherUrl = "https://patcher.wiilink24.com";
     ////////////////////
