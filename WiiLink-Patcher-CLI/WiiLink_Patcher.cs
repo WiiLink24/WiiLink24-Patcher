@@ -2415,6 +2415,7 @@ class WiiLink_Patcher
                     wiiLinkChannels_selection.Clear();
                     wiiConnect24Channels_selection.Clear();
                     combinedChannels_selection.Clear();
+                    channelMap.Clear();
                     MainMenu();
                     break;
                 case 0: // Enter
@@ -2518,6 +2519,8 @@ class WiiLink_Patcher
             {
                 case -1: // Escape
                     combinedChannels_selection.Clear();
+                    wiiLinkChannels_selection.Clear();
+                    wiiConnect24Channels_selection.Clear();
                     MainMenu();
                     break;
                 case -2: // Backspace
@@ -2727,10 +2730,14 @@ class WiiLink_Patcher
                     }
                 case 2: // No, start over
                     combinedChannels_selection.Clear();
+                    wiiLinkChannels_selection.Clear();
+                    wiiConnect24Channels_selection.Clear();
                     CustomInstall_WiiLinkChannels_Setup();
                     break;
                 case 3: // No, go back to main menu
                     combinedChannels_selection.Clear();
+                    wiiLinkChannels_selection.Clear();
+                    wiiConnect24Channels_selection.Clear();
                     MainMenu();
                     break;
                 default:
@@ -2886,8 +2893,9 @@ class WiiLink_Patcher
                 case -1: // Escape
                 case -2: // Backspace
                     // Clear selection list
-                    wiiLinkChannels_selection.Clear();
+                    combinedChannels_selection.Clear();
                     extraChannels_selection.Clear();
+                    channelMap.Clear();
                     MainMenu();
                     break;
                 case 0: // Enter
@@ -2989,6 +2997,7 @@ class WiiLink_Patcher
             {
                 case -1: // Escape
                     combinedChannels_selection.Clear();
+                    extraChannels_selection.Clear();
                     MainMenu();
                     break;
                 case -2: // Backspace
@@ -3122,10 +3131,12 @@ class WiiLink_Patcher
                     }
                 case 2: // No, start over
                     combinedChannels_selection.Clear();
+                    extraChannels_selection.Clear();
                     ExtraChannels_Setup();
                     break;
                 case 3: // No, go back to main menu
                     combinedChannels_selection.Clear();
+                    extraChannels_selection.Clear();
                     MainMenu();
                     break;
                 default:
