@@ -1825,6 +1825,7 @@ class WiiLink_Patcher
             { "ws_jp", "Wii Speak Channel [bold](Japan)[/]" },
             { "tatc_eu", "Today and Tomorrow Channel [bold](Europe)[/]" },
             { "tatc_jp", "Today and Tomorrow Channel [bold](Japan)[/]" },
+            { "pc", "Photo Channel 1.1" },
             { "ic_us", "Internet Channel [bold](USA)[/]" },
             { "ic_eu", "Internet Channel [bold](Europe)[/]" },
             { "ic_jp", "Internet Channel [bold](Japan)[/]" },
@@ -2841,11 +2842,6 @@ class WiiLink_Patcher
             { "Wii Speak Channel [bold](Europe)[/]", "ws_eu" },
             { "Wii Speak Channel [bold](Japan)[/]", "ws_jp" },
             { "Today and Tomorrow Channel [bold](Europe)[/]", "tatc_eu" },
-            { "Today and Tomorrow Channel [bold](Japan)[/]", "tatc_jp" },
-            { "Internet Channel [bold](USA)[/]", "ic_us" },
-            { "Internet Channel [bold](Europe)[/]", "ic_eu" },
-            { "Internet Channel [bold](Japan)[/]", "ic_jp" },
-            { "System Channel Restorer", "scr" },
             { "Today and Tomorrow Channel [bold](Japan)[/]", "tatc_jp" }
         };
 
@@ -2857,11 +2853,6 @@ class WiiLink_Patcher
             extraChannelMap.Add("Internet Channel [bold](Japan)[/]", "ic_jp");
         }
         
-        else
-        {
-            extraChannels_selection.Add("scr");
-        }
-        
 
         // Create channel map dictionary
         var channelMap = extraChannelMap.ToDictionary(x => x.Key, x => x.Value);
@@ -2869,6 +2860,12 @@ class WiiLink_Patcher
         // Initialize selection list to "Not selected" using LINQ
         if (combinedChannels_selection.Count == 0) // Only do this
             combinedChannels_selection = channelMap.Values.Select(_ => "[grey]Not selected[/]").ToList();
+
+        if (systemChannelRestorer == true)
+        {
+            combinedChannels_selection = combinedChannels_selection.Append("scr").ToList();
+            extraChannels_selection.Add("scr");
+        }
 
         // Page setup
         const int ITEMS_PER_PAGE = 9;
@@ -2989,6 +2986,12 @@ class WiiLink_Patcher
             switch (choice)
             {
                 case -1: // Escape
+                    // Clear selection list
+                    combinedChannels_selection.Clear();
+                    extraChannels_selection.Clear();
+                    channelMap.Clear();
+                    MainMenu();
+                    break;
                 case -2: // Backspace
                     // Clear selection list
                     combinedChannels_selection.Clear();
@@ -3136,6 +3139,7 @@ class WiiLink_Patcher
             { "ws_jp", "● Wii Speak Channel [bold](Japan)[/]" },
             { "tatc_eu", "● Today and Tomorrow Channel [bold](Europe)[/]" },
             { "tatc_jp", "● Today and Tomorrow Channel [bold](Japan)[/]" },
+            { "pc", "● Photo Channel 1.1" },
             { "ic_us", "● Internet Channel [bold](USA)[/]" },
             { "ic_eu", "● Internet Channel [bold](Europe)[/]" },
             { "ic_jp", "● Internet Channel [bold](Japan)[/]" },
@@ -3883,12 +3887,6 @@ class WiiLink_Patcher
             {
                 DownloadFile($"{fileURL}{file.Key}", file.Value, 
                     $"Photo Channel 1.1 {file.Key}", noError: true);
-                if (DEBUG_MODE)
-                {
-                    AnsiConsole.MarkupLine($"[bold yellow]URL:[/] {fileURL}");
-                    AnsiConsole.MarkupLine("------- Press any key to continue -------");
-                    Console.ReadKey(true);
-                 }
             }
             catch { } // File doesn't exist, move on
         });
