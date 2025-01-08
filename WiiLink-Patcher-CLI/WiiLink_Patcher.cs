@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text;
 using System.Runtime.InteropServices;
 using Spectre.Console;
@@ -1870,6 +1870,7 @@ class WiiLink_Patcher
             { "ws_jp", () => WiiSpeak_Patch(Region.Japan) },
             { "tatc_eu", () => TodayTomorrow_Download(Region.PAL) },
             { "tatc_jp", () => TodayTomorrow_Download(Region.Japan) },
+            { "pc", () => PhotoChannel_Download() },
             { "ic_us", () => DownloadWC24Channel("ic", "Internet Channel", 1024, Region.USA, "0001000148414445") },
             { "ic_eu", () => DownloadWC24Channel("ic", "Internet Channel", 1024, Region.PAL, "0001000148414450") },
             { "ic_jp", () => DownloadWC24Channel("ic", "Internet Channel", 1024, Region.Japan, "000100014841444a") },
@@ -2748,12 +2749,92 @@ class WiiLink_Patcher
         }
     }
 
-    // Install Extras (Part 1 - Select Extra channels)
-    static void ExtraChannels_Setup()
+    // Install Extras (Part 1 - System Channel Restorer)
+    static void systemChannelRestorer_Setup()
     {
-        task = "Install Extras (Part 1 - Select Extra channels)";
+        task = "Install Extras (Part 1 - System Channel Restorer)";
+        while (true)
+        {
+            PrintHeader();
+
+            // Print title
+            string installExtras = patcherLang == PatcherLanguage.en
+                ? "Install Extras"
+                : $"{localizedText?["InstallExtras"]?["Header"]}";
+            AnsiConsole.MarkupLine($"[bold springgreen2_1]{installExtras}[/]\n");
+
+            // Print step number and title
+            string stepNum = patcherLang == PatcherLanguage.en
+                ? "Step 1"
+                : $"{localizedText?["CustomSetup"]?["wiiLinkChannels_Setup"]?["stepNum"]}";
+            string stepTitle = patcherLang == PatcherLanguage.en
+                ? "System Channel Restorer"
+                : $"{localizedText?["CustomSetup"]?["ConsolePlatform_Setup"]?["stepTitle"]}";
+            AnsiConsole.MarkupLine($"[bold]{stepNum}:[/] {stepTitle}\n");
+
+            // Display console platform selection menu
+            string AskSystemChannelRestorer = patcherLang == PatcherLanguage.en
+                ? "Would you like to download System Channel Restorer?"
+                : $"{localizedText?["ExtrasInstall"]?["systemChannelRestorer_Setup"]?["systemChannelRestorer"]}";
+            AnsiConsole.MarkupLine($"[bold]{AskSystemChannelRestorer}[/]\n");
+
+            // Display console platform selection menu
+            string systemChannelRestorerInfo = patcherLang == PatcherLanguage.en
+                ? "System Channel Restorer is a homebrew application that allows for proper installation of Photo Channel 1.1 directly to your console."
+                : $"{localizedText?["ExtrasInstall"]?["systemChannelRestorer_Setup"]?["systemChannelRestorerInfo"]}";
+            AnsiConsole.MarkupLine($"[grey]{systemChannelRestorerInfo}[/]");
+
+            // Display console platform selection menu
+            string moreSystemChannelRestorerInfo = patcherLang == PatcherLanguage.en
+                ? "Use of System Channel Restorer requires an internet connection on your console, and is more difficult to use on Dolphin than offline WADs."
+                : $"{localizedText?["ExtrasInstall"]?["systemChannelRestorer_Setup"]?["moreSystemChannelRestorerInfo"]}";
+            AnsiConsole.MarkupLine($"[grey]{moreSystemChannelRestorerInfo}[/]\n");
+
+            // Print Console Platform options
+            string useSystemChannelRestorer = patcherLang == PatcherLanguage.en
+                ? "[bold]System Channel Restorer[/]"
+                : $"{localizedText?["ExtrasInstall"]?["systemChannelRestorer_Setup"]?["onWii"]}";
+            string offlineWADs = patcherLang == PatcherLanguage.en
+                ? "[bold]Offline WADs[/]"
+                : $"{localizedText?["ExtrasInstall"]?["systemChannelRestorer_Setup"]?["offlineWADs"]}";
+            AnsiConsole.MarkupLine($"[bold]1.[/] {useSystemChannelRestorer}");
+            AnsiConsole.MarkupLine($"[bold]2.[/] {offlineWADs}\n");
+
+            // Print instructions
+            string platformInstructions = patcherLang == PatcherLanguage.en
+                ? "< Press [bold white]a number[/] to make your selection, [bold white]Backspace[/] to go back, [bold white]ESC[/] to go back to exit setup >"
+                : $"{localizedText?["CustomSetup"]?["systemChannelRestorer_Setup"]?["selectionInstructions"]}";
+            AnsiConsole.MarkupLine($"[grey]{platformInstructions}[/]\n");
+
+            int choice = UserChoose("12");
+
+            // Use a switch statement to handle user's SPD version selection
+            switch (choice)
+            {
+                case -1: // Escape
+                case -2: // Backspace
+                    MainMenu();
+                    break;
+                case 1:
+                    ExtraChannels_Setup(true);
+                    break;
+                case 2:
+                    ExtraChannels_Setup(false);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+
+    // Install Extras (Part 2 - Select Extra channels)
+    static void ExtraChannels_Setup(bool systemChannelRestorer)
+    {
+        task = "Install Extras (Part 2 - Select Extra channels)";
 
         // Define a dictionary to map the extra channel names to easy-to-read format
+
         var extraChannelMap = new Dictionary<string, string>()
         {
             { "Wii Speak Channel [bold](USA)[/]", "ws_us" },
@@ -2764,8 +2845,23 @@ class WiiLink_Patcher
             { "Internet Channel [bold](USA)[/]", "ic_us" },
             { "Internet Channel [bold](Europe)[/]", "ic_eu" },
             { "Internet Channel [bold](Japan)[/]", "ic_jp" },
-            { "System Channel Restorer", "scr" }
+            { "System Channel Restorer", "scr" },
+            { "Today and Tomorrow Channel [bold](Japan)[/]", "tatc_jp" }
         };
+
+        if (systemChannelRestorer == false)
+        {
+            extraChannelMap.Add("Photo Channel 1.1", "pc");
+            extraChannelMap.Add("Internet Channel [bold](USA)[/]", "ic_us");
+            extraChannelMap.Add("Internet Channel [bold](Europe)[/]", "ic_eu");
+            extraChannelMap.Add("Internet Channel [bold](Japan)[/]", "ic_jp");
+        }
+        
+        else
+        {
+            extraChannels_selection.Add("scr");
+        }
+        
 
         // Create channel map dictionary
         var channelMap = extraChannelMap.ToDictionary(x => x.Key, x => x.Value);
@@ -2790,7 +2886,7 @@ class WiiLink_Patcher
 
             // Print step number and title
             string stepNum = patcherLang == PatcherLanguage.en
-                ? "Step 1"
+                ? "Step 2"
                 : $"{localizedText?["CustomSetup"]?["wiiLinkChannels_Setup"]?["stepNum"]}";
             string stepTitle = patcherLang == PatcherLanguage.en
                 ? "Select extra channel(s) to install"
@@ -2898,7 +2994,7 @@ class WiiLink_Patcher
                     combinedChannels_selection.Clear();
                     extraChannels_selection.Clear();
                     channelMap.Clear();
-                    MainMenu();
+                    systemChannelRestorer_Setup();
                     break;
                 case 0: // Enter
                     // Save selected channels to global variable if any are selected, divide them into WiiLink and WC24 channels
@@ -2943,10 +3039,10 @@ class WiiLink_Patcher
         }
     }
 
-    // Install Extras (Part 2 - Select Console Platform)
+    // Install Extras (Part 3 - Select Console Platform)
     static void ExtraChannels_ConsolePlatform_Setup()
     {
-        task = "Install Extras (Part 2 - Select Console Platform)";
+        task = "Install Extras (Part 3 - Select Console Platform)";
         while (true)
         {
             PrintHeader();
@@ -2959,7 +3055,7 @@ class WiiLink_Patcher
 
             // Print step number and title
             string stepNum = patcherLang == PatcherLanguage.en
-                ? "Step 2"
+                ? "Step 3"
                 : $"{localizedText?["CustomSetup"]?["ConsolePlatform_Setup"]?["stepNum"]}";
             string stepTitle = patcherLang == PatcherLanguage.en
                 ? "Select Console Platform"
@@ -3003,7 +3099,7 @@ class WiiLink_Patcher
                     MainMenu();
                     break;
                 case -2: // Backspace
-                    ExtraChannels_Setup();
+                    systemChannelRestorer_Setup();
                     break;
                 case 1:
                     platformType_custom = Platform.Wii;
@@ -3027,10 +3123,10 @@ class WiiLink_Patcher
     }
 
 
-    // Install Extras (Part 3 - Show summary of selected channels to be installed)
+    // Install Extras (Part 4 - Show summary of selected channels to be installed)
     static void ExtraChannels_SummaryScreen(bool showSPD = false)
     {
-        task = "Install Extras (Part 3 - Show summary of selected channels to be installed)";
+        task = "Install Extras (Part 4 - Show summary of selected channels to be installed)";
 
         // Convert extra channel names to proper names
         var extraChannelMap = new Dictionary<string, string>()
@@ -3134,7 +3230,7 @@ class WiiLink_Patcher
                 case 2: // No, start over
                     combinedChannels_selection.Clear();
                     extraChannels_selection.Clear();
-                    ExtraChannels_Setup();
+                    systemChannelRestorer_Setup();
                     break;
                 case 3: // No, go back to main menu
                     combinedChannels_selection.Clear();
@@ -3352,7 +3448,7 @@ class WiiLink_Patcher
                     DownloadPatch("ws", $"WS_0_PAL.delta", "WS_0_PAL.delta", "Wii Speak Channel");
                     DownloadPatch("ws", $"WS_1_PAL.delta", "WS_1_PAL.delta", "Wii Speak Channel");
                     break;
-                case "ws_jp:
+                case "ws_jp":
                     task = $"Downloading Wii Speak Channel (Japan)";
                     DownloadPatch("ws", $"WS_0_Japan.delta", "WS_0_Japan.delta", "Wii Speak Channel");
                     DownloadPatch("ws", $"WS_1_Japan.delta", "WS_1_Japan.delta", "Wii Speak Channel");
@@ -3754,6 +3850,57 @@ class WiiLink_Patcher
         List<string> appNums = ["00000009","0000000a"];
 
         PatchWC24Channel("ws", "Wii Speak Channel", 512, region, channelID, patches, appNums);
+    }
+
+    // Downloading Photo Channel 1.1
+    static void PhotoChannel_Download()
+    {
+        task = "Downloading Photo Channel 1.1";
+        
+        string titleFolder = Path.Join(tempDir, "Unpack");
+        string outputWad = Path.Join("WAD", "Photo Channel 1.1 (WiiLink).wad");
+                
+        Directory.CreateDirectory("WAD");
+        Directory.CreateDirectory(titleFolder);
+    
+        string baseId = "0001000248415941";
+        string fileURL = $"{wiiLinkPatcherUrl}/pc/{baseId}";
+    
+        task = "Extracting stuff for Photo Channel 1.1";
+        DownloadNUS(baseId, titleFolder, "3", true);
+
+        Dictionary<string, string> files = new()
+        {
+            [".cert"] = Path.Join(titleFolder, $"{baseId}.cert"),
+            [".tmd"] = Path.Join(titleFolder, "tmd.3"),
+            [".tik"] = Path.Join(titleFolder, "cetk")
+        };
+    
+        task = "Downloading necessary files for Photo Channel 1.1";
+        Parallel.ForEach(files, file =>
+        {
+            try
+            {
+                DownloadFile($"{fileURL}{file.Key}", file.Value, 
+                    $"Photo Channel 1.1 {file.Key}", noError: true);
+                if (DEBUG_MODE)
+                {
+                    AnsiConsole.MarkupLine($"[bold yellow]URL:[/] {fileURL}");
+                    AnsiConsole.MarkupLine("------- Press any key to continue -------");
+                    Console.ReadKey(true);
+                 }
+            }
+            catch { } // File doesn't exist, move on
+        });
+    
+        task = "Renaming files for Photo Channel 1.1";
+        File.Move(Path.Join(titleFolder, "tmd.3"), Path.Join(titleFolder, $"{baseId}.tmd"));
+        File.Move(Path.Join(titleFolder, "cetk"), Path.Join(titleFolder, $"{baseId}.tik"));
+    
+        task = "Repacking the title for Photo Channel 1.1";
+        PackWAD(titleFolder, outputWad);
+                
+        Directory.Delete(titleFolder, true);
     }
 
     // Finish SD Copy
@@ -4459,7 +4606,7 @@ class WiiLink_Patcher
                     CustomInstall_WiiLinkChannels_Setup();
                     break;
                 case 3: // Start Extras Setup
-                    ExtraChannels_Setup();
+                    systemChannelRestorer_Setup();
                     break;
                 case 4: // Settings                
                     SettingsMenu();
