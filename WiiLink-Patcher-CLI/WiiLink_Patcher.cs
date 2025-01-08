@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Text;
 using System.Runtime.InteropServices;
 using Spectre.Console;
@@ -677,6 +677,8 @@ class WiiLink_Patcher
         string outputWad;
         if (channelName == "ktv" || channelRegion == null)
             outputWad = Path.Join("WAD", $"{channelTitle} (WiiLink).wad");
+        else if (channelName == "ws")
+            outputWad = Path.Join("WAD", $"{channelTitle} [{channelRegion}] (Wiimmfi).wad");
         else
             outputWad = Path.Join("WAD", $"{channelTitle} [{channelRegion}] (WiiLink).wad");
 
@@ -1823,10 +1825,10 @@ class WiiLink_Patcher
             { "ws_jp", "Wii Speak Channel [bold](Japan)[/]" },
             { "tatc_eu", "Today and Tomorrow Channel [bold](Europe)[/]" },
             { "tatc_jp", "Today and Tomorrow Channel [bold](Japan)[/]" },
-            { "pc", "Photo Channel 1.1" },
             { "ic_us", "Internet Channel [bold](USA)[/]" },
             { "ic_eu", "Internet Channel [bold](Europe)[/]" },
-            { "ic_jp", "Internet Channel [bold](Japan)[/]" }
+            { "ic_jp", "Internet Channel [bold](Japan)[/]" },
+            { "scr", "System Channel Restorer" }
         };
 
         // Setup patching process arrays based on the selected channels
@@ -1863,15 +1865,15 @@ class WiiLink_Patcher
             { "cmoc_us", () => CheckMiiOut_Patch(Region.USA) },
             { "cmoc_eu", () => CheckMiiOut_Patch(Region.PAL) },
             { "cmoc_jp", () => CheckMiiOut_Patch(Region.Japan) },
-            { "ws_us", () => DownloadWC24Channel("ws", "Wii Speak Channel", 512, Region.USA, "0001000148434645") },
-            { "ws_eu", () => DownloadWC24Channel("ws", "Wii Speak Channel", 512, Region.PAL, "0001000148434650") },
-            { "ws_jp", () => DownloadWC24Channel("ws", "Wii Speak Channel", 512, Region.Japan, "000100014843464a") },
+            { "ws_us", () => WiiSpeak_Patch(Region.USA) },
+            { "ws_eu", () => WiiSpeak_Patch(Region.PAL) },
+            { "ws_jp", () => WiiSpeak_Patch(Region.Japan) },
             { "tatc_eu", () => TodayTomorrow_Download(Region.PAL) },
             { "tatc_jp", () => TodayTomorrow_Download(Region.Japan) },
-            { "pc", () => DownloadWC24Channel("pc", "Photo Channel 1.1", 3, null, "0001000248415941") },
             { "ic_us", () => DownloadWC24Channel("ic", "Internet Channel", 1024, Region.USA, "0001000148414445") },
             { "ic_eu", () => DownloadWC24Channel("ic", "Internet Channel", 1024, Region.PAL, "0001000148414450") },
-            { "ic_jp", () => DownloadWC24Channel("ic", "Internet Channel", 1024, Region.Japan, "000100014841444a") }
+            { "ic_jp", () => DownloadWC24Channel("ic", "Internet Channel", 1024, Region.Japan, "000100014841444a") },
+            { "scr", () => DownloadOSCApp("system-channel-restorer") }
         };
 
         // Create a list of patching functions to execute
@@ -2759,10 +2761,10 @@ class WiiLink_Patcher
             { "Wii Speak Channel [bold](Japan)[/]", "ws_jp" },
             { "Today and Tomorrow Channel [bold](Europe)[/]", "tatc_eu" },
             { "Today and Tomorrow Channel [bold](Japan)[/]", "tatc_jp" },
-            { "Photo Channel 1.1", "pc" },
             { "Internet Channel [bold](USA)[/]", "ic_us" },
             { "Internet Channel [bold](Europe)[/]", "ic_eu" },
-            { "Internet Channel [bold](Japan)[/]", "ic_jp" }
+            { "Internet Channel [bold](Japan)[/]", "ic_jp" },
+            { "System Channel Restorer", "scr" }
         };
 
         // Create channel map dictionary
@@ -3038,10 +3040,10 @@ class WiiLink_Patcher
             { "ws_jp", "● Wii Speak Channel [bold](Japan)[/]" },
             { "tatc_eu", "● Today and Tomorrow Channel [bold](Europe)[/]" },
             { "tatc_jp", "● Today and Tomorrow Channel [bold](Japan)[/]" },
-            { "pc", "● Photo Channel 1.1" },
             { "ic_us", "● Internet Channel [bold](USA)[/]" },
             { "ic_eu", "● Internet Channel [bold](Europe)[/]" },
-            { "ic_jp", "● Internet Channel [bold](Japan)[/]" }
+            { "ic_jp", "● Internet Channel [bold](Japan)[/]" },
+            { "scr", "● System Channel Restorer" }
         };
 
         var selectedExtraChannels = new List<string>();
@@ -3339,6 +3341,21 @@ class WiiLink_Patcher
                 case "kirbytv":
                     task = "Downloading Kirby TV Channel";
                     DownloadPatch("ktv", $"ktv_2.delta", "KirbyTV_2.delta", "Kirby TV Channel");
+                    break;
+                case "ws_us":
+                    task = $"Downloading Wii Speak Channel (USA)";
+                    DownloadPatch("ws", $"WS_0_USA.delta", "WS_0_USA.delta", "Wii Speak Channel");
+                    DownloadPatch("ws", $"WS_1_USA.delta", "WS_1_USA.delta", "Wii Speak Channel");
+                    break;
+                case "ws_eu":
+                    task = $"Downloading Wii Speak Channel (Europe)";
+                    DownloadPatch("ws", $"WS_0_PAL.delta", "WS_0_PAL.delta", "Wii Speak Channel");
+                    DownloadPatch("ws", $"WS_1_PAL.delta", "WS_1_PAL.delta", "Wii Speak Channel");
+                    break;
+                case "ws_jp:
+                    task = $"Downloading Wii Speak Channel (Japan)";
+                    DownloadPatch("ws", $"WS_0_Japan.delta", "WS_0_Japan.delta", "Wii Speak Channel");
+                    DownloadPatch("ws", $"WS_1_Japan.delta", "WS_1_Japan.delta", "Wii Speak Channel");
                     break;
             }
         }
@@ -3719,6 +3736,26 @@ class WiiLink_Patcher
         }
     }
 
+    // Patching Wii Speak
+    static void WiiSpeak_Patch(Region region)
+    {
+        task = "Patching Wii Speak Channel";
+
+        // Properly set Wii Speak Channel titleID based on region
+        string channelID = region switch
+        {
+            Region.USA => "0001000148434645",
+            Region.PAL => "0001000148434650",
+            Region.Japan => "000100014843464a",
+            _ => throw new NotImplementedException(),
+        };
+
+        List<string> patches = [$"WS_0_{region}",$"WS_1_{region}"];
+        List<string> appNums = ["00000009","0000000a"];
+
+        PatchWC24Channel("ws", "Wii Speak Channel", 512, region, channelID, patches, appNums);
+    }
+
     // Finish SD Copy
     static void FinishSDCopy()
     {
@@ -3847,14 +3884,6 @@ class WiiLink_Patcher
                         : $"{localizedText?["Finished"]?["installWadYawmme"]}";
                     AnsiConsole.MarkupLine($"{installWad}\n");
                 }
-            }
-            
-            if (extraChannels_selection.Contains("ws_eu") || extraChannels_selection.Contains("ws_us") || extraChannels_selection.Contains("ws_jp"))
-            {
-                string wiiWarePatch = patcherLang == PatcherLanguage.en
-                    ? "To use the [bold]Wii Speak Channel[/] online, you'll need to patch it for use with Wiimmfi. You can find the WiiWare patcher at [bold springgreen2_1 link]https://github.com/RiiConnect24/WiiWare-Patcher/releases[/]"
-                    : $"{localizedText?["Finished"]?["wiiWarePatch"]}";
-                AnsiConsole.MarkupLine($"{wiiWarePatch}\n");
             }
 
             // What would you like to do now text
