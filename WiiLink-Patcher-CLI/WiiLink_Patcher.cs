@@ -14,10 +14,10 @@ using System.IO.Compression;
 class WiiLink_Patcher
 {
     //// Build Info ////
-    static readonly string version = "v2.0.6 Nightly";
+    static readonly string version = "v2.0.6 RC1";
     static readonly string copyrightYear = DateTime.Now.Year.ToString();
-    static readonly string buildDate = "December 23rd, 2024";
-    static readonly string buildTime = "3:54 PM";
+    static readonly string buildDate = "January 9th, 2024";
+    static readonly string buildTime = "9:28 PM";
     static string? sdcard = DetectRemovableDrive;
     static readonly string wiiLinkPatcherUrl = "https://patcher.wiilink24.com";
     ////////////////////
@@ -3851,7 +3851,13 @@ class WiiLink_Patcher
         };
 
         List<string> patches = [$"WS_0_{region}",$"WS_1_{region}"];
-        List<string> appNums = ["00000009","0000000a"];
+        List<string>appNums = region switch
+        {
+            Region.USA => ["00000012","00000013"],
+            Region.PAL => ["00000009","0000000a"],
+            Region.Japan => ["00000014","00000012"],
+            _ => throw new NotImplementedException(),
+        };
 
         PatchWC24Channel("ws", "Wii Speak Channel", 512, region, channelID, patches, appNums);
     }
