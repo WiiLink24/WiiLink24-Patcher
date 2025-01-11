@@ -14,10 +14,10 @@ using System.IO.Compression;
 class WiiLink_Patcher
 {
     //// Build Info ////
-    static readonly string version = "v2.0.6 RC1";
+    static readonly string version = "v2.0.6 RC2";
     static readonly string copyrightYear = DateTime.Now.Year.ToString();
-    static readonly string buildDate = "January 9th, 2024";
-    static readonly string buildTime = "9:28 PM";
+    static readonly string buildDate = "January 11th, 2024";
+    static readonly string buildTime = "12:34 PM";
     static string? sdcard = DetectRemovableDrive;
     static readonly string wiiLinkPatcherUrl = "https://patcher.wiilink24.com";
     ////////////////////
@@ -787,6 +787,9 @@ class WiiLink_Patcher
         task = $"Renaming files for {channelTitle}";
 
         // Move resulting WAD to output folder
+        if (File.Exists(outputWad))
+            File.Delete(outputWad);
+        
         File.Move(Path.Join(titleFolder, $"{titleID}v{channelVersion}.wad"), outputWad);
 
         // Delete the unpack folder
@@ -3929,11 +3932,18 @@ class WiiLink_Patcher
             }
             catch (Exception e)
             {
+                // Format exception message to prevent a crash when reading square brackets
+                string exceptionMessage = e.Message;
+                if (exceptionMessage.Contains("["))
+                    exceptionMessage = exceptionMessage.Replace("[", "[[");
+                if (exceptionMessage.Contains("]"))
+                    exceptionMessage = exceptionMessage.Replace("]", "]]");
+                
                 // Error message
                 string pressAnyKey_error = patcherLang == PatcherLanguage.en
                     ? "Press any key to try again..."
                     : $"{localizedText?["FinishSDCopy"]?["pressAnyKey_error"]}";
-                AnsiConsole.MarkupLine($"[bold red]ERROR:[/] {e.Message}\n{pressAnyKey_error}");
+                AnsiConsole.MarkupLine($"[bold red]ERROR:[/] {exceptionMessage}\n{pressAnyKey_error}");
                 Console.ReadKey();
                 FinishSDCopy();
             }
