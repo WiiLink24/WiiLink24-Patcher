@@ -6,7 +6,7 @@
     <RootNamespace>WiiLink_Patcher_CLI</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <ApplicationIcon>WIiLink Icon.ico</ApplicationIcon>
+    <ApplicationIcon>WiiLink Icon.ico</ApplicationIcon>
     <Title>WiiLink Patcher CLI</Title>
     <Authors>WiiLink</Authors>
     <PackageIcon>icon.png</PackageIcon>
