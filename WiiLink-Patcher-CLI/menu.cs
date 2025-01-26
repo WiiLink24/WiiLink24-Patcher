@@ -2,10 +2,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Runtime.InteropServices;
 using Spectre.Console;
-using libWiiSharp;
-using System.Net;
 using Newtonsoft.Json.Linq;
-using System.IO.Compression;
 
 public class menu
 {
@@ -206,7 +203,7 @@ public class menu
             ? "WiiLink website"
             : $"{main.localizedText?["Credits"]?["wiilinkSite"]}";
         string githubRepo = main.patcherLang == main.PatcherLanguage.en
-            ? "Github repository"
+            ? "GitHub repository"
             : $"{main.localizedText?["Credits"]?["githubRepo"]}";
 
         var linksGrid = new Grid().AddColumn().AddColumn();
@@ -253,43 +250,18 @@ public class menu
                 : $"{main.localizedText?["ExpressInstall"]?["WiiRoomConfiguration"]?["instructions"]}";
             AnsiConsole.MarkupLine($"{instructions}\n");
 
-            // User Choices
-            string english = main.patcherLang == main.PatcherLanguage.en
-                ? "English"
-                : $"{main.localizedText?["ExpressInstall"]?["WiiRoomConfiguration"]?["english"]}";
-            string spanish = main.patcherLang == main.PatcherLanguage.en
-                ? "Español"
-                : $"{main.localizedText?["ExpressInstall"]?["WiiRoomConfiguration"]?["spanish"]}";
-            string french = main.patcherLang == main.PatcherLanguage.en
-                ? "Français"
-                : $"{main.localizedText?["ExpressInstall"]?["WiiRoomConfiguration"]?["french"]}";
-            string german = main.patcherLang == main.PatcherLanguage.en
-                ? "Deutsch"
-                : $"{main.localizedText?["ExpressInstall"]?["WiiRoomConfiguration"]?["german"]}";
-            string italian = main.patcherLang == main.PatcherLanguage.en
-                ? "Italiano"
-                : $"{main.localizedText?["ExpressInstall"]?["WiiRoomConfiguration"]?["italian"]}";
-            string dutch = main.patcherLang == main.PatcherLanguage.en
-                ? "Nederlands"
-                : $"{main.localizedText?["ExpressInstall"]?["WiiRoomConfiguration"]?["dutch"]}";
-            string portuguese = main.patcherLang == main.PatcherLanguage.en
-                ? "Português (Brasil)"
-                : $"{main.localizedText?["ExpressInstall"]?["WiiRoomConfiguration"]?["portuguese"]}";
-            string russian = main.patcherLang == main.PatcherLanguage.en
-                ? "Русский"
-                : $"{main.localizedText?["ExpressInstall"]?["WiiRoomConfiguration"]?["russian"]}";
             string goBackToMainMenu = main.patcherLang == main.PatcherLanguage.en
                 ? "Go Back to Main Menu"
-                : $"{main.localizedText?["ExpressInstall"]?["WiiRoomConfiguration"]?["goBackToMainMenu"]}";
+                : $"{main.localizedText?["goBackToMainMenu"]}";
 
-            AnsiConsole.MarkupLine($"1. {english}");
-            AnsiConsole.MarkupLine($"2. {spanish}");
-            AnsiConsole.MarkupLine($"3. {french}");
-            AnsiConsole.MarkupLine($"4. {german}");
-            AnsiConsole.MarkupLine($"5. {italian}");
-            AnsiConsole.MarkupLine($"6. {dutch}");
-            AnsiConsole.MarkupLine($"7. {portuguese}");
-            AnsiConsole.MarkupLine($"8. {russian}\n");
+            AnsiConsole.MarkupLine($"1. English");
+            AnsiConsole.MarkupLine($"2. Español");
+            AnsiConsole.MarkupLine($"3. Français");
+            AnsiConsole.MarkupLine($"4. Deutsch");
+            AnsiConsole.MarkupLine($"5. Italiano");
+            AnsiConsole.MarkupLine($"6. Nederlands");
+            AnsiConsole.MarkupLine($"7. Português (Brasil)");
+            AnsiConsole.MarkupLine($"8. Русский\n");
 
             AnsiConsole.MarkupLine($"9. {goBackToMainMenu}\n");
 
@@ -373,7 +345,7 @@ public class menu
                 ? "Step 2B"
                 : $"{main.localizedText?["ExpressInstall"]?["DemaeConfiguration"]?["stepNum"]}";
             string step1bTitle = main.patcherLang == main.PatcherLanguage.en
-                ? "Choose Food Channel version"
+                ? "s"
                 : $"{main.localizedText?["ExpressInstall"]?["DemaeConfiguration"]?["stepTitle"]}";
             AnsiConsole.MarkupLine($"[bold]{stepNumber}: {step1bTitle}[/]\n");
 
@@ -392,7 +364,7 @@ public class menu
                 : $"{main.localizedText?["ExpressInstall"]?["DemaeConfiguration"]?["demaeDominos"]}";
             string goBackToMainMenu = main.patcherLang == main.PatcherLanguage.en
                 ? "Go Back to Main Menu"
-                : $"{main.localizedText?["ExpressInstall"]?["DemaeConfiguration"]?["goBackToMainMenu"]}";
+                : $"{main.localizedText?["goBackToMainMenu"]}";
 
             AnsiConsole.MarkupLine($"1. {demaeStandard}");
             AnsiConsole.MarkupLine($"2. {demaeDominos}\n");
@@ -466,10 +438,10 @@ public class menu
             // Yes or No Text
             string yes = main.patcherLang == main.PatcherLanguage.en
                 ? "Yes"
-                : $"{main.localizedText?["ExpressInstall"]?["WiiLinkSetup"]?["yes"]}";
+                : $"{main.localizedText?["yes"]}";
             string no = main.patcherLang == main.PatcherLanguage.en
                 ? "No"
-                : $"{main.localizedText?["ExpressInstall"]?["WiiLinkSetup"]?["no"]}";
+                : $"{main.localizedText?["no"]}";
 
             Console.WriteLine($"1. {yes}");
             Console.WriteLine($"2. {no}\n");
@@ -477,7 +449,7 @@ public class menu
             // Go Back to Main Menu Text
             string goBackToMainMenu = main.patcherLang == main.PatcherLanguage.en
                 ? "Go Back to Main Menu"
-                : $"{main.localizedText?["ExpressInstall"]?["WiiLinkSetup"]?["goBackToMainMenu"]}";
+                : $"{main.localizedText?["goBackToMainMenu"]}";
             Console.WriteLine($"3. {goBackToMainMenu}\n");
 
             int choice = UserChoose("123");
@@ -610,13 +582,13 @@ public class menu
 
             // User Choices
             string wii = main.patcherLang == main.PatcherLanguage.en
-                ? "Wii [bold][/]"
+                ? "Wii"
                 : $"{main.localizedText?["ExpressInstall"]?["ChoosePlatform"]?["wii"]}";
             string vWii = main.patcherLang == main.PatcherLanguage.en
                 ? "vWii [bold](Wii U)[/]"
                 : $"{main.localizedText?["ExpressInstall"]?["ChoosePlatform"]?["vWii"]}";
             string Dolphin = main.patcherLang == main.PatcherLanguage.en
-                ? "Dolphin Emulator[bold][/]"
+                ? "Dolphin Emulator"
                 : $"{main.localizedText?["ExpressInstall"]?["ChoosePlatform"]?["dolphin"]}";
             string goBackToMainMenu = main.patcherLang == main.PatcherLanguage.en
                 ? "Go Back to Main Menu"
@@ -723,7 +695,7 @@ public class menu
                 : $"{main.localizedText?["SDSetup"]?["start_noSD"]}";
             string manualDetection = main.patcherLang == main.PatcherLanguage.en
                 ? "Manually Select SD Card / USB Drive Path\n"
-                : $"{main.localizedText?["SDSetup"]?["manualDetection"]}";
+                : $"{main.localizedText?["SDSetup"]?["manualDetection"]}\n";
 
             AnsiConsole.MarkupLine($"1. {startOption}");
             AnsiConsole.MarkupLine($"2. {(main.sdcard != null ? startWithoutSDOption : manualDetection)}");
@@ -828,7 +800,7 @@ public class menu
                     : $"{main.localizedText?["WADFolderCheck"]?["keepWADFolder"]}";
                 string goBackToMainMenu = main.patcherLang == main.PatcherLanguage.en
                     ? "Go Back to Main Menu"
-                    : $"{main.localizedText?["WADFolderCheck"]?["goBackToMainMenu"]}";
+                    : $"{main.localizedText?["goBackToMainMenu"]}";
 
                 AnsiConsole.MarkupLine($"1. {deleteWADFolder}");
                 AnsiConsole.MarkupLine($"2. {keepWADFolder}\n");
@@ -850,7 +822,7 @@ public class menu
                             // Press any key to try again
                             string pressAnyKey = main.patcherLang == main.PatcherLanguage.en
                                 ? "Press any key to try again..."
-                                : $"{main.localizedText?["WADFolderCheck"]?["pressAnyKey"]}";
+                                : $"{main.localizedText?["pressAnyKey"]}";
                             AnsiConsole.MarkupLine($"{pressAnyKey}\n");
 
                             WADFolderCheck();
@@ -894,23 +866,17 @@ public class menu
             : "Domino's";
 
         // Define WiiLink channels titles
-        string demae_title = main.patcherLang == main.PatcherLanguage.en // Demae Channel
-            ? main.lang == main.Language.English
+        string demae_title = main.lang == main.Language.English
                 ? $"Food Channel [bold](English)[/] [bold][[{demaeVerTxt}]][/]"
-                : $"Demae Channel [bold](Japanese)[/] [bold][[{demaeVerTxt}]][/]"
-            : $"{main.localizedText?["ChannelNames"]?[$"{main.lang}]?[${(main.lang == main.Language.English ? "food" : "demae")}"]} [bold]({main.lang})[/] [bold][[{demaeVerTxt}]][/]";
+                : $"Demae Channel [bold](Japanese)[/] [bold][[{demaeVerTxt}]][/]";
 
-        string wiiroom_title = main.patcherLang == main.PatcherLanguage.en // Wii no Ma
-            ? main.wiiRoomLang != main.Language.Japan
+        string wiiroom_title = main.wiiRoomLang != main.Language.Japan
                 ? $"Wii Room [bold]({main.wiiRoomLang})[/]"
-                : "Wii no Ma [bold](Japanese)[/]"
-            : $"{main.localizedText?["ChannelNames"]?[$"{main.wiiRoomLang}"]?[$"{(main.wiiRoomLang != main.Language.Japan ? "wiiRoom" : "wiiNoMa")}"]} [bold]({main.wiiRoomLang})[/]";
+                : "Wii no Ma [bold](Japanese)[/]";
 
-        string digicam_title = main.patcherLang == main.PatcherLanguage.en // Digicam Print Channel
-            ? main.lang == main.Language.English
+        string digicam_title = main.lang == main.Language.English
                 ? "Photo Prints Channel [bold](English)[/]"
-                : "Digicam Print Channel [bold](Japanese)[/]"
-            : $"{main.localizedText?["ChannelNames"]?[$"{main.lang}"]?[$"{(main.lang == main.Language.English ? "photoPrints" : "digicam")}"]} [bold]({main.lang})[/]";
+                : "Digicam Print Channel [bold](Japanese)[/]";
 
         string kirbytv_title = "Kirby TV Channel"; // Kirby TV Channel
 
@@ -1514,21 +1480,21 @@ public class menu
                 {
                     string pleaseProceed = main.patcherLang == main.PatcherLanguage.en
                         ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://wiilink.ca/guide/wii/#section-ii---installing-wads-and-patching-wii-mail[/]"
-                        : $"{main.localizedText?["Finished"]?["pleaseProceedWii"]}";
+                        : $"{main.localizedText?["Finished"]?["pleaseProceed"]?["Wii"]}";
                     AnsiConsole.MarkupLine($"{pleaseProceed}\n");
                 }
                 else if (main.platformType == main.Platform.vWii)
                 {
                     string pleaseProceed = main.patcherLang == main.PatcherLanguage.en
                         ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://wiilink.ca/guide/vwii/#section-iii---installing-wads-and-patching-wii-mail[/]"
-                        : $"{main.localizedText?["Finished"]?["pleaseProceedvWii"]}";
+                        : $"{main.localizedText?["Finished"]?["pleaseProceed"]?["vWii"]}";
                     AnsiConsole.MarkupLine($"{pleaseProceed}\n");
                 }
                 else
                 {
                     string pleaseProceed = main.patcherLang == main.PatcherLanguage.en
                         ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://wiilink.ca/guide/dolphin/#section-ii---installing-wads[/]"
-                        : $"{main.localizedText?["Finished"]?["pleaseProceedDolphin"]}";
+                        : $"{main.localizedText?["Finished"]?["pleaseProceed"]?["Dolphin"]}";
                     AnsiConsole.MarkupLine($"{pleaseProceed}\n");
                 }
             }
@@ -1538,14 +1504,14 @@ public class menu
                 {
                     string installWad = main.patcherLang == main.PatcherLanguage.en
                         ? "Please proceed with installing the WADs through the Dolphin interface (Tools > Install WAD...)"
-                        : $"{main.localizedText?["Finished"]?["installWadDolphin"]}";
+                        : $"{main.localizedText?["Finished"]?["installWad"]?["Dolphin"]}";
                     AnsiConsole.MarkupLine($"{installWad}\n");
                 }
                 else
                 {
                     string installWad = main.patcherLang == main.PatcherLanguage.en
                         ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://wii.hacks.guide/yawmme[/]"
-                        : $"{main.localizedText?["Finished"]?["installWadYawmme"]}";
+                        : $"{main.localizedText?["Finished"]?["installWad"]?["yawmME"]}";
                     AnsiConsole.MarkupLine($"{installWad}\n");
                 }
             }
@@ -1562,7 +1528,7 @@ public class menu
                 : main.sdcard != null ? $"{main.localizedText?["Finished"]?["withSD/USB"]?["openFolder"]}" : $"{main.localizedText?["Finished"]?["withoutSD/USB"]?["openFolder"]}";
             string goBackToMainMenu = main.patcherLang == main.PatcherLanguage.en
                 ? "Go back to the main menu"
-                : $"{main.localizedText?["Finished"]?["goBackToMainMenu"]}";
+                : $"{main.localizedText?["goBackToMainMenu"]}";
             string exitProgram = main.patcherLang == main.PatcherLanguage.en
                 ? "Exit the program"
                 : $"{main.localizedText?["Finished"]?["exitProgram"]}";
@@ -1868,10 +1834,10 @@ public class menu
             AnsiConsole.MarkupLine($"[bold springgreen2_1]{EIHeader}[/]\n");
 
             // Step 2 Text
-            string step1Message = main.patcherLang == main.PatcherLanguage.en
+            string step2Message = main.patcherLang == main.PatcherLanguage.en
                 ? "Step 2: Choose WiiLink's regional channels language"
-                : $"{main.localizedText?["ExpressInstall"]?["WiiLinkChannels_LangSetup"]?["step1Message"]}";
-            AnsiConsole.MarkupLine($"[bold]{step1Message}[/]\n");
+                : $"{main.localizedText?["ExpressInstall"]?["WiiLinkChannels_LangSetup"]?["step2Message"]}";
+            AnsiConsole.MarkupLine($"[bold]{step2Message}[/]\n");
 
             // Instructions Text
             string instructions = main.patcherLang == main.PatcherLanguage.en
@@ -1880,17 +1846,17 @@ public class menu
             AnsiConsole.MarkupLine($"{instructions}\n");
 
             // User Choices
-            string englishTranslation = main.patcherLang == main.PatcherLanguage.en
+            string translated = main.patcherLang == main.PatcherLanguage.en
                 ? "Translated (eg. English, French, etc.)"
-                : $"{main.localizedText?["ExpressInstall"]?["WiiLinkChannels_LangSetup"]?["englishOption"]}";
+                : $"{main.localizedText?["ExpressInstall"]?["WiiLinkChannels_LangSetup"]?["translatedOption"]}";
             string japanese = main.patcherLang == main.PatcherLanguage.en
                 ? "Japanese"
                 : $"{main.localizedText?["ExpressInstall"]?["WiiLinkChannels_LangSetup"]?["japaneseOption"]}";
             string goBackToMainMenu = main.patcherLang == main.PatcherLanguage.en
                 ? "Go Back to Main Menu"
-                : $"{main.localizedText?["ExpressInstall"]?["WiiLinkChannels_LangSetup"]?["goBackToMainMenu"]}";
+                : $"{main.localizedText?["goBackToMainMenu"]}";
 
-            AnsiConsole.MarkupLine($"1. {englishTranslation}");
+            AnsiConsole.MarkupLine($"1. {translated}");
             AnsiConsole.MarkupLine($"2. {japanese}\n");
 
             AnsiConsole.MarkupLine($"3. {goBackToMainMenu}\n");
@@ -2383,7 +2349,7 @@ public class menu
             // User confirmation strings
             string yes = main.patcherLang == main.PatcherLanguage.en
                 ? "Yes"
-                : $"{main.localizedText?["CustomSetup"]?["summaryScreen"]?["confirmation"]?["yes"]}";
+                : $"{main.localizedText?["yes"]}";
             string noStartOver = main.patcherLang == main.PatcherLanguage.en
                 ? "No, start over"
                 : $"{main.localizedText?["CustomSetup"]?["summaryScreen"]?["confirmation"]?["noStartOver"]}";
@@ -2450,44 +2416,44 @@ public class menu
             // Print step number and title
             string stepNum = main.patcherLang == main.PatcherLanguage.en
                 ? "Step 1"
-                : $"{main.localizedText?["CustomSetup"]?["wiiLinkChannels_Setup"]?["stepNum"]}";
+                : $"{main.localizedText?["InstallExtras"]?["systemChannelRestorer_Setup"]?["stepNum"]}";
             string stepTitle = main.patcherLang == main.PatcherLanguage.en
                 ? "System Channel Restorer"
-                : $"{main.localizedText?["CustomSetup"]?["ConsolePlatform_Setup"]?["stepTitle"]}";
+                : $"{main.localizedText?["InstallExtras"]?["systemChannelRestorer_Setup"]?["stepTitle"]}";
             AnsiConsole.MarkupLine($"[bold]{stepNum}:[/] {stepTitle}\n");
 
             // Display console platform selection menu
             string AskSystemChannelRestorer = main.patcherLang == main.PatcherLanguage.en
                 ? "Would you like to download System Channel Restorer?"
-                : $"{main.localizedText?["ExtrasInstall"]?["systemChannelRestorer_Setup"]?["systemChannelRestorer"]}";
+                : $"{main.localizedText?["InstallExtras"]?["systemChannelRestorer_Setup"]?["systemChannelRestorer"]}";
             AnsiConsole.MarkupLine($"[bold]{AskSystemChannelRestorer}[/]\n");
 
             // Display console platform selection menu
             string systemChannelRestorerInfo = main.patcherLang == main.PatcherLanguage.en
                 ? "System Channel Restorer is a homebrew application that allows for proper installation of Photo Channel 1.1 directly to your console."
-                : $"{main.localizedText?["ExtrasInstall"]?["systemChannelRestorer_Setup"]?["systemChannelRestorerInfo"]}";
+                : $"{main.localizedText?["InstallExtras"]?["systemChannelRestorer_Setup"]?["systemChannelRestorerInfo"]}";
             AnsiConsole.MarkupLine($"[grey]{systemChannelRestorerInfo}[/]");
 
             // Display console platform selection menu
             string moreSystemChannelRestorerInfo = main.patcherLang == main.PatcherLanguage.en
                 ? "Use of System Channel Restorer requires an internet connection on your console, and is more difficult to use on Dolphin than offline WADs."
-                : $"{main.localizedText?["ExtrasInstall"]?["systemChannelRestorer_Setup"]?["moreSystemChannelRestorerInfo"]}";
+                : $"{main.localizedText?["InstallExtras"]?["systemChannelRestorer_Setup"]?["moreSystemChannelRestorerInfo"]}";
             AnsiConsole.MarkupLine($"[grey]{moreSystemChannelRestorerInfo}[/]\n");
 
             // Print Console Platform options
             string useSystemChannelRestorer = main.patcherLang == main.PatcherLanguage.en
                 ? "[bold]System Channel Restorer[/]"
-                : $"{main.localizedText?["ExtrasInstall"]?["systemChannelRestorer_Setup"]?["onWii"]}";
+                : $"{main.localizedText?["InstallExtras"]?["systemChannelRestorer_Setup"]?["getSCR"]}";
             string offlineWADs = main.patcherLang == main.PatcherLanguage.en
                 ? "[bold]Offline WADs[/]"
-                : $"{main.localizedText?["ExtrasInstall"]?["systemChannelRestorer_Setup"]?["offlineWADs"]}";
+                : $"{main.localizedText?["InstallExtras"]?["systemChannelRestorer_Setup"]?["offlineWADs"]}";
             AnsiConsole.MarkupLine($"[bold]1.[/] {useSystemChannelRestorer}");
             AnsiConsole.MarkupLine($"[bold]2.[/] {offlineWADs}\n");
 
             // Print instructions
             string platformInstructions = main.patcherLang == main.PatcherLanguage.en
                 ? "< Press [bold white]a number[/] to make your selection, [bold white]Backspace[/] to go back, [bold white]ESC[/] to go back to exit setup >"
-                : $"{main.localizedText?["CustomSetup"]?["systemChannelRestorer_Setup"]?["selectionInstructions"]}";
+                : $"{main.localizedText?["InstallExtras"]?["systemChannelRestorer_Setup"]?["selectionInstructions"]}";
             AnsiConsole.MarkupLine($"[grey]{platformInstructions}[/]\n");
 
             int choice = UserChoose("12");
@@ -2567,16 +2533,16 @@ public class menu
             // Print step number and title
             string stepNum = main.patcherLang == main.PatcherLanguage.en
                 ? "Step 2"
-                : $"{main.localizedText?["CustomSetup"]?["wiiLinkChannels_Setup"]?["stepNum"]}";
+                : $"{main.localizedText?["InstallExtras"]?["ExtraChannels_Setup"]?["stepNum"]}";
             string stepTitle = main.patcherLang == main.PatcherLanguage.en
                 ? "Select extra channel(s) to install"
-                : $"{main.localizedText?["installExtras"]?["extraChannels_Setup"]?["stepTitle"]}";
+                : $"{main.localizedText?["InstallExtras"]?["ExtraChannels_Setup"]?["stepTitle"]}";
             AnsiConsole.MarkupLine($"[bold]{stepNum}:[/] {stepTitle}\n");
 
             // Display extra channel selection menu
             string selectExtraChns = main.patcherLang == main.PatcherLanguage.en
                 ? "Select extra channel(s) to install:"
-                : $"{main.localizedText?["CustomSetup"]?["extraChannels_Setup"]?["selectExtraChns"]}";
+                : $"{main.localizedText?["InstallExtras"]?["ExtraChannels_Setup"]?["selectExtraChns"]}";
             AnsiConsole.MarkupLine($"[bold]{selectExtraChns}[/]\n");
             var grid = new Grid();
 
@@ -2633,14 +2599,14 @@ public class menu
                 //AnsiConsole.MarkupLine(" [grey](Press [bold white]<-[/] or [bold white]->[/] to navigate pages)[/]\n");
                 string pageInstructions = main.patcherLang == main.PatcherLanguage.en
                     ? "(Press [bold white]<-[/] or [bold white]->[/] to navigate pages)"
-                    : $"{main.localizedText?["CustomSetup"]?["pageInstructions"]}";
+                    : $"{main.localizedText?["InstallExtras"]?["pageInstructions"]}";
                 AnsiConsole.MarkupLine($" [grey]{pageInstructions}[/]\n");
             }
 
             // Print regular instructions
             string regInstructions = main.patcherLang == main.PatcherLanguage.en
                 ? "< Press [bold white]a number[/] to select/deselect a channel, [bold white]ENTER[/] to continue, [bold white]Backspace[/] to go back, [bold white]ESC[/] to go back to exit setup >"
-                : $"{main.localizedText?["CustomSetup"]?["regInstructions"]}";
+                : $"{main.localizedText?["InstallExtras"]?["regInstructions"]}";
             AnsiConsole.MarkupLine($"[grey]{regInstructions}[/]\n");
 
             // Generate the choice string dynamically
@@ -2660,10 +2626,10 @@ public class menu
             // Not selected and Selected strings
             string notSelected = main.patcherLang == main.PatcherLanguage.en
                 ? "Not selected"
-                : $"{main.localizedText?["CustomSetup"]?["notSelected"]}";
+                : $"{main.localizedText?["InstallExtras"]?["notSelected"]}";
             string selectedText = main.patcherLang == main.PatcherLanguage.en
                 ? "Selected"
-                : $"{main.localizedText?["CustomSetup"]?["selected"]}";
+                : $"{main.localizedText?["InstallExtras"]?["selected"]}";
 
             // Handle user input
             switch (choice)
@@ -2695,7 +2661,7 @@ public class menu
                         //AnsiConsole.MarkupLine("\n[bold red]ERROR:[/] You must select at least one channel to proceed!");
                         string mustSelectOneChannel = main.patcherLang == main.PatcherLanguage.en
                             ? "[bold red]ERROR:[/] You must select at least one channel to proceed!"
-                            : $"{main.localizedText?["CustomSetup"]?["mustSelectOneChannel"]}";
+                            : $"{main.localizedText?["InstallExtras"]?["mustSelectOneChannel"]}";
                         AnsiConsole.MarkupLine($"\n{mustSelectOneChannel}");
                         Thread.Sleep(3000);
                         continue;
@@ -2846,7 +2812,7 @@ public class menu
                 : $"{main.localizedText?["InstallExtras"]?["Header"]}";
             string summaryHeader = main.patcherLang == main.PatcherLanguage.en
                 ? "Summary of selected channels to be installed:"
-                : $"{main.localizedText?["CustomSetup"]?["summaryScreen"]?["summaryHeader"]}";
+                : $"{main.localizedText?["InstallExtras"]?["summaryScreen"]?["summaryHeader"]}";
             AnsiConsole.MarkupLine($"[bold springgreen2_1]{installExtras}[/]\n");
             AnsiConsole.MarkupLine($"[bold]{summaryHeader}[/]\n");
 
@@ -2858,10 +2824,10 @@ public class menu
             // Grid header text
             string extraChannels = main.patcherLang == main.PatcherLanguage.en
                 ? "Extra Channels:"
-                : $"{main.localizedText?["CustomSetup"]?["summaryScreen"]?["extraChannels"]}";
+                : $"{main.localizedText?["InstallExtras"]?["summaryScreen"]?["extraChannels"]}";
             string consoleVersion = main.patcherLang == main.PatcherLanguage.en
                 ? "Console Platform:"
-                : $"{main.localizedText?["CustomSetup"]?["summaryScreen"]?["ConsoleVersion"]}";
+                : $"{main.localizedText?["InstallExtras"]?["summaryScreen"]?["ConsoleVersion"]}";
 
             grid.AddRow($"[bold springgreen2_1]{extraChannels}[/]", $"[bold]{consoleVersion}[/]");
 
@@ -2877,18 +2843,18 @@ public class menu
             // Print instructions
             string prompt = main.patcherLang == main.PatcherLanguage.en
                 ? "Are you sure you want to install these selected channels?"
-                : $"{main.localizedText?["CustomSetup"]?["summaryScreen"]?["confirmation"]?["prompt"]}";
+                : $"{main.localizedText?["InstallExtras"]?["summaryScreen"]?["confirmation"]?["prompt"]}";
 
             // User confirmation strings
             string yes = main.patcherLang == main.PatcherLanguage.en
                 ? "Yes"
-                : $"{main.localizedText?["CustomSetup"]?["summaryScreen"]?["confirmation"]?["yes"]}";
+                : $"{main.localizedText?["yes"]}";
             string noStartOver = main.patcherLang == main.PatcherLanguage.en
                 ? "No, start over"
-                : $"{main.localizedText?["CustomSetup"]?["summaryScreen"]?["confirmation"]?["noStartOver"]}";
+                : $"{main.localizedText?["InstallExtras"]?["summaryScreen"]?["confirmation"]?["noStartOver"]}";
             string noGoBackToMainMenu = main.patcherLang == main.PatcherLanguage.en
                 ? "No, go back to Main Menu"
-                : $"{main.localizedText?["CustomSetup"]?["summaryScreen"]?["confirmation"]?["noGoBackToMainMenu"]}";
+                : $"{main.localizedText?["InstallExtras"]?["summaryScreen"]?["confirmation"]?["noGoBackToMainMenu"]}";
 
             AnsiConsole.MarkupLine($"\n[bold]{prompt}[/]\n");
 
@@ -2930,7 +2896,7 @@ public class menu
         }
     }
 
-    static void SettingsMenu()
+    public static void SettingsMenu()
     {
         while (true)
         {
@@ -2972,7 +2938,7 @@ public class menu
             switch (choice)
             {
                 case 1 when !main.inCompatabilityMode:
-                    LanguageMenu();
+                    language.LanguageMenu();
                     break;
                 case 1 when main.inCompatabilityMode:
                     CreditsScreen();
@@ -2988,82 +2954,6 @@ public class menu
                     break;
                 default:
                     break;
-            }
-        }
-    }
-
-    // Language Menu function, supports English, Spanish, French, and Japanese
-    static void LanguageMenu()
-    {
-        while (true)
-        {
-            PrintHeader();
-            PrintNotice();
-
-            // Dictionary for language codes and their names
-            var languages = new Dictionary<main.PatcherLanguage, string>
-            {
-                {main.PatcherLanguage.en, "English"},
-                // Add other language codes here
-            };
-
-            // Choose a Language text
-            string chooseALanguage = main.patcherLang == main.PatcherLanguage.en
-                ? "Choose a Language"
-                : $"{main.localizedText?["LanguageSettings"]?["chooseALanguage"]}";
-            AnsiConsole.MarkupLine($"[bold springgreen2_1]{chooseALanguage}[/]\n");
-
-            // More languages coming soon text
-            AnsiConsole.MarkupLine($"[bold springgreen2_1]More languages coming soon![/]\n");
-
-            // Display languages
-            StringBuilder choices = new();
-            for (int i = 1; i <= languages.Count; i++)
-            {
-                AnsiConsole.MarkupLine($"[bold]{i}.[/] {languages.ElementAt(i - 1).Value}");
-                choices.Append(i);
-            }
-            choices.Append(languages.Count + 1); // So user can go back to Settings Menu
-
-            // Go back to Settings Menu text
-            string goBack = main.patcherLang == main.PatcherLanguage.en
-                ? "Go back to Settings Menu"
-                : $"{main.localizedText?["LanguageSettings"]?["goBack"]}";
-            AnsiConsole.MarkupLine($"\n[bold]{languages.Count + 1}.[/] {goBack}\n");
-
-            int choice = UserChoose(choices.ToString());
-
-            // Check if choice is valid
-            if (choice < 1 || choice > languages.Count + 1)
-                continue; // Restart LanguageMenu
-
-            // Map choice to language code
-            if (choice <= languages.Count)
-            {
-                var selectedLanguage = languages.ElementAt(choice - 1);
-                var langCode = selectedLanguage.Key;
-
-                // Set programLang to chosen language code
-                main.patcherLang = langCode;
-
-                // Since English is hardcoded, there's no language pack for it
-                if (main.patcherLang == main.PatcherLanguage.en)
-                {
-                    SettingsMenu();
-                    break;
-                }
-
-                // Download language pack
-                main.DownloadLanguagePack(langCode.ToString());
-
-                // Set localizedText to use the language pack
-                main.localizedText = JObject.Parse(File.ReadAllText(Path.Join(main.tempDir, "LanguagePack", $"LocalizedText.{langCode}.json")));
-
-                SettingsMenu();
-            }
-            else if (choice == languages.Count + 1)
-            {
-                SettingsMenu();
             }
         }
     }

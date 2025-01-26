@@ -1,11 +1,8 @@
-﻿using System.Diagnostics;
-using System.Text;
+﻿using System.Text;
 using System.Runtime.InteropServices;
 using Spectre.Console;
-using libWiiSharp;
 using System.Net;
 using Newtonsoft.Json.Linq;
-using System.IO.Compression;
 
 // Author: PablosCorner and WiiLink Team
 // Project: WiiLink Patcher (CLI Version)
@@ -16,7 +13,7 @@ public class main
     //// Build Info ////
     public static readonly string version = "v2.0.6 RC2";
     public static readonly string copyrightYear = DateTime.Now.Year.ToString();
-    public static readonly string buildDate = "January 11th, 2024";
+    public static readonly string buildDate = "January 11th, 2025";
     public static readonly string buildTime = "12:34 PM";
     public static string? sdcard = sd.DetectRemovableDrive;
     public static readonly string wiiLinkPatcherUrl = "https://patcher.wiilink24.com";
@@ -77,7 +74,7 @@ public class main
         // Display server status check message
         string checkingServerStatus = patcherLang == PatcherLanguage.en
             ? "Checking server status..."
-            : $"{localizedText?["CheckServerStatus"]}";
+            : $"{localizedText?["CheckServerStatus"]?["checking"]}";
         AnsiConsole.MarkupLine($"{checkingServerStatus}\n");
 
         try
@@ -92,7 +89,7 @@ public class main
                 // If successful, display success message and return
                 string success = patcherLang == PatcherLanguage.en
                     ? "Successfully connected to server!"
-                    : $"{localizedText?["CheckServerStatus"]}";
+                    : $"{localizedText?["CheckServerStatus"]?["success"]}";
                 AnsiConsole.MarkupLine($"[bold springgreen2_1]{success}[/]\n");
                 // Wait for 1 second before returning
                 Thread.Sleep(1000);
@@ -234,10 +231,10 @@ public class main
                 // Yes/No text
                 string yes = patcherLang == PatcherLanguage.en
                     ? "Yes"
-                    : $"{localizedText?["CheckForUpdates"]?["yes"]}";
+                    : $"{localizedText?["yes"]}";
                 string no = patcherLang == PatcherLanguage.en
                     ? "No"
-                    : $"{localizedText?["CheckForUpdates"]?["no"]}";
+                    : $"{localizedText?["no"]}";
 
                 AnsiConsole.MarkupLine($"1. {yes}");
                 AnsiConsole.MarkupLine($"2. {no}\n");
@@ -370,59 +367,6 @@ public class main
 
         inCompatabilityMode = true;
     }
-
-    public static void DownloadLanguagePack(string languageCode)
-    {
-        string URL = "http://pabloscorner.akawah.net/WL24-Patcher/TextLocalization";
-
-        AnsiConsole.MarkupLine($"\n[bold springgreen2_1]Checking for Language Pack updates ({languageCode})[/]");
-
-        // Create LanguagePack folder if it doesn't exist
-        var languagePackDir = Path.Join(tempDir, "LanguagePack");
-        if (!Directory.Exists(languagePackDir))
-            Directory.CreateDirectory(languagePackDir);
-
-        // Prepare language file paths
-        var languageFileUrl = $"{URL}/LocalizedText.{languageCode}.json";
-        var languageFilePath = Path.Join(languagePackDir, $"LocalizedText.{languageCode}.json");
-
-        bool shouldDownload = false;
-
-        // Check if local file exists
-        if (File.Exists(languageFilePath))
-        {
-            // Get last modified date of local file
-            DateTime localFileModifiedDate = File.GetLastWriteTime(languageFilePath);
-
-            // Get last modified date of server file
-            HttpRequestMessage request = new(HttpMethod.Head, languageFileUrl);
-            HttpResponseMessage response = httpClient.Send(request);
-            DateTime serverFileModifiedDate = response.Content.Headers.LastModified.GetValueOrDefault().DateTime;
-
-            // If server file is newer, download it
-            if (serverFileModifiedDate > localFileModifiedDate)
-            {
-                shouldDownload = true;
-            }
-        }
-        else
-        {
-            // If local file doesn't exist, download it
-            shouldDownload = true;
-        }
-
-        if (shouldDownload)
-        {
-            AnsiConsole.MarkupLine($"[bold springgreen2_1]Downloading Language Pack ({languageCode})[/]");
-            patch.DownloadFile(languageFileUrl, languageFilePath, $"Language Pack ({languageCode})");
-        }
-        else
-        {
-            AnsiConsole.MarkupLine($"[bold springgreen2_1]Language Pack ({languageCode}) is up to date[/]");
-            Thread.Sleep(500);
-        }
-    }
-
 
     // Exit console app
     public static void ExitApp()
