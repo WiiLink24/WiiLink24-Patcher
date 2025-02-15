@@ -3,6 +3,155 @@ using Spectre.Console;
 
 public class sd
 {
+    // SD card setup
+    public static void SDSetup(main.SetupType setupType)
+    {
+        while (true)
+        {
+            menu.PrintHeader();
+
+            // Change step number depending on if WiiConnect24 is being installed or not
+            string stepNum = setupType switch
+            {
+                main.SetupType.express => main.patcherLang == main.PatcherLanguage.en
+                    ? !main.installRegionalChannels ? "Step 3" : "Step 4"
+                    : $"{main.localizedText?["SDSetup"]?["ifExpress"]?[main.installRegionalChannels ? "ifWC24" : "ifNoWC24"]?["stepNum"]}",
+                _ => main.patcherLang == main.PatcherLanguage.en
+                    ? "Step 4"
+                    : $"{main.localizedText?["SDSetup"]?["ifCustom"]?["stepNum"]}"
+            };
+
+            // Change header depending on the setup type
+            string installType = setupType switch
+            {
+                main.SetupType.express => main.patcherLang == main.PatcherLanguage.en
+                    ? "Express Install"
+                    : $"{main.localizedText?["ExpressInstall"]?["Header"]}",
+                main.SetupType.custom => main.patcherLang == main.PatcherLanguage.en
+                    ? "Custom Install"
+                    : $"{main.localizedText?["CustomSetup"]?["Header"]}",
+                main.SetupType.extras => main.patcherLang == main.PatcherLanguage.en
+                    ? "Install Extras"
+                    : $"{main.localizedText?["InstallExtras"]?["Header"]}",
+                _ => throw new NotImplementedException()
+            };
+
+            // Step title
+            string stepTitle = main.patcherLang == main.PatcherLanguage.en
+                ? "Insert SD Card / USB Drive (if applicable)"
+                : $"{main.localizedText?["SDSetup"]?["stepTitle"]}";
+
+            // After passing this step text
+            string afterPassingThisStep = main.patcherLang == main.PatcherLanguage.en
+                ? "After passing this step, any user interaction won't be needed, so sit back and relax!"
+                : $"{main.localizedText?["SDSetup"]?["afterPassingThisStep"]}";
+
+            // Download to SD card text
+            string downloadToSD = main.patcherLang == main.PatcherLanguage.en
+                ? "You can download everything directly to your Wii SD Card / USB Drive if you insert it before starting the patching\nprocess. Otherwise, everything will be saved in the same folder as this patcher on your computer."
+                : $"{main.localizedText?["SDSetup"]?["downloadToSD"]}";
+
+
+
+            // SD card detected text
+            string sdDetected = main.patcherLang == main.PatcherLanguage.en
+                ? main.sdcard != null ? $"SD card detected: [bold springgreen2_1]{main.sdcard}[/]" : ""
+                : main.sdcard != null ? $"{main.localizedText?["SDSetup"]?["sdDetected"]}: [bold springgreen2_1]{main.sdcard}[/]" : "";
+
+            // Go Back to Main Menu Text
+            string goBackToMainMenu = main.patcherLang == main.PatcherLanguage.en
+                ? "Go Back to Main Menu"
+                : $"{main.localizedText?["goBackToMainMenu"]}";
+
+            AnsiConsole.MarkupLine($"[bold springgreen2_1]{installType}[/]\n");
+
+            AnsiConsole.MarkupLine($"[bold]{stepNum}: {stepTitle}[/]\n");
+
+            Console.WriteLine($"{afterPassingThisStep}\n");
+
+            Console.WriteLine($"{downloadToSD}\n");
+
+            if (main.platformType == main.Platform.vWii && setupType == main.SetupType.express)
+            {
+                string eulaChannel = main.patcherLang == main.PatcherLanguage.en
+                ? "[bold]NOTE:[/] For [bold deepskyblue1]vWii[/] users, The EULA channel will also be included."
+                : $"{main.localizedText?["ExpressInstall"]?["SDSetup"]?["eulaChannel"]}";
+                AnsiConsole.MarkupLine($"{eulaChannel}\n");
+            }
+
+            // User Choices
+            string startOption = main.patcherLang == main.PatcherLanguage.en
+                ? main.sdcard != null ? "Start [bold]with[/] SD Card / USB Drive" : "Start [bold]without[/] SD Card / USB Drive"
+                : main.sdcard != null ? $"{main.localizedText?["SDSetup"]?["start_withSD"]}" : $"{main.localizedText?["SDSetup"]?["start_noSD"]}";
+            string startWithoutSDOption = main.patcherLang == main.PatcherLanguage.en
+                ? "Start [bold]without[/] SD Card / USB Drive"
+                : $"{main.localizedText?["SDSetup"]?["start_noSD"]}";
+            string manualDetection = main.patcherLang == main.PatcherLanguage.en
+                ? "Manually Select SD Card / USB Drive Path\n"
+                : $"{main.localizedText?["SDSetup"]?["manualDetection"]}\n";
+
+            AnsiConsole.MarkupLine($"1. {startOption}");
+            AnsiConsole.MarkupLine($"2. {(main.sdcard != null ? startWithoutSDOption : manualDetection)}");
+            AnsiConsole.MarkupLine($"3. {(main.sdcard != null ? manualDetection : goBackToMainMenu)}");
+
+            if (main.sdcard != null)
+            {
+                AnsiConsole.MarkupLine($"4. {goBackToMainMenu}\n");
+
+                AnsiConsole.MarkupLine($"{sdDetected}");
+            }
+
+            AnsiConsole.MarkupLine("");
+            int choice = main.sdcard != null ? menu.UserChoose("1234") : menu.UserChoose("123");
+
+            switch (choice)
+            {
+                case 1: // Check if WAD folder exists before starting patching process
+                    menu.WADFolderCheck(setupType);
+                    break;
+                case 2: // Start patching process without SD card or Manually select SD card
+                    if (main.sdcard != null)
+                    {
+                        main.sdcard = null;
+                        menu.WADFolderCheck(setupType);
+                    }
+                    else
+                    {
+                        SDCardSelect();
+                    }
+                    break;
+                case 3: // Manually select SD card or Go back to main menu
+                    if (main.sdcard != null)
+                    {
+                        SDCardSelect();
+                    }
+                    else
+                    {
+                        // Clear all lists (just in case it's Custom Setup)
+                        main.wiiLinkChannels_selection.Clear();
+                        main.wiiConnect24Channels_selection.Clear();
+                        main.extraChannels_selection.Clear();
+                        main.combinedChannels_selection.Clear();
+                        menu.MainMenu();
+                    }
+                    break;
+                case 4: // Go back to main menu
+                    if (main.sdcard != null)
+                    {
+                        // Clear all lists (just in case it's Custom Setup)
+                        main.wiiLinkChannels_selection.Clear();
+                        main.wiiConnect24Channels_selection.Clear();
+                        main.extraChannels_selection.Clear();
+                        main.combinedChannels_selection.Clear();
+                        menu.MainMenu();
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
     // Finish SD Copy
     public static void FinishSDCopy()
     {

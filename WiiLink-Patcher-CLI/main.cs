@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using Spectre.Console;
 using System.Net;
 using Newtonsoft.Json.Linq;
+using System.Globalization;
 
 // Author: PablosCorner and WiiLink Team
 // Project: WiiLink Patcher (CLI Version)
@@ -11,10 +12,10 @@ using Newtonsoft.Json.Linq;
 public class main
 {
     //// Build Info ////
-    public static readonly string version = "v2.0.6 RC2";
+    public static readonly string version = "v3.0.0 RC1";
     public static readonly string copyrightYear = DateTime.Now.Year.ToString();
-    public static readonly string buildDate = "January 11th, 2025";
-    public static readonly string buildTime = "12:34 PM";
+    public static readonly string buildDate = "February 14th, 2025";
+    public static readonly string buildTime = "9:40 PM";
     public static string? sdcard = sd.DetectRemovableDrive;
     public static readonly string wiiLinkPatcherUrl = "https://patcher.wiilink24.com";
     ////////////////////
@@ -51,13 +52,17 @@ public class main
     // Enums
     public enum Region : int { USA, PAL, Japan }
     public enum Language : int { English, Japan, Russian, Catalan, Portuguese, French, Italian, German, Dutch, Spanish }
-    public enum PatcherLanguage : int { en }
+    public enum PatcherLanguage : int { en, it, nl, hu }
     public enum DemaeVersion : int { Standard, Dominos }
     public enum Platform : int { Wii, vWii, Dolphin }
+    public enum SetupType : int { express, custom, extras }
 
     // Get current console window size
     public static int console_width = 0;
     public static int console_height = 0;
+
+    // Get system language
+    public static string sysLang = CultureInfo.InstalledUICulture.TwoLetterISOLanguageName;
 
     // HttpClient
     public static readonly HttpClient httpClient = new() { Timeout = TimeSpan.FromMinutes(1) };
@@ -418,6 +423,9 @@ public class main
             if (Environment.OSVersion.Version.Major < 10)
                 WinCompatWarning();
         }
+
+        // Attempt to automatically set language, showing a prompt to ensure it was correctly detected
+        language.AutoSetLang();
 
         // Check if the server is up
         // If the server is down, show the status code and error message
