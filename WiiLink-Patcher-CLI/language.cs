@@ -1,8 +1,6 @@
 using System.Text;
 using Spectre.Console;
 using Newtonsoft.Json.Linq;
-using System.Globalization;
-using Windows.Media.Devices;
 
 public class language
 {
@@ -120,7 +118,7 @@ public class language
                     }
                     else
                     {
-                        menu.SettingsMenu();
+                        settings.SettingsMenu();
                         break;
                     }
                 }
@@ -134,11 +132,11 @@ public class language
                 if (startup)
                     break;
                 else
-                    menu.SettingsMenu();
+                    settings.SettingsMenu();
             }
             else if (choice == languages.Count + 1 && !startup)
             {
-                menu.SettingsMenu();
+                settings.SettingsMenu();
             }
         }
     }
