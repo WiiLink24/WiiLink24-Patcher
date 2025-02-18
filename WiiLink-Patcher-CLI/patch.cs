@@ -607,17 +607,20 @@ public class patch
             // Download the below if any WiiConnect24 channels are selected
             if (main.wiiConnect24Channels_selection.Any())
             {
-                // Download EULA for vWii users
-                string EULATitleID = main.wc24_reg switch
+                // Create a dictionary mapping EULA title IDs to their respective regions
+                Dictionary<string, main.Region> EULATitleIDs = new()
                 {
-                    main.Region.USA => "0001000848414b45",
-                    main.Region.PAL => "0001000848414b50",
-                    main.Region.Japan => "0001000848414b4a",
-                    _ => throw new NotImplementedException()
+                    { "0001000848414b45", main.Region.USA },
+                    { "0001000848414b50", main.Region.PAL },
+                    { "0001000848414b4a", main.Region.Japan }
                 };
 
-                DownloadWC24Channel("EULA", "EULA", 3, main.wc24_reg, EULATitleID);
-
+                // Iterate over the dictionary
+                foreach ((string titleID, main.Region region) in EULATitleIDs)
+                {
+                    // Use the deconstructed variables in the DownloadWC24Channel function call
+                    DownloadWC24Channel("EULA", "EULA", 3, region, titleID);
+                }
             }
         }
 
