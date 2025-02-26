@@ -1,0 +1,25 @@
+name: publish
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  DOTNET_VERSION: '9.0.103'
+
+jobs:
+  publish:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+      
+    - name: Build
+      run: |
+        cd WiiLink-Patcher-CLI
+        dotnet publish -c Release -r "linux-x64" /p:AssemblyName="WiiLinkPatcher_Linux-x64_${{ github.sha }}"

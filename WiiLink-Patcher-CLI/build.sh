@@ -39,7 +39,7 @@ function build_for_platform {
         ;;
     esac
     
-    dotnet publish -c Release -r "$1" --self-contained /p:AssemblyName="WiiLinkPatcher_$platform$versionString"
+    dotnet publish -c Release -r "$1" /p:AssemblyName="WiiLinkPatcher_$platform$versionString"
 }
 
 # Initialize variables

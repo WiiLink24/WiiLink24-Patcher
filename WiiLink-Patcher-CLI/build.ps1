@@ -32,7 +32,7 @@ function Build-For-Platform {
         }
     }
 
-    dotnet publish -c Release -r $Platform --self-contained /p:AssemblyName="WiiLinkPatcher_$PlatformName$versionString"
+    dotnet publish -c Release -r $Platform /p:AssemblyName="WiiLinkPatcher_$PlatformName$versionString"
 }
 
 # Shows the help message
