@@ -1,0 +1,53 @@
+name: publish
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  DOTNET_VERSION: '9.0.103'
+
+jobs:
+  publish-x64:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+      
+    - name: Build
+      run: |
+        cd WiiLink-Patcher-CLI
+        dotnet publish -c Release -r "linux-x64" /p:AssemblyName="WiiLinkPatcher_Linux-x64_${{ github.sha }}"
+
+    - name: Upload Build
+      uses: actions/upload-artifact@v4
+      with:
+        path: WiiLink-Patcher-CLI/bin/Release/net9.0-windows10.0.22621.0/linux-x64/native/WiiLinkPatcher_Linux-x64_${{ github.sha }}
+        name: WiiLinkPatcher_Linux-x64_${{ github.sha }}
+
+  publish-arm64:
+
+    runs-on: ubuntu-latest-arm64
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+      
+    - name: Build
+      run: |
+        cd WiiLink-Patcher-CLI
+        dotnet publish -c Release -r "linux-arm64" /p:AssemblyName="WiiLinkPatcher_Linux-arm64_${{ github.sha }}"
+
+    - name: Upload Build
+      uses: actions/upload-artifact@v4
+      with:
+        path: WiiLink-Patcher-CLI/bin/Release/net9.0-windows10.0.22621.0/linux-arm64/native/WiiLinkPatcher_Linux-arm64_${{ github.sha }}
+        name: WiiLinkPatcher_Linux-arm64_${{ github.sha }}
