@@ -5,7 +5,7 @@ on:
     branches: [ main ]
 
 env:
-  DOTNET_VERSION: '9.0.103'
+  DOTNET_VERSION: '9.0.x'
 
 jobs:
   build-linux-x64:
@@ -14,7 +14,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Setup .NET Core
+    - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
@@ -23,11 +23,15 @@ jobs:
       run: |
         cd WiiLink-Patcher-CLI
         dotnet publish -c Release -r "linux-x64" /p:AssemblyName="WiiLinkPatcher_Linux-x64_${{ github.sha }}"
+    
+    - name: Tar Build
+      run: |
+        tar cvf WiiLinkPatcher_Linux-x64_${{ github.sha }}.tar WiiLink-Patcher-CLI/bin/Release/net9.0-windows10.0.22621.0/linux-x64/native/WiiLinkPatcher_Linux-x64_${{ github.sha }}
 
     - name: Upload Build
       uses: actions/upload-artifact@v4
       with:
-        path: WiiLink-Patcher-CLI/bin/Release/net9.0-windows10.0.22621.0/linux-x64/native/WiiLinkPatcher_Linux-x64_${{ github.sha }}
+        path: WiiLinkPatcher_Linux-x64_${{ github.sha }}.tar
         name: WiiLinkPatcher_Linux-x64_${{ github.sha }}
 
   build-linux-arm64:
@@ -36,7 +40,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Setup .NET Core
+    - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
@@ -45,11 +49,15 @@ jobs:
       run: |
         cd WiiLink-Patcher-CLI
         dotnet publish -c Release -r "linux-arm64" /p:AssemblyName="WiiLinkPatcher_Linux-arm64_${{ github.sha }}"
+    
+    - name: Tar Build
+      run: |
+        tar cvf WiiLinkPatcher_Linux-arm64_${{ github.sha }}.tar WiiLink-Patcher-CLI/bin/Release/net9.0-windows10.0.22621.0/linux-arm64/native/WiiLinkPatcher_Linux-arm64_${{ github.sha }}
 
     - name: Upload Build
       uses: actions/upload-artifact@v4
       with:
-        path: WiiLink-Patcher-CLI/bin/Release/net9.0-windows10.0.22621.0/linux-arm64/native/WiiLinkPatcher_Linux-arm64_${{ github.sha }}
+        path: WiiLinkPatcher_Linux-arm64_${{ github.sha }}.tar
         name: WiiLinkPatcher_Linux-arm64_${{ github.sha }}
 
   build-windows-x64:
@@ -58,7 +66,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Setup .NET Core
+    - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
@@ -80,7 +88,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Setup .NET Core
+    - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
@@ -90,10 +98,14 @@ jobs:
         cd WiiLink-Patcher-CLI
         dotnet publish -c Release -r "osx-x64" /p:AssemblyName="WiiLinkPatcher_macOS-x64_${{ github.sha }}"
 
+    - name: Tar Build
+      run: |
+        tar cvf WiiLinkPatcher_macOS-x64_${{ github.sha }}.tar WiiLink-Patcher-CLI/bin/Release/net9.0-windows10.0.22621.0/osx-x64/native/WiiLinkPatcher_macOS-x64_${{ github.sha }}
+
     - name: Upload Build
       uses: actions/upload-artifact@v4
       with:
-        path: WiiLink-Patcher-CLI/bin/Release/net9.0-windows10.0.22621.0/osx-x64/native/WiiLinkPatcher_macOS-x64_${{ github.sha }}
+        path: WiiLinkPatcher_macOS-x64_${{ github.sha }}.tar
         name: WiiLinkPatcher_macOS-x64_${{ github.sha }}
   
   build-macos-arm64:
@@ -102,7 +114,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Setup .NET Core
+    - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
@@ -112,9 +124,13 @@ jobs:
         cd WiiLink-Patcher-CLI
         dotnet publish -c Release -r "osx-arm64" /p:AssemblyName="WiiLinkPatcher_macOS-arm64_${{ github.sha }}"
 
+    - name: Tar Build
+      run: |
+        tar cvf WiiLinkPatcher_macOS-arm64_${{ github.sha }}.tar WiiLink-Patcher-CLI/bin/Release/net9.0-windows10.0.22621.0/osx-arm64/native/WiiLinkPatcher_macOS-arm64_${{ github.sha }}
+
     - name: Upload Build
       uses: actions/upload-artifact@v4
       with:
-        path: WiiLink-Patcher-CLI/bin/Release/net9.0-windows10.0.22621.0/osx-arm64/native/WiiLinkPatcher_macOS-arm64_${{ github.sha }}
+        path: WiiLinkPatcher_macOS-arm64_${{ github.sha }}.tar
         name: WiiLinkPatcher_macOS-arm64_${{ github.sha }}
 
