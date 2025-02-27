@@ -2,7 +2,7 @@ using System.Text;
 using Spectre.Console;
 using Newtonsoft.Json.Linq;
 
-public class language
+public class LanguageClass
 {
     // Automatically set language function, uses system locale and prompts user to ensure correct detection
     public static void AutoSetLang()
@@ -17,19 +17,19 @@ public class language
                 // Add other language codes here
             };
 
-            if (languages.ContainsKey(main.sysLang))
+            if (languages.ContainsKey(MainClass.sysLang))
             {
-                string detectedLang = languages[main.sysLang];
+                string detectedLang = languages[MainClass.sysLang];
 
-                menu.PrintHeader();
-                menu.PrintNotice();
+                MenuClass.PrintHeader();
+                MenuClass.PrintNotice();
 
                 AnsiConsole.MarkupLine($"[bold springgreen2_1]Detected Language:[/] {detectedLang}\n");
                 AnsiConsole.MarkupLine("Press [bold]C[/] to change language, or any other key to continue with this language.\n");
 
-                string chooseText = main.patcherLang == main.PatcherLanguage.en
+                string chooseText = MainClass.patcherLang == MainClass.PatcherLanguage.en
                     ? "Choose: "
-                    : $"{main.localizedText?["UserChoose"]} ";
+                    : $"{MainClass.localizedText?["UserChoose"]} ";
                 AnsiConsole.Markup(chooseText);
                 
                 ConsoleKeyInfo keyPressed = Console.ReadKey(intercept: true);
@@ -39,8 +39,8 @@ public class language
                 }
                 else
                 {
-                    if (main.sysLang != "en")
-                        DownloadLanguagePack(main.sysLang);
+                    if (MainClass.sysLang != "en")
+                        DownloadLanguagePack(MainClass.sysLang);
                 }
             }
             else
@@ -54,23 +54,23 @@ public class language
     {
         while (true)
         {
-            menu.PrintHeader();
-            menu.PrintNotice();
+            MenuClass.PrintHeader();
+            MenuClass.PrintNotice();
 
             // Dictionary for language codes and their names
-            var languages = new Dictionary<main.PatcherLanguage, string>
+            var languages = new Dictionary<MainClass.PatcherLanguage, string>
             {
-                {main.PatcherLanguage.en, "English"},
-                {main.PatcherLanguage.it, "Italiano"},
-                {main.PatcherLanguage.nl, "Dutch"},
-                {main.PatcherLanguage.hu, "Magyar"}
+                {MainClass.PatcherLanguage.en, "English"},
+                {MainClass.PatcherLanguage.it, "Italiano"},
+                {MainClass.PatcherLanguage.nl, "Dutch"},
+                {MainClass.PatcherLanguage.hu, "Magyar"}
                 // Add other language codes here
             };
 
             // Choose a Language text
-            string chooseALanguage = main.patcherLang == main.PatcherLanguage.en
+            string chooseALanguage = MainClass.patcherLang == MainClass.PatcherLanguage.en
                 ? "Choose a Language"
-                : $"{main.localizedText?["LanguageSettings"]?["chooseALanguage"]}";
+                : $"{MainClass.localizedText?["LanguageSettings"]?["chooseALanguage"]}";
             AnsiConsole.MarkupLine($"[bold springgreen2_1]{chooseALanguage}[/]\n");
 
             // Display languages
@@ -88,13 +88,13 @@ public class language
                 choices.Append(languages.Count + 1); // So user can go back to Settings Menu
 
                 // Go back to Settings Menu text
-                string goBack = main.patcherLang == main.PatcherLanguage.en
+                string goBack = MainClass.patcherLang == MainClass.PatcherLanguage.en
                     ? "Go back to Settings Menu"
-                    : $"{main.localizedText?["LanguageSettings"]?["goBack"]}";
+                    : $"{MainClass.localizedText?["LanguageSettings"]?["goBack"]}";
                 AnsiConsole.MarkupLine($"[bold]{languages.Count + 1}.[/] {goBack}\n");
             }
 
-            int choice = menu.UserChoose(choices.ToString());
+            int choice = MenuClass.UserChoose(choices.ToString());
 
             // Check if choice is valid
             if (choice < 1 || choice > languages.Count + 1)
@@ -107,10 +107,10 @@ public class language
                 var langCode = selectedLanguage.Key;
 
                 // Set programLang to chosen language code
-                main.patcherLang = langCode;
+                MainClass.patcherLang = langCode;
 
                 // Since English is hardcoded, there's no language pack for it
-                if (main.patcherLang == main.PatcherLanguage.en)
+                if (MainClass.patcherLang == MainClass.PatcherLanguage.en)
                 {
                     if (startup)
                     {
@@ -118,7 +118,7 @@ public class language
                     }
                     else
                     {
-                        settings.SettingsMenu();
+                        SettingsClass.SettingsMenu();
                         break;
                     }
                 }
@@ -127,28 +127,28 @@ public class language
                 DownloadLanguagePack(langCode.ToString());
 
                 // Set localizedText to use the language pack
-                main.localizedText = JObject.Parse(File.ReadAllText(Path.Join(main.tempDir, "LanguagePack", $"LocalizedText.{langCode}.json")));
+                MainClass.localizedText = JObject.Parse(File.ReadAllText(Path.Join(MainClass.tempDir, "LanguagePack", $"LocalizedText.{langCode}.json")));
 
                 if (startup)
                     break;
                 else
-                    settings.SettingsMenu();
+                    SettingsClass.SettingsMenu();
             }
             else if (choice == languages.Count + 1 && !startup)
             {
-                settings.SettingsMenu();
+                SettingsClass.SettingsMenu();
             }
         }
     }
 
     public static void DownloadLanguagePack(string languageCode)
     {
-        string URL = $"{main.wiiLinkPatcherUrl}/lang";
+        string URL = $"{MainClass.wiiLinkPatcherUrl}/lang";
 
         AnsiConsole.MarkupLine($"\n[bold springgreen2_1]Checking for Language Pack updates ({languageCode})[/]");
 
         // Create LanguagePack folder if it doesn't exist
-        var languagePackDir = Path.Join(main.tempDir, "LanguagePack");
+        var languagePackDir = Path.Join(MainClass.tempDir, "LanguagePack");
         if (!Directory.Exists(languagePackDir))
             Directory.CreateDirectory(languagePackDir);
 
@@ -166,7 +166,7 @@ public class language
 
             // Get last modified date of server file
             HttpRequestMessage request = new(HttpMethod.Head, languageFileUrl);
-            HttpResponseMessage response = main.httpClient.Send(request);
+            HttpResponseMessage response = MainClass.httpClient.Send(request);
             DateTime serverFileModifiedDate = response.Content.Headers.LastModified.GetValueOrDefault().DateTime;
 
             // If server file is newer, download it
@@ -184,7 +184,7 @@ public class language
         if (shouldDownload)
         {
             AnsiConsole.MarkupLine($"[bold springgreen2_1]Downloading Language Pack ({languageCode})[/]");
-            patch.DownloadFile(languageFileUrl, languageFilePath, $"Language Pack ({languageCode})");
+            PatchClass.DownloadFile(languageFileUrl, languageFilePath, $"Language Pack ({languageCode})");
         }
         else
         {

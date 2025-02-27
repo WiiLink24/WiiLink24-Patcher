@@ -1,32 +1,32 @@
 using Spectre.Console;
 
-public class settings
+public class SettingsClass
 {
     public static void SettingsMenu()
     {
         while (true)
         {
-            menu.PrintHeader();
-            menu.PrintNotice();
+            MenuClass.PrintHeader();
+            MenuClass.PrintNotice();
 
             // Settings text
-            string settings = main.patcherLang == main.PatcherLanguage.en
+            string settings = MainClass.patcherLang == MainClass.PatcherLanguage.en
                 ? "Settings"
-                : $"{main.localizedText?["SettingsMenu"]?["settings"]}";
+                : $"{MainClass.localizedText?["SettingsMenu"]?["settings"]}";
             AnsiConsole.MarkupLine($"[bold springgreen2_1]{settings}[/]\n");
 
-            if (!main.inCompatabilityMode)
+            if (!MainClass.inCompatabilityMode)
             {
                 // User choices
-                string changeLanguage = main.patcherLang == main.PatcherLanguage.en
+                string changeLanguage = MainClass.patcherLang == MainClass.PatcherLanguage.en
                     ? "Change Language"
-                    : $"{main.localizedText?["SettingsMenu"]?["changeLanguage"]}";
-                string credits = main.patcherLang == main.PatcherLanguage.en
+                    : $"{MainClass.localizedText?["SettingsMenu"]?["changeLanguage"]}";
+                string credits = MainClass.patcherLang == MainClass.PatcherLanguage.en
                     ? "Credits"
-                    : $"{main.localizedText?["SettingsMenu"]?["credits"]}";
-                string goBack = main.patcherLang == main.PatcherLanguage.en
+                    : $"{MainClass.localizedText?["SettingsMenu"]?["credits"]}";
+                string goBack = MainClass.patcherLang == MainClass.PatcherLanguage.en
                     ? "Go back to Main Menu"
-                    : $"{main.localizedText?["SettingsMenu"]?["goBack"]}";
+                    : $"{MainClass.localizedText?["SettingsMenu"]?["goBack"]}";
 
                 AnsiConsole.MarkupLine($"1. {changeLanguage}");
                 AnsiConsole.MarkupLine($"2. {credits}\n");
@@ -40,23 +40,23 @@ public class settings
                 Console.WriteLine("2. Go back to Main Menu\n");
             }
 
-            int choice = menu.UserChoose("123");
+            int choice = MenuClass.UserChoose("123");
             switch (choice)
             {
-                case 1 when !main.inCompatabilityMode:
-                    language.LanguageMenu(false);
+                case 1 when !MainClass.inCompatabilityMode:
+                    LanguageClass.LanguageMenu(false);
                     break;
-                case 1 when main.inCompatabilityMode:
+                case 1 when MainClass.inCompatabilityMode:
                     CreditsScreen();
                     break;
-                case 2 when !main.inCompatabilityMode:
+                case 2 when !MainClass.inCompatabilityMode:
                     CreditsScreen();
                     break;
-                case 2 when main.inCompatabilityMode:
-                    menu.MainMenu();
+                case 2 when MainClass.inCompatabilityMode:
+                    MenuClass.MainMenu();
                     break;
-                case 3 when !main.inCompatabilityMode:
-                    menu.MainMenu();
+                case 3 when !MainClass.inCompatabilityMode:
+                    MenuClass.MainMenu();
                     break;
                 default:
                     break;
@@ -67,55 +67,55 @@ public class settings
     // Credits function
     public static void CreditsScreen()
     {
-        menu.PrintHeader();
+        MenuClass.PrintHeader();
 
         // Build info
-        string buildInfo = main.patcherLang == main.PatcherLanguage.en
-            ? $"This build was compiled on [bold springgreen2_1]{main.buildDate}[/] at [bold springgreen2_1]{main.buildTime}[/]."
-            : $"{main.localizedText?["Credits"]?["buildInfo"]}"
-                .Replace("{main.buildDate}", main.buildDate)
-                .Replace("{main.buildTime}", main.buildTime);
+        string buildInfo = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            ? $"This build was compiled on [bold springgreen2_1]{MainClass.buildDate}[/] at [bold springgreen2_1]{MainClass.buildTime}[/]."
+            : $"{MainClass.localizedText?["Credits"]?["buildInfo"]}"
+                .Replace("{MainClass.buildDate}", MainClass.buildDate)
+                .Replace("{MainClass.buildTime}", MainClass.buildTime);
         AnsiConsole.MarkupLine($"{buildInfo}\n");
 
         // Credits table
-        var creditTable = new Table().Border(main.inCompatabilityMode ? TableBorder.None : TableBorder.DoubleEdge);
+        var creditTable = new Table().Border(MainClass.inCompatabilityMode ? TableBorder.None : TableBorder.DoubleEdge);
 
         // Credits header
-        string credits = main.patcherLang == main.PatcherLanguage.en
+        string credits = MainClass.patcherLang == MainClass.PatcherLanguage.en
             ? "Credits"
-            : $"{main.localizedText?["Credits"]?["credits"]}";
+            : $"{MainClass.localizedText?["Credits"]?["credits"]}";
         creditTable.AddColumn(new TableColumn($"[bold springgreen2_1]{credits}[/]").Centered());
 
         // Credits grid
         var creditGrid = new Grid().AddColumn().AddColumn();
 
         // Credits text
-        string sketchDesc = main.patcherLang == main.PatcherLanguage.en
+        string sketchDesc = MainClass.patcherLang == MainClass.PatcherLanguage.en
             ? "WiiLink Lead"
-            : $"{main.localizedText?["Credits"]?["sketchDesc"]}";
-        string pablosDesc = main.patcherLang == main.PatcherLanguage.en
+            : $"{MainClass.localizedText?["Credits"]?["sketchDesc"]}";
+        string pablosDesc = MainClass.patcherLang == MainClass.PatcherLanguage.en
             ? "WiiLink Patcher Developer"
-            : $"{main.localizedText?["Credits"]?["pablosDesc"]}";
-        string harryDesc = main.patcherLang == main.PatcherLanguage.en
+            : $"{MainClass.localizedText?["Credits"]?["pablosDesc"]}";
+        string harryDesc = MainClass.patcherLang == MainClass.PatcherLanguage.en
             ? "WiiLink Patcher Developer"
-            : $"{main.localizedText?["Credits"]?["harryDesc"]}";
-        string lunaDesc = main.patcherLang == main.PatcherLanguage.en
+            : $"{MainClass.localizedText?["Credits"]?["harryDesc"]}";
+        string lunaDesc = MainClass.patcherLang == MainClass.PatcherLanguage.en
             ? "Lead Translator"
-            : $"{main.localizedText?["Credits"]?["lunaDesc"]}";
-        string leathlWiiDatabase = main.patcherLang == main.PatcherLanguage.en
+            : $"{MainClass.localizedText?["Credits"]?["lunaDesc"]}";
+        string leathlWiiDatabase = MainClass.patcherLang == MainClass.PatcherLanguage.en
             ? "leathl and WiiDatabase"
-            : $"{main.localizedText?["Credits"]?["leathlWiiDatabase"]}";
-        string leathlWiiDatabaseDesc = main.patcherLang == main.PatcherLanguage.en
+            : $"{MainClass.localizedText?["Credits"]?["leathlWiiDatabase"]}";
+        string leathlWiiDatabaseDesc = MainClass.patcherLang == MainClass.PatcherLanguage.en
             ? "libWiiSharp developers"
-            : $"{main.localizedText?["Credits"]?["leathlWiiDatabaseDesc"]}";
+            : $"{MainClass.localizedText?["Credits"]?["leathlWiiDatabaseDesc"]}";
 
         creditGrid.AddRow(new Text("Sketch", new Style(Color.SpringGreen2_1, null, Decoration.Bold)).RightJustified(), new Text(sketchDesc, new Style(null, null, Decoration.Bold)));
         creditGrid.AddRow(new Text("PablosCorner", new Style(Color.SpringGreen2_1, null, Decoration.Bold)).RightJustified(), new Text(pablosDesc, new Style(null, null, Decoration.Bold)));
         creditGrid.AddRow(new Text("Isla", new Style(Color.SpringGreen2_1, null, Decoration.Bold)).RightJustified(), new Text(harryDesc, new Style(null, null, Decoration.Bold)));
         creditGrid.AddRow(new Text("Luna", new Style(Color.SpringGreen2_1, null, Decoration.Bold)).RightJustified(), new Text(lunaDesc, new Style(null, null, Decoration.Bold)));
 
-        if (main.patcherLang != main.PatcherLanguage.en)
-            creditGrid.AddRow(new Text($"{main.localizedText?["Credits"]?["translatorName"]}", new Style(Color.SpringGreen2_1, null, Decoration.Bold)).RightJustified(), new Text($"{main.localizedText?["Credits"]?["translatorDesc"]}", new Style(null, null, Decoration.Bold)));
+        if (MainClass.patcherLang != MainClass.PatcherLanguage.en)
+            creditGrid.AddRow(new Text($"{MainClass.localizedText?["Credits"]?["translatorName"]}", new Style(Color.SpringGreen2_1, null, Decoration.Bold)).RightJustified(), new Text($"{MainClass.localizedText?["Credits"]?["translatorDesc"]}", new Style(null, null, Decoration.Bold)));
 
         creditGrid.AddRow(new Text(leathlWiiDatabase, new Style(Color.SpringGreen2_1, null, Decoration.Bold)).RightJustified(), new Text(leathlWiiDatabaseDesc, new Style(null, null, Decoration.Bold)));
         creditGrid.AddRow(new Text("SnowflakePowered", new Style(Color.SpringGreen2_1, null, Decoration.Bold)).RightJustified(), new Text("VCDiff", new Style(null, null, Decoration.Bold)));
@@ -125,29 +125,29 @@ public class settings
         AnsiConsole.Write(creditTable);
 
         // Special thanks grid
-        string specialThanksTo = main.patcherLang == main.PatcherLanguage.en
+        string specialThanksTo = MainClass.patcherLang == MainClass.PatcherLanguage.en
             ? "Special thanks to:"
-            : $"{main.localizedText?["Credits"]?["specialThanksTo"]}";
+            : $"{MainClass.localizedText?["Credits"]?["specialThanksTo"]}";
         AnsiConsole.MarkupLine($"\n[bold springgreen2_1]{specialThanksTo}[/]\n");
 
         var specialThanksGrid = new Grid().AddColumn().AddColumn();
 
         // Special thanks text
-        string theshadoweeveeRole = main.patcherLang == main.PatcherLanguage.en
+        string theshadoweeveeRole = MainClass.patcherLang == MainClass.PatcherLanguage.en
             ? "- Pointing me in the right direction with implementing libWiiSharp!"
-            : $"{main.localizedText?["Credits"]?["theshadoweeveeRole"]}";
-        string ourTesters = main.patcherLang == main.PatcherLanguage.en
+            : $"{MainClass.localizedText?["Credits"]?["theshadoweeveeRole"]}";
+        string ourTesters = MainClass.patcherLang == MainClass.PatcherLanguage.en
             ? "Our Testers"
-            : $"{main.localizedText?["Credits"]?["ourTesters"]}";
-        string ourTestersRole = main.patcherLang == main.PatcherLanguage.en
+            : $"{MainClass.localizedText?["Credits"]?["ourTesters"]}";
+        string ourTestersRole = MainClass.patcherLang == MainClass.PatcherLanguage.en
             ? "- For testing the patcher and reporting bugs/anomalies!"
-            : $"{main.localizedText?["Credits"]?["ourTestersRole"]}";
-        string you = main.patcherLang == main.PatcherLanguage.en
+            : $"{MainClass.localizedText?["Credits"]?["ourTestersRole"]}";
+        string you = MainClass.patcherLang == MainClass.PatcherLanguage.en
             ? "You!"
-            : $"{main.localizedText?["Credits"]?["you"]}";
-        string youRole = main.patcherLang == main.PatcherLanguage.en
+            : $"{MainClass.localizedText?["Credits"]?["you"]}";
+        string youRole = MainClass.patcherLang == MainClass.PatcherLanguage.en
             ? "- For your continued support of WiiLink!"
-            : $"{main.localizedText?["Credits"]?["youRole"]}";
+            : $"{MainClass.localizedText?["Credits"]?["youRole"]}";
 
         specialThanksGrid.AddRow($"  ● [bold springgreen2_1]TheShadowEevee[/]", theshadoweeveeRole);
         specialThanksGrid.AddRow($"  ● [bold springgreen2_1]{ourTesters}[/]", ourTestersRole);
@@ -157,12 +157,12 @@ public class settings
         AnsiConsole.MarkupLine("");
 
         // Links grid
-        string wiilinkSite = main.patcherLang == main.PatcherLanguage.en
+        string wiilinkSite = MainClass.patcherLang == MainClass.PatcherLanguage.en
             ? "WiiLink website"
-            : $"{main.localizedText?["Credits"]?["wiilinkSite"]}";
-        string githubRepo = main.patcherLang == main.PatcherLanguage.en
+            : $"{MainClass.localizedText?["Credits"]?["wiilinkSite"]}";
+        string githubRepo = MainClass.patcherLang == MainClass.PatcherLanguage.en
             ? "GitHub repository"
-            : $"{main.localizedText?["Credits"]?["githubRepo"]}";
+            : $"{MainClass.localizedText?["Credits"]?["githubRepo"]}";
 
         var linksGrid = new Grid().AddColumn().AddColumn();
 
@@ -173,9 +173,9 @@ public class settings
         AnsiConsole.MarkupLine("");
 
         // Press any key to go back to settings
-        string pressAnyKey = main.patcherLang == main.PatcherLanguage.en
+        string pressAnyKey = MainClass.patcherLang == MainClass.PatcherLanguage.en
             ? "Press any key to go back to settings..."
-            : $"{main.localizedText?["Credits"]?["pressAnyKey"]}";
+            : $"{MainClass.localizedText?["Credits"]?["pressAnyKey"]}";
         AnsiConsole.Markup($"[bold]{pressAnyKey}[/]");
         Console.ReadKey();
     }

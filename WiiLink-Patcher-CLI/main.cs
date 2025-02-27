@@ -9,14 +9,14 @@ using System.Globalization;
 // Project: WiiLink Patcher (CLI Version)
 // Description: WiiLink Patcher (CLI Version) is a command-line interface to patch and revive the exclusive Japanese Wii Channels that were shut down, along with the international WiiConnect24 Channels.
 
-public class main
+public class MainClass
 {
     //// Build Info ////
     public static readonly string version = "v3.0.0 RC1";
     public static readonly string copyrightYear = DateTime.Now.Year.ToString();
     public static readonly string buildDate = "February 14th, 2025";
     public static readonly string buildTime = "9:40 PM";
-    public static string? sdcard = sd.DetectRemovableDrive;
+    public static string? sdcard = SdClass.DetectRemovableDrive;
     public static readonly string wiiLinkPatcherUrl = "https://patcher.wiilink24.com";
     ////////////////////
 
@@ -74,7 +74,7 @@ public class main
         string url = $"{serverURL}/connectiontest.txt";
         string expectedResponse = "If the patcher can read this, the connection test succeeds.";
 
-        menu.PrintHeader();
+        MenuClass.PrintHeader();
 
         // Display server status check message
         string checkingServerStatus = patcherLang == PatcherLanguage.en
@@ -132,7 +132,7 @@ public class main
 
     public static async Task CheckForUpdates(string currentVersion)
     {
-        menu.PrintHeader();
+        MenuClass.PrintHeader();
 
         // Check for updates text
         string checkingForUpdates = patcherLang == PatcherLanguage.en
@@ -209,7 +209,7 @@ public class main
             do
             {
                 // Print header
-                menu.PrintHeader();
+                MenuClass.PrintHeader();
 
                 // Prompt user to download the latest version
                 string updateAvailable = patcherLang == PatcherLanguage.en
@@ -245,7 +245,7 @@ public class main
                 AnsiConsole.MarkupLine($"2. {no}\n");
 
                 // Get user's choice
-                int choice = menu.UserChoose("12");
+                int choice = MenuClass.UserChoose("12");
 
                 switch (choice)
                 {
@@ -299,7 +299,7 @@ public class main
                         // Tell user that program will exit in 5 seconds with a countdown in a loop
                         for (int i = 5; i > 0; i--)
                         {
-                            menu.PrintHeader();
+                            MenuClass.PrintHeader();
                             // Download complete text
                             string downloadComplete = patcherLang == PatcherLanguage.en
                                 ? $"[bold springgreen2_1]Download complete![/] Exiting in [bold springgreen2_1]{i}[/] seconds..."
@@ -350,7 +350,7 @@ public class main
 
     public static void WinCompatWarning()
     {
-        menu.PrintHeader();
+        MenuClass.PrintHeader();
 
         AnsiConsole.MarkupLine("[bold red]WARNING:[/] Older version of Windows detected!\n");
 
@@ -425,19 +425,19 @@ public class main
         }
 
         // Attempt to automatically set language, showing a prompt to ensure it was correctly detected
-        language.AutoSetLang();
+        LanguageClass.AutoSetLang();
 
         // Check if the server is up
         // If the server is down, show the status code and error message
         var result = CheckServer(wiiLinkPatcherUrl);
         if (!result.Item1)
-            menu.ConnectionFailed(result.Item2, result.Item3);
+            MenuClass.ConnectionFailed(result.Item2, result.Item3);
 
         // Check latest version if not on a nightly build or release candidate
         if (!version.Contains("Nightly") && !version.Contains("RC"))
             await CheckForUpdates(version);
 
         // Go to the main menu
-        menu.MainMenu();
+        MenuClass.MainMenu();
     }
 }
