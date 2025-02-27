@@ -17,7 +17,8 @@ function Build-For-Platform {
     )
 
     switch ($Platform) {
-        "win-x64" { $PlatformName = "Windows" }
+        "win-x64" { $PlatformName = "Windows-x64" }
+        "win-arm64" { $PlatformName = "Windows-ARM64" }
         "osx-x64" { $PlatformName = "macOS-x64" }
         "osx-arm64" { $PlatformName = "macOS-ARM64" }
         "linux-x64" { $PlatformName = "Linux-x64" }
@@ -54,7 +55,7 @@ function Show-Help {
 
 # Initialize variables
 $versionString = ""
-$Global:Platforms = "win-x64", "osx-x64", "osx-arm64", "linux-x64", "linux-arm64"
+$Global:Platforms = "win-x64", "win-arm64", "osx-x64", "osx-arm64", "linux-x64", "linux-arm64"
 
 # Parse command line arguments
 $build_invoked = $false
@@ -121,4 +122,4 @@ if (-not $platform) {
 }
 
 # Open the folder where the builds are located
-explorer.exe .\bin\Release\net6.0-windows10.0.22621.0\
+explorer.exe .\bin\Release\net9.0-windows10.0.22621.0\

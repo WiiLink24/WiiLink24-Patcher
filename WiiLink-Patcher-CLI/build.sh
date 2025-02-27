@@ -15,7 +15,10 @@ function check_dotnet {
 function build_for_platform {
     case "$1" in
         win-x64)
-            platform="Windows"
+            platform="Windows-x64"
+        ;;
+        win-arm64)
+            platform="Windows-ARM64"
         ;;
         osx-x64)
             platform="macOS-x64"
@@ -44,7 +47,7 @@ function build_for_platform {
 
 # Initialize variables
 versionString=""
-platforms=("win-x64" "osx-x64" "osx-arm64" "linux-x64" "linux-arm64")
+platforms=("win-x64" "win-arm64" "osx-x64" "osx-arm64" "linux-x64" "linux-arm64")
 
 # Parse command line arguments
 build_invoked=false
@@ -134,10 +137,10 @@ fi
 
 # Open the folder where the builds are located
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    xdg-open ./bin/Release/net6.0-windows10.0.22621.0/ &> /dev/null
-    elif [[ "$OSTYPE" == "darwin"* ]]; then
-    open ./bin/Release/net6.0-windows10.0.22621.0/ &> /dev/null
+    xdg-open ./bin/Release/net9.0-windows10.0.22621.0/ &> /dev/null
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    open ./bin/Release/net9.0-windows10.0.22621.0/ &> /dev/null
 else
     echo "Cannot open the directory automatically on this OS."
-    echo "You can find the builds in the bin/Release/net6.0-windows10.0.22621.0/ directory."
+    echo "You can find the builds in the bin/Release/net9.0-windows10.0.22621.0/ directory."
 fi

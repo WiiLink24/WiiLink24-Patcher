@@ -48,21 +48,21 @@ jobs:
     - name: Build
       run: |
         cd WiiLink-Patcher-CLI
-        dotnet publish -c Release -r "linux-arm64" /p:AssemblyName="WiiLinkPatcher_Linux-arm64_${{ github.sha }}"
+        dotnet publish -c Release -r "linux-arm64" /p:AssemblyName="WiiLinkPatcher_Linux-ARM64_${{ github.sha }}"
     
     - name: Tar Build
       run: |
-        tar cvf WiiLinkPatcher_Linux-arm64_${{ github.sha }}.tar --directory=WiiLink-Patcher-CLI/bin/Release/net9.0-windows10.0.22621.0/linux-arm64/native/ WiiLinkPatcher_Linux-arm64_${{ github.sha }}
+        tar cvf WiiLinkPatcher_Linux-ARM64_${{ github.sha }}.tar --directory=WiiLink-Patcher-CLI/bin/Release/net9.0-windows10.0.22621.0/linux-arm64/native/ WiiLinkPatcher_Linux-ARM64_${{ github.sha }}
 
     - name: Upload Build
       uses: actions/upload-artifact@v4
       with:
-        path: WiiLinkPatcher_Linux-arm64_${{ github.sha }}.tar
-        name: WiiLinkPatcher_Linux-arm64_${{ github.sha }}
+        path: WiiLinkPatcher_Linux-ARM64_${{ github.sha }}.tar
+        name: WiiLinkPatcher_Linux-ARM64_${{ github.sha }}
 
   build-windows-x64:
 
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
@@ -84,7 +84,7 @@ jobs:
   
   build-windows-arm64:
 
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
@@ -96,13 +96,13 @@ jobs:
     - name: Build
       run: |
         cd WiiLink-Patcher-CLI
-        dotnet publish -c Release -r "win-arm64" /p:AssemblyName="WiiLinkPatcher_Windows-arm64_${{ github.sha }}"
+        dotnet publish -c Release -r "win-arm64" /p:AssemblyName="WiiLinkPatcher_Windows-ARM64_${{ github.sha }}"
 
     - name: Upload Build
       uses: actions/upload-artifact@v4
       with:
-        path: D:\a\WiiLink24-Patcher\WiiLink24-Patcher\WiiLink-Patcher-CLI\bin\Release\net9.0-windows10.0.22621.0\win-arm64\publish\WiiLinkPatcher_Windows-arm64_${{ github.sha }}.exe
-        name: WiiLinkPatcher_Windows-arm64_${{ github.sha }}
+        path: D:\a\WiiLink24-Patcher\WiiLink24-Patcher\WiiLink-Patcher-CLI\bin\Release\net9.0-windows10.0.22621.0\win-arm64\publish\WiiLinkPatcher_Windows-ARM64_${{ github.sha }}.exe
+        name: WiiLinkPatcher_Windows-ARM64_${{ github.sha }}
 
   build-macos-x64:
 
@@ -144,15 +144,15 @@ jobs:
     - name: Build
       run: |
         cd WiiLink-Patcher-CLI
-        dotnet publish -c Release -r "osx-arm64" /p:AssemblyName="WiiLinkPatcher_macOS-arm64_${{ github.sha }}"
+        dotnet publish -c Release -r "osx-arm64" /p:AssemblyName="WiiLinkPatcher_macOS-ARM64_${{ github.sha }}"
 
     - name: Tar Build
       run: |
-        tar cvf WiiLinkPatcher_macOS-arm64_${{ github.sha }}.tar --directory=WiiLink-Patcher-CLI/bin/Release/net9.0-windows10.0.22621.0/osx-arm64/native/ WiiLinkPatcher_macOS-arm64_${{ github.sha }}
+        tar cvf WiiLinkPatcher_macOS-ARM64_${{ github.sha }}.tar --directory=WiiLink-Patcher-CLI/bin/Release/net9.0-windows10.0.22621.0/osx-arm64/native/ WiiLinkPatcher_macOS-ARM64_${{ github.sha }}
 
     - name: Upload Build
       uses: actions/upload-artifact@v4
       with:
-        path: WiiLinkPatcher_macOS-arm64_${{ github.sha }}.tar
-        name: WiiLinkPatcher_macOS-arm64_${{ github.sha }}
+        path: WiiLinkPatcher_macOS-ARM64_${{ github.sha }}.tar
+        name: WiiLinkPatcher_macOS-ARM64_${{ github.sha }}
 
