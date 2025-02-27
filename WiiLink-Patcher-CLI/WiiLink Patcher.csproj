@@ -17,7 +17,7 @@
     <PublishTrimmed>true</PublishTrimmed>
     <LangVersion>latest</LangVersion>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
-    <PublishAOT Condition="$(RuntimeIdentifier.StartsWith('win'))">false</PublishAOT>
+    <PublishAOT Condition="!$(RuntimeIdentifier.StartsWith('win'))">true</PublishAOT>
   </PropertyGroup>
 
   <ItemGroup>
