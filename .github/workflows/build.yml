@@ -79,8 +79,30 @@ jobs:
     - name: Upload Build
       uses: actions/upload-artifact@v4
       with:
-        path: D:\a\WiiLink24-Patcher\WiiLink24-Patcher\WiiLink-Patcher-CLI\bin\Release\net9.0-windows10.0.22621.0\win-x64\native\WiiLinkPatcher_Windows-x64_${{ github.sha }}.exe
+        path: D:\a\WiiLink24-Patcher\WiiLink24-Patcher\WiiLink-Patcher-CLI\bin\Release\net9.0-windows10.0.22621.0\win-x64\publish\WiiLinkPatcher_Windows-x64_${{ github.sha }}.exe
         name: WiiLinkPatcher_Windows-x64_${{ github.sha }}
+  
+  build-windows-arm64:
+
+    runs-on: windows-2022-arm
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+      
+    - name: Build
+      run: |
+        cd WiiLink-Patcher-CLI
+        dotnet publish -c Release -r "win-arm64" /p:AssemblyName="WiiLinkPatcher_Windows-arm64_${{ github.sha }}"
+
+    - name: Upload Build
+      uses: actions/upload-artifact@v4
+      with:
+        path: D:\a\WiiLink24-Patcher\WiiLink24-Patcher\WiiLink-Patcher-CLI\bin\Release\net9.0-windows10.0.22621.0\win-x64\publish\WiiLinkPatcher_Windows-arm64_${{ github.sha }}.exe
+        name: WiiLinkPatcher_Windows-arm64_${{ github.sha }}
 
   build-macos-x64:
 
