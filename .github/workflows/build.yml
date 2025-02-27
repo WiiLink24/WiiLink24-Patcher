@@ -84,7 +84,7 @@ jobs:
   
   build-windows-arm64:
 
-    runs-on: windows-2022-arm
+    runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v4
