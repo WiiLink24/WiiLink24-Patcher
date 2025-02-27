@@ -18,7 +18,7 @@
     <LangVersion>latest</LangVersion>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <PublishAOT>true</PublishAOT>
-    <IsAotCompatible>Condition=" '$(OS)' != 'Windows_NT' "</IsAotCompatible>
+    <IsAotCompatible>Condition='$(OS)' != 'Windows_NT'</IsAotCompatible>
   </PropertyGroup>
 
   <ItemGroup>
