@@ -2,7 +2,6 @@ using System.Text;
 using Spectre.Console;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
-using System.Net;
 
 public class LanguageClass
 {
@@ -15,22 +14,23 @@ public class LanguageClass
             // Dictionary for language codes and their names
             Dictionary<string, string> languages = JsonConvert.DeserializeObject<Dictionary<string, string>>(MainClass.languageList) ?? throw new InvalidOperationException();
 
-            Console.WriteLine(MainClass.languageList);
-            Console.WriteLine(languages);
-            Thread.Sleep(5000);
-
-            foreach (string langCode in languages.Keys)
+            if (languages.ContainsKey(MainClass.sysLang))
             {
-                if (langCode.Contains(MainClass.shortLang))
-                    langMatches += 1;
-                    detectedLang = languages[langCode];
+                langMatches = 1;
+                detectedLang = languages[MainClass.sysLang];
+            }
+            else
+            {
+                foreach (string langCode in languages.Keys)
+                {
+                    if (langCode.Contains(MainClass.shortLang))
+                        langMatches += 1;
+                        detectedLang = languages[langCode];
+                }
             }
 
-            if (langMatches == 1 || languages.ContainsKey(MainClass.sysLang))
+            if (langMatches == 1)
             {
-                if (languages.ContainsKey(MainClass.sysLang))
-                    detectedLang = languages[MainClass.sysLang];
-
                 MenuClass.PrintHeader();
                 MenuClass.PrintNotice();
 
