@@ -53,10 +53,10 @@ public class CustomClass
         var channelMap = wc24ChannelMap.Concat(wiiLinkChannelMap).ToDictionary(x => x.Key, x => x.Value);
 
         // Not selected and Selected strings
-            string notSelected = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string notSelected = MainClass.patcherLang == "en-US"
                 ? "Not selected"
                 : $"{MainClass.localizedText?["CustomSetup"]?["notSelected"]}";
-            string selectedText = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string selectedText = MainClass.patcherLang == "en-US"
                 ? "Selected"
                 : $"{MainClass.localizedText?["CustomSetup"]?["selected"]}";
 
@@ -74,22 +74,22 @@ public class CustomClass
             MenuClass.PrintHeader();
 
             // Print title
-            string customInstall = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string customInstall = MainClass.patcherLang == "en-US"
                 ? "Custom Install"
                 : $"{MainClass.localizedText?["CustomSetup"]?["Header"]}";
             AnsiConsole.MarkupLine($"[bold springgreen2_1]{customInstall}[/]\n");
 
             // Print step number and title
-            string stepNum = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string stepNum = MainClass.patcherLang == "en-US"
                 ? "Step 1"
                 : $"{MainClass.localizedText?["CustomSetup"]?["wiiLinkChannels_Setup"]?["stepNum"]}";
-            string stepTitle = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string stepTitle = MainClass.patcherLang == "en-US"
                 ? "Select WiiConnect24 / Regional channel(s) to install"
                 : $"{MainClass.localizedText?["CustomSetup"]?["wiiLinkChannels_Setup"]?["stepTitle"]}";
             AnsiConsole.MarkupLine($"[bold]{stepNum}:[/] {stepTitle}\n");
 
             // Display WiiLink channel selection menu
-            string selectWiiLinkChns = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string selectWiiLinkChns = MainClass.patcherLang == "en-US"
                 ? "Select WiiConnect24 / Regional channel(s) to install:"
                 : $"{MainClass.localizedText?["CustomSetup"]?["wiiLinkChannels_Setup"]?["selectWiiLinkChns"]}";
             AnsiConsole.MarkupLine($"[bold]{selectWiiLinkChns}[/]\n");
@@ -133,7 +133,7 @@ public class CustomClass
                 AnsiConsole.Markup(currentPage > 1 ? "[bold white]<<[/] " : "   ");
 
                 // Print page number
-                string pageNum = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                string pageNum = MainClass.patcherLang == "en-US"
                     ? $"Page {currentPage} of {totalPages}"
                     : $"{MainClass.localizedText?["CustomSetup"]?["pageNum"]}"
                         .Replace("{currentPage}", currentPage.ToString())
@@ -146,14 +146,14 @@ public class CustomClass
 
                 // Print instructions
                 //AnsiConsole.MarkupLine(" [grey](Press [bold white]<-[/] or [bold white]->[/] to navigate pages)[/]\n");
-                string pageInstructions = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                string pageInstructions = MainClass.patcherLang == "en-US"
                     ? "(Press [bold white]<-[/] or [bold white]->[/] to navigate pages)"
                     : $"{MainClass.localizedText?["CustomSetup"]?["pageInstructions"]}";
                 AnsiConsole.MarkupLine($" [grey]{pageInstructions}[/]\n");
             }
 
             // Print regular instructions
-            string regInstructions = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string regInstructions = MainClass.patcherLang == "en-US"
                 ? "< Press [bold white]a number[/] to select/deselect a channel, [bold white]ENTER[/] to continue, [bold white]Backspace[/] to go back, [bold white]ESC[/] to go back to exit setup >"
                 : $"{MainClass.localizedText?["CustomSetup"]?["regInstructions"]}";
             AnsiConsole.MarkupLine($"[grey]{regInstructions}[/]\n");
@@ -197,7 +197,7 @@ public class CustomClass
                     if (!channelMap.Values.Any(MainClass.combinedChannels_selection.Contains))
                     {
                         //AnsiConsole.MarkupLine("\n[bold red]ERROR:[/] You must select at least one channel to proceed!");
-                        string mustSelectOneChannel = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                        string mustSelectOneChannel = MainClass.patcherLang == "en-US"
                             ? "[bold red]ERROR:[/] You must select at least one channel to proceed!"
                             : $"{MainClass.localizedText?["CustomSetup"]?["mustSelectOneChannel"]}";
                         AnsiConsole.MarkupLine($"\n{mustSelectOneChannel}");
@@ -238,34 +238,34 @@ public class CustomClass
             MenuClass.PrintHeader();
 
             // Print title
-            string customInstall = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string customInstall = MainClass.patcherLang == "en-US"
                 ? "Custom Install"
                 : $"{MainClass.localizedText?["CustomSetup"]?["Header"]}";
             AnsiConsole.MarkupLine($"[bold springgreen2_1]{customInstall}[/]\n");
 
             // Print step number and title
-            string stepNum = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string stepNum = MainClass.patcherLang == "en-US"
                 ? "Step 2"
                 : $"{MainClass.localizedText?["CustomSetup"]?["ConsolePlatform_Setup"]?["stepNum"]}";
-            string stepTitle = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string stepTitle = MainClass.patcherLang == "en-US"
                 ? "Select Console Platform"
                 : $"{MainClass.localizedText?["CustomSetup"]?["ConsolePlatform_Setup"]?["stepTitle"]}";
             AnsiConsole.MarkupLine($"[bold]{stepNum}:[/] {stepTitle}\n");
 
             // Display console platform selection menu
-            string selectConsolePlatform = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string selectConsolePlatform = MainClass.patcherLang == "en-US"
                 ? "Which console platform are you installing these channels on?"
                 : $"{MainClass.localizedText?["CustomSetup"]?["ConsolePlatform_Setup"]?["selectConsolePlatform"]}";
             AnsiConsole.MarkupLine($"[bold]{selectConsolePlatform}[/]\n");
 
             // Print Console Platform options
-            string onWii = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string onWii = MainClass.patcherLang == "en-US"
                 ? "[bold]Wii[/]"
                 : $"{MainClass.localizedText?["CustomSetup"]?["ConsolePlatform_Setup"]?["onWii"]}";
-            string onvWii = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string onvWii = MainClass.patcherLang == "en-US"
                 ? "[bold]vWii (Wii U)[/]"
                 : $"{MainClass.localizedText?["CustomSetup"]?["ConsolePlatform_Setup"]?["onvWii"]}";
-            string onDolphin = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string onDolphin = MainClass.patcherLang == "en-US"
                 ? "[bold]Dolphin Emulator[/]"
                 : $"{MainClass.localizedText?["CustomSetup"]?["ConsolePlatform_Setup"]?["onDolphin"]}";
             AnsiConsole.MarkupLine($"[bold]1.[/] {onWii}");
@@ -273,7 +273,7 @@ public class CustomClass
             AnsiConsole.MarkupLine($"[bold]3.[/] {onDolphin}\n");
 
             // Print instructions
-            string platformInstructions = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string platformInstructions = MainClass.patcherLang == "en-US"
                 ? "< Press [bold white]a number[/] to select platform, [bold white]Backspace[/] to go back, [bold white]ESC[/] to go back to exit setup >"
                 : $"{MainClass.localizedText?["CustomSetup"]?["ConsolePlatform_Setup"]?["platformInstructions"]}";
             AnsiConsole.MarkupLine($"[grey]{platformInstructions}[/]\n");
@@ -390,10 +390,10 @@ public class CustomClass
             MenuClass.PrintHeader();
 
             // Print title
-            string customInstall = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string customInstall = MainClass.patcherLang == "en-US"
                 ? "Custom Install"
                 : $"{MainClass.localizedText?["CustomSetup"]?["Header"]}";
-            string summaryHeader = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string summaryHeader = MainClass.patcherLang == "en-US"
                 ? "Summary of selected channels to be installed:"
                 : $"{MainClass.localizedText?["CustomSetup"]?["summaryScreen"]?["summaryHeader"]}";
             AnsiConsole.MarkupLine($"[bold springgreen2_1]{customInstall}[/]\n");
@@ -405,13 +405,13 @@ public class CustomClass
             grid.AddColumn();
 
             // Grid header text
-            string regionalChannels = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string regionalChannels = MainClass.patcherLang == "en-US"
                 ? "Regional channels:"
                 : $"{MainClass.localizedText?["CustomSetup"]?["summaryScreen"]?["wiiLinkChannels"]}";
-            string wiiConnect24Channels = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string wiiConnect24Channels = MainClass.patcherLang == "en-US"
                 ? "WiiConnect24 Channels:"
                 : $"{MainClass.localizedText?["CustomSetup"]?["summaryScreen"]?["wiiConnect24Channels"]}";
-            string consoleVersion = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string consoleVersion = MainClass.patcherLang == "en-US"
                 ? "Console Platform:"
                 : $"{MainClass.localizedText?["CustomSetup"]?["summaryScreen"]?["ConsoleVersion"]}";
 
@@ -431,7 +431,7 @@ public class CustomClass
             // If user chose vWii as their platform, notify that the EULA channel will be included
             if (MainClass.platformType_custom == MainClass.Platform.vWii && MainClass.wiiConnect24Channels_selection.Any())
             {
-                string eulaChannel = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                string eulaChannel = MainClass.patcherLang == "en-US"
                     ? "[bold]NOTE:[/] For [bold deepskyblue1]vWii[/] users, The EULA channel will be included."
                     : $"{MainClass.localizedText?["CustomSetup"]?["summaryScreen"]?["eulaChannel"]}";
                 AnsiConsole.MarkupLine($"\n{eulaChannel}");
@@ -448,25 +448,25 @@ public class CustomClass
 
             if (MainClass.combinedChannels_selection.Contains("food_dominos"))
             {
-                string internetNotice = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                string internetNotice = MainClass.patcherLang == "en-US"
                     ? "[bold]NOTE:[/] For [bold]Food Channel (Dominos)[/] users, the Internet Channel will be included to allow you to track your order."
                     : $"{MainClass.localizedText?["CustomSetup"]?["summaryScreen"]?["internetNotice"]}";
                 AnsiConsole.MarkupLine($"\n{internetNotice}");
             }
 
             // Print instructions
-            string prompt = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string prompt = MainClass.patcherLang == "en-US"
                 ? "Are you sure you want to install these selected channels?"
                 : $"{MainClass.localizedText?["CustomSetup"]?["summaryScreen"]?["confirmation"]?["prompt"]}";
 
             // User confirmation strings
-            string yes = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string yes = MainClass.patcherLang == "en-US"
                 ? "Yes"
                 : $"{MainClass.localizedText?["yes"]}";
-            string noStartOver = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string noStartOver = MainClass.patcherLang == "en-US"
                 ? "No, start over"
                 : $"{MainClass.localizedText?["CustomSetup"]?["summaryScreen"]?["confirmation"]?["noStartOver"]}";
-            string noGoBackToMainMenu = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string noGoBackToMainMenu = MainClass.patcherLang == "en-US"
                 ? "No, go back to Main Menu"
                 : $"{MainClass.localizedText?["CustomSetup"]?["summaryScreen"]?["confirmation"]?["noGoBackToMainMenu"]}";
 
@@ -641,10 +641,10 @@ public class CustomClass
             MenuClass.PrintHeader();
 
             // Progress text
-            string patching = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string patching = MainClass.patcherLang == "en-US"
                 ? "Patching... this can take some time depending on the processing speed (CPU) of your computer."
                 : $"{MainClass.localizedText?["PatchingProgress"]?["patching"]}";
-            string progress = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string progress = MainClass.patcherLang == "en-US"
                 ? "Progress"
                 : $"{MainClass.localizedText?["PatchingProgress"]?["progress"]}";
             AnsiConsole.MarkupLine($"[bold][[*]] {patching}[/]\n");
@@ -668,10 +668,10 @@ public class CustomClass
             AnsiConsole.Markup(progressBar.ToString());
 
             // Display percentage
-            string percentComplete = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string percentComplete = MainClass.patcherLang == "en-US"
                 ? "completed"
                 : $"{MainClass.localizedText?["PatchingProgress"]?["percentComplete"]}";
-            string pleaseWait = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string pleaseWait = MainClass.patcherLang == "en-US"
                 ? "Please wait while the patching process is in progress..."
                 : $"{MainClass.localizedText?["PatchingProgress"]?["pleaseWait"]}";
             AnsiConsole.Markup($" [bold]{percentage}%[/] {percentComplete}\n\n");
@@ -680,10 +680,10 @@ public class CustomClass
             //// Display progress for each channel ////
 
             // Pre-Patching Section: Downloading files
-            string prePatching = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string prePatching = MainClass.patcherLang == "en-US"
                 ? "Pre-Patching"
                 : $"{MainClass.localizedText?["PatchingProgress"]?["prePatching"]}";
-            string downloadingFiles = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string downloadingFiles = MainClass.patcherLang == "en-US"
                 ? "Downloading files..."
                 : $"{MainClass.localizedText?["PatchingProgress"]?["downloadingFiles"]}";
             AnsiConsole.MarkupLine($"[bold]{prePatching}:[/]");
@@ -704,7 +704,7 @@ public class CustomClass
             if (MainClass.wiiConnect24Channels_selection.Count > 0)
             {
                 //AnsiConsole.MarkupLine("\n[bold]Patching WiiConnect24 Channels:[/]");
-                string patchingWC24Channels = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                string patchingWC24Channels = MainClass.patcherLang == "en-US"
                     ? "Patching WiiConnect24 Channels"
                     : $"{MainClass.localizedText?["PatchingProgress"]?["patchingWC24Channels"]}";
                 AnsiConsole.MarkupLine($"\n[bold]{patchingWC24Channels}:[/]");
@@ -732,7 +732,7 @@ public class CustomClass
             // Patching Section: Patching Regional Channels
             if (MainClass.wiiLinkChannels_selection.Count > 0)
             {
-                string patchingWiiLinkChannels = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                string patchingWiiLinkChannels = MainClass.patcherLang == "en-US"
                     ? "Patching Regional Channels"
                     : $"{MainClass.localizedText?["PatchingProgress"]?["patchingWiiLinkChannels"]}";
                 AnsiConsole.MarkupLine($"\n[bold]{patchingWiiLinkChannels}:[/]");
@@ -759,7 +759,7 @@ public class CustomClass
 
             else if (MainClass.extraChannels_selection.Count > 0)
             {
-                string patchingExtraChannels = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                string patchingExtraChannels = MainClass.patcherLang == "en-US"
                     ? "Downloading Extra Channels"
                     : $"{MainClass.localizedText?["PatchingProgress"]?["patchingExtraChannels"]}";
                 AnsiConsole.MarkupLine($"\n[bold]{patchingExtraChannels}:[/]");
@@ -785,10 +785,10 @@ public class CustomClass
             }
 
             // Post-Patching Section: Finishing up
-            string postPatching = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string postPatching = MainClass.patcherLang == "en-US"
                 ? "Post-Patching"
                 : $"{MainClass.localizedText?["PatchingProgress"]?["postPatching"]}";
-            string finishingUp = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string finishingUp = MainClass.patcherLang == "en-US"
                 ? "Finishing up..."
                 : $"{MainClass.localizedText?["PatchingProgress"]?["finishingUp"]}";
             AnsiConsole.MarkupLine($"\n[bold]{postPatching}:[/]");

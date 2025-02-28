@@ -46,13 +46,13 @@ public class MainClass
     public static readonly string curDir = Directory.GetCurrentDirectory();
     public static readonly string tempDir = Path.Join(Path.GetTempPath(), "WiiLink_Patcher");
     public static bool DEBUG_MODE = false;
-    public static PatcherLanguage patcherLang = PatcherLanguage.en;
+    public static string patcherLang = "en-US";
+    public static string languageList = "";
     public static JObject? localizedText = null;
 
     // Enums
     public enum Region : int { USA, PAL, Japan }
     public enum Language : int { English, Japan, Russian, Catalan, Portuguese, French, Italian, German, Dutch, Spanish }
-    public enum PatcherLanguage : int { en, it, nl, hu }
     public enum DemaeVersion : int { Standard, Dominos }
     public enum Platform : int { Wii, vWii, Dolphin }
     public enum SetupType : int { express, custom, extras }
@@ -62,7 +62,8 @@ public class MainClass
     public static int console_height = 0;
 
     // Get system language
-    public static string sysLang = CultureInfo.InstalledUICulture.TwoLetterISOLanguageName;
+    public static string sysLang = CultureInfo.InstalledUICulture.Name;
+    public static string shortLang = sysLang[..2];
 
     // HttpClient
     public static readonly HttpClient httpClient = new() { Timeout = TimeSpan.FromMinutes(1) };
@@ -77,7 +78,7 @@ public class MainClass
         MenuClass.PrintHeader();
 
         // Display server status check message
-        string checkingServerStatus = patcherLang == PatcherLanguage.en
+        string checkingServerStatus = patcherLang == "en-US"
             ? "Checking server status..."
             : $"{localizedText?["CheckServerStatus"]?["checking"]}";
         AnsiConsole.MarkupLine($"{checkingServerStatus}\n");
@@ -92,7 +93,7 @@ public class MainClass
             if (responseText.Trim() == expectedResponse)
             {
                 // If successful, display success message and return
-                string success = patcherLang == PatcherLanguage.en
+                string success = patcherLang == "en-US"
                     ? "Successfully connected to server!"
                     : $"{localizedText?["CheckServerStatus"]?["success"]}";
                 AnsiConsole.MarkupLine($"[bold springgreen2_1]{success}[/]\n");
@@ -135,7 +136,7 @@ public class MainClass
         MenuClass.PrintHeader();
 
         // Check for updates text
-        string checkingForUpdates = patcherLang == PatcherLanguage.en
+        string checkingForUpdates = patcherLang == "en-US"
             ? "Checking for updates..."
             : $"{localizedText?["CheckForUpdates"]?["checking"]}";
         AnsiConsole.MarkupLine($"{checkingForUpdates}\n");
@@ -152,11 +153,11 @@ public class MainClass
         catch (HttpRequestException ex)
         {
             // Error retrieving update information text
-            string errorRetrievingUpdateInfo = patcherLang == PatcherLanguage.en
+            string errorRetrievingUpdateInfo = patcherLang == "en-US"
                 ? $"Error retrieving update information: [bold red]{ex.Message}[/]"
                 : $"{localizedText?["CheckForUpdates"]?["errorChecking"]}"
                     .Replace("{ex.Message}", ex.Message);
-            string skippingUpdateCheck = patcherLang == PatcherLanguage.en
+            string skippingUpdateCheck = patcherLang == "en-US"
                 ? "Skipping update check..."
                 : $"{localizedText?["CheckForUpdates"]?["skippingCheck"]}";
 
@@ -212,13 +213,13 @@ public class MainClass
                 MenuClass.PrintHeader();
 
                 // Prompt user to download the latest version
-                string updateAvailable = patcherLang == PatcherLanguage.en
+                string updateAvailable = patcherLang == "en-US"
                     ? "A new version is available! Would you like to download it now?"
                     : $"{localizedText?["CheckForUpdates"]?["updateAvailable"]}";
-                string currentVersionText = patcherLang == PatcherLanguage.en
+                string currentVersionText = patcherLang == "en-US"
                     ? "Current version:"
                     : $"{localizedText?["CheckForUpdates"]?["currentVersion"]}";
-                string latestVersionText = patcherLang == PatcherLanguage.en
+                string latestVersionText = patcherLang == "en-US"
                     ? "Latest version:"
                     : $"{localizedText?["CheckForUpdates"]?["latestVersion"]}";
 
@@ -228,16 +229,16 @@ public class MainClass
                 AnsiConsole.MarkupLine($"{latestVersionText} [bold springgreen2_1]{latestVersion}[/]\n");
 
                 // Show changelog via Github link
-                string changelogLink = patcherLang == PatcherLanguage.en
+                string changelogLink = patcherLang == "en-US"
                     ? "Changelog:"
                     : $"{localizedText?["CheckForUpdates"]?["changelogLink"]}";
                 AnsiConsole.MarkupLine($"[bold]{changelogLink}[/] [link springgreen2_1]https://github.com/WiiLink24/WiiLink24-Patcher/releases/tag/{latestVersion}[/]\n");
 
                 // Yes/No text
-                string yes = patcherLang == PatcherLanguage.en
+                string yes = patcherLang == "en-US"
                     ? "Yes"
                     : $"{localizedText?["yes"]}";
-                string no = patcherLang == PatcherLanguage.en
+                string no = patcherLang == "en-US"
                     ? "No"
                     : $"{localizedText?["no"]}";
 
@@ -259,7 +260,7 @@ public class MainClass
                             .IsOSPlatform(OSPlatform.Linux) ? "Linux" : "Unknown";
 
                         // Log message
-                        string downloadingFrom = patcherLang == PatcherLanguage.en
+                        string downloadingFrom = patcherLang == "en-US"
                             ? $"Downloading [springgreen2_1]{latestVersion}[/] for [springgreen2_1]{osName}[/]..."
                             : $"{localizedText?["CheckForUpdates"]?["downloadingFrom"]}"
                                 .Replace("{latestVersion}", latestVersion)
@@ -273,11 +274,11 @@ public class MainClass
                         if (!response.IsSuccessStatusCode) // Ideally shouldn't happen if version.txt is set up correctly
                         {
                             // Download failed text
-                            string downloadFailed = patcherLang == PatcherLanguage.en
+                            string downloadFailed = patcherLang == "en-US"
                                 ? $"An error occurred while downloading the latest version:[/] {response.StatusCode}"
                                 : $"{localizedText?["CheckForUpdates"]?["downloadFailed"]}"
                                     .Replace("{response.StatusCode}", response.StatusCode.ToString());
-                            string pressAnyKey = patcherLang == PatcherLanguage.en
+                            string pressAnyKey = patcherLang == "en-US"
                                 ? "Press any key to exit..."
                                 : $"{localizedText?["CheckForUpdates"]?["pressAnyKey"]}";
                             AnsiConsole.MarkupLine($"\n[red]{downloadFailed}[/]");
@@ -301,7 +302,7 @@ public class MainClass
                         {
                             MenuClass.PrintHeader();
                             // Download complete text
-                            string downloadComplete = patcherLang == PatcherLanguage.en
+                            string downloadComplete = patcherLang == "en-US"
                                 ? $"[bold springgreen2_1]Download complete![/] Exiting in [bold springgreen2_1]{i}[/] seconds..."
                                 : $"{localizedText?["CheckForUpdates"]?["downloadComplete"]}"
                                     .Replace("{i}", i.ToString());
@@ -322,7 +323,7 @@ public class MainClass
         else // On the latest version
         {
             // Log message
-            string onLatestVersion = patcherLang == PatcherLanguage.en
+            string onLatestVersion = patcherLang == "en-US"
                 ? "You are running the latest version!"
                 : $"{localizedText?["CheckForUpdates"]?["onLatestVersion"]}";
             AnsiConsole.MarkupLine($"[bold springgreen2_1]{onLatestVersion}[/]");
@@ -424,14 +425,17 @@ public class MainClass
                 WinCompatWarning();
         }
 
-        // Attempt to automatically set language, showing a prompt to ensure it was correctly detected
-        LanguageClass.AutoSetLang();
-
         // Check if the server is up
         // If the server is down, show the status code and error message
         var result = CheckServer(wiiLinkPatcherUrl);
         if (!result.Item1)
             MenuClass.ConnectionFailed(result.Item2, result.Item3);
+
+        // Initialise language list
+        languageList = LanguageClass.DownloadLanguageList();
+
+        // Attempt to automatically set language, showing a prompt to ensure it was correctly detected
+        LanguageClass.AutoSetLang();
 
         // Check latest version if not on a nightly build or release candidate
         if (!version.Contains("Nightly") && !version.Contains("RC"))

@@ -8,7 +8,7 @@ public class MenuClass
     {
         Console.Clear();
 
-        string headerText = MainClass.patcherLang == MainClass.PatcherLanguage.en
+        string headerText = MainClass.patcherLang == "en-US"
             ? $"[springgreen2_1]WiiLink[/] Patcher {MainClass.version} - (c) {MainClass.copyrightYear} WiiLink Team"
             : $"{MainClass.localizedText?["Header"]}"
                 .Replace("{version}", MainClass.version)
@@ -28,10 +28,10 @@ public class MenuClass
 
     public static void PrintNotice()
     {
-        string title = MainClass.patcherLang == MainClass.PatcherLanguage.en
+        string title = MainClass.patcherLang == "en-US"
             ? "Notice"
             : $"{MainClass.localizedText?["Notice"]?["noticeTitle"]}";
-        string text = MainClass.patcherLang == MainClass.PatcherLanguage.en
+        string text = MainClass.patcherLang == "en-US"
             ? "If you have any issues with the patcher or services offered by WiiLink, please report them on our [springgreen2_1 link=https://discord.gg/wiilink]Discord Server[/]!"
             : $"{MainClass.localizedText?["Notice"]?["noticeMsg"]}";
 
@@ -70,7 +70,7 @@ public class MenuClass
         const int INVALID_INPUT = -24;
 
         ConsoleKeyInfo keyPressed;
-        string chooseText = MainClass.patcherLang == MainClass.PatcherLanguage.en
+        string chooseText = MainClass.patcherLang == "en-US"
                 ? "Choose: "
                 : $"{MainClass.localizedText?["UserChoose"]} ";
         AnsiConsole.Markup(chooseText);
@@ -128,13 +128,13 @@ public class MenuClass
                 // Change header depending on if it's Express Install or Custom Install
                 string installType = setupType switch
                 {
-                    MainClass.SetupType.express => MainClass.patcherLang == MainClass.PatcherLanguage.en
+                    MainClass.SetupType.express => MainClass.patcherLang == "en-US"
                         ? "Express Install"
                         : $"{MainClass.localizedText?["ExpressInstall"]?["Header"]}",
-                    MainClass.SetupType.custom => MainClass.patcherLang == MainClass.PatcherLanguage.en
+                    MainClass.SetupType.custom => MainClass.patcherLang == "en-US"
                         ? "Custom Install"
                         : $"{MainClass.localizedText?["CustomSetup"]?["Header"]}",
-                    MainClass.SetupType.extras => MainClass.patcherLang == MainClass.PatcherLanguage.en
+                    MainClass.SetupType.extras => MainClass.patcherLang == "en-US"
                         ? "Install Extras"
                         : $"{MainClass.localizedText?["InstallExtras"]?["Header"]}",
                     _ => throw new NotImplementedException()
@@ -142,10 +142,10 @@ public class MenuClass
 
                 string stepNum = setupType switch
                 {
-                    MainClass.SetupType.express => MainClass.patcherLang == MainClass.PatcherLanguage.en
+                    MainClass.SetupType.express => MainClass.patcherLang == "en-US"
                         ? !MainClass.installRegionalChannels ? "Step 4" : "Step 5"
                         : $"{MainClass.localizedText?["WADFolderCheck"]?["ifExpress"]?[MainClass.installRegionalChannels ? "ifWC24" : "ifNoWC24"]?["stepNum"]}",
-                    _ => MainClass.patcherLang == MainClass.PatcherLanguage.en
+                    _ => MainClass.patcherLang == "en-US"
                         ? "Step 5"
                         : $"{MainClass.localizedText?["WADFolderCheck"]?["ifCustom"]?["stepNum"]}"
                 };
@@ -153,27 +153,27 @@ public class MenuClass
                 AnsiConsole.MarkupLine($"[bold springgreen2_1]{installType}[/]\n");
 
                 // Step title
-                string stepTitle = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                string stepTitle = MainClass.patcherLang == "en-US"
                     ? "WAD folder detected"
                     : $"{MainClass.localizedText?["WADFolderCheck"]?["stepTitle"]}";
 
                 AnsiConsole.MarkupLine($"[bold]{stepNum}: {stepTitle}[/]\n");
 
                 // WAD folder detected text
-                string wadFolderDetected = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                string wadFolderDetected = MainClass.patcherLang == "en-US"
                     ? "A [bold]WAD[/] folder has been detected in the current directory. This folder is used to store the WAD files that are downloaded during the patching process. If you choose to delete this folder, it will be recreated when you start the patching process again."
                     : $"{MainClass.localizedText?["WADFolderCheck"]?["wadFolderDetected"]}";
 
                 AnsiConsole.MarkupLine($"{wadFolderDetected}\n");
 
                 // User Choices
-                string deleteWADFolder = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                string deleteWADFolder = MainClass.patcherLang == "en-US"
                     ? "Delete WAD folder"
                     : $"{MainClass.localizedText?["WADFolderCheck"]?["deleteWADFolder"]}";
-                string keepWADFolder = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                string keepWADFolder = MainClass.patcherLang == "en-US"
                     ? "Keep WAD folder"
                     : $"{MainClass.localizedText?["WADFolderCheck"]?["keepWADFolder"]}";
-                string goBackToMainMenu = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                string goBackToMainMenu = MainClass.patcherLang == "en-US"
                     ? "Go Back to Main Menu"
                     : $"{MainClass.localizedText?["goBackToMainMenu"]}";
 
@@ -195,7 +195,7 @@ public class MenuClass
                             AnsiConsole.MarkupLine($"[bold red]ERROR:[/] {e.Message}\n");
 
                             // Press any key to try again
-                            string pressAnyKey = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                            string pressAnyKey = MainClass.patcherLang == "en-US"
                                 ? "Press any key to try again..."
                                 : $"{MainClass.localizedText?["pressAnyKey"]}";
                             AnsiConsole.MarkupLine($"{pressAnyKey}\n");
@@ -237,7 +237,7 @@ public class MenuClass
         {
             PrintHeader();
             // Patching Completed text
-            string completed = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string completed = MainClass.patcherLang == "en-US"
                 ? "Patching Completed!"
                 : $"{MainClass.localizedText?["Finished"]?["completed"]}";
             AnsiConsole.MarkupLine($"[bold slowblink springgreen2_1]{completed}[/]\n");
@@ -245,7 +245,7 @@ public class MenuClass
             if (MainClass.sdcard != null)
             {
                 // Every file is in its place text
-                string everyFileInPlace = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                string everyFileInPlace = MainClass.patcherLang == "en-US"
                     ? "Every file is in its place on your SD Card / USB Drive!"
                     : $"{MainClass.localizedText?["Finished"]?["withSD/USB"]?["everyFileInPlace"]}";
                 AnsiConsole.MarkupLine($"{everyFileInPlace}\n");
@@ -255,13 +255,13 @@ public class MenuClass
                 if (MainClass.platformType != MainClass.Platform.Dolphin)
                 {
                     // Please connect text
-                    string connectDrive = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                    string connectDrive = MainClass.patcherLang == "en-US"
                         ? "Please connect your Wii SD Card / USB Drive and copy the [u]WAD[/] and [u]apps[/] folders to the root (main folder) of your SD Card / USB Drive."
                         : $"{MainClass.localizedText?["Finished"]?["withoutSD/USB"]?["connectDrive"]}";
                     AnsiConsole.MarkupLine($"{connectDrive}\n");
 
                     // Open the folder text
-                    string canFindFolders = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                    string canFindFolders = MainClass.patcherLang == "en-US"
                         ? "You can find these folders in the [u]{curDir}[/] folder of your computer."
                         : $"{MainClass.localizedText?["Finished"]?["canFindFolders"]}";
                     canFindFolders = canFindFolders.Replace("{curDir}", MainClass.curDir);
@@ -274,21 +274,21 @@ public class MenuClass
             {
                 if (MainClass.platformType == MainClass.Platform.Wii)
                 {
-                    string pleaseProceed = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                    string pleaseProceed = MainClass.patcherLang == "en-US"
                         ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://wiilink.ca/guide/wii/#section-ii---installing-wads-and-patching-wii-mail[/]"
                         : $"{MainClass.localizedText?["Finished"]?["pleaseProceed"]?["Wii"]}";
                     AnsiConsole.MarkupLine($"{pleaseProceed}\n");
                 }
                 else if (MainClass.platformType == MainClass.Platform.vWii)
                 {
-                    string pleaseProceed = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                    string pleaseProceed = MainClass.patcherLang == "en-US"
                         ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://wiilink.ca/guide/vwii/#section-iii---installing-wads-and-patching-wii-mail[/]"
                         : $"{MainClass.localizedText?["Finished"]?["pleaseProceed"]?["vWii"]}";
                     AnsiConsole.MarkupLine($"{pleaseProceed}\n");
                 }
                 else
                 {
-                    string pleaseProceed = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                    string pleaseProceed = MainClass.patcherLang == "en-US"
                         ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://wiilink.ca/guide/dolphin/#section-ii---installing-wads[/]"
                         : $"{MainClass.localizedText?["Finished"]?["pleaseProceed"]?["Dolphin"]}";
                     AnsiConsole.MarkupLine($"{pleaseProceed}\n");
@@ -298,14 +298,14 @@ public class MenuClass
             {
                 if (MainClass.platformType == MainClass.Platform.Dolphin)
                 {
-                    string installWad = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                    string installWad = MainClass.patcherLang == "en-US"
                         ? "Please proceed with installing the WADs through the Dolphin interface (Tools > Install WAD...)"
                         : $"{MainClass.localizedText?["Finished"]?["installWad"]?["Dolphin"]}";
                     AnsiConsole.MarkupLine($"{installWad}\n");
                 }
                 else
                 {
-                    string installWad = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                    string installWad = MainClass.patcherLang == "en-US"
                         ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://wii.hacks.guide/yawmme[/]"
                         : $"{MainClass.localizedText?["Finished"]?["installWad"]?["yawmME"]}";
                     AnsiConsole.MarkupLine($"{installWad}\n");
@@ -313,19 +313,19 @@ public class MenuClass
             }
 
             // What would you like to do now text
-            string whatWouldYouLikeToDo = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string whatWouldYouLikeToDo = MainClass.patcherLang == "en-US"
                 ? "What would you like to do now?"
                 : $"{MainClass.localizedText?["Finished"]?["whatWouldYouLikeToDo"]}";
             AnsiConsole.MarkupLine($"{whatWouldYouLikeToDo}\n");
 
             // User choices
-            string openFolder = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string openFolder = MainClass.patcherLang == "en-US"
                 ? MainClass.sdcard != null ? "Open the SD Card / USB Drive folder" : "Open the folder"
                 : MainClass.sdcard != null ? $"{MainClass.localizedText?["Finished"]?["withSD/USB"]?["openFolder"]}" : $"{MainClass.localizedText?["Finished"]?["withoutSD/USB"]?["openFolder"]}";
-            string goBackToMainMenu = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string goBackToMainMenu = MainClass.patcherLang == "en-US"
                 ? "Go back to the main menu"
                 : $"{MainClass.localizedText?["goBackToMainMenu"]}";
-            string exitProgram = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string exitProgram = MainClass.patcherLang == "en-US"
                 ? "Exit the program"
                 : $"{MainClass.localizedText?["Finished"]?["exitProgram"]}";
 
@@ -411,43 +411,43 @@ public class MenuClass
             PrintNotice();
 
             // Main Menu text
-            string welcomeMessage = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string welcomeMessage = MainClass.patcherLang == "en-US"
                 ? "Welcome to the [springgreen2_1]WiiLink[/] Patcher!"
                 : $"{MainClass.localizedText?["MainMenu"]?["welcomeMessage"]}";
 
             // Express Install text
-            string startExpressSetup = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string startExpressSetup = MainClass.patcherLang == "en-US"
                 ? "Start Express Install Setup [bold springgreen2_1](Recommended)[/]"
                 : $"{MainClass.localizedText?["MainMenu"]?["startExpressSetup"]}";
 
             // Custom Install text
-            string startCustomSetup = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string startCustomSetup = MainClass.patcherLang == "en-US"
                 ? "Start Custom Install Setup [bold](Advanced)[/]"
                 : $"{MainClass.localizedText?["MainMenu"]?["startCustomSetup"]}";
 
             // Install Extras text
-            string startExtrasSetup = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string startExtrasSetup = MainClass.patcherLang == "en-US"
                 ? "Install Extra Channels [bold grey](Optional)[/]"
                 : $"{MainClass.localizedText?["MainMenu"]?["startExtrasSetup"]}";
 
 
             // Settings text
-            string settingsText = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string settingsText = MainClass.patcherLang == "en-US"
                 ? "Settings"
                 : $"{MainClass.localizedText?["MainMenu"]?["settings"]}";
 
             // Visit the GitHub repository text
-            string visitGitHub = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string visitGitHub = MainClass.patcherLang == "en-US"
                 ? "Visit the GitHub Repository"
                 : $"{MainClass.localizedText?["MainMenu"]?["visitGitHub"]}";
 
             // Visit the WiiLink website text
-            string visitWiiLink = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string visitWiiLink = MainClass.patcherLang == "en-US"
                 ? "Visit the WiiLink Website"
                 : $"{MainClass.localizedText?["MainMenu"]?["visitWiiLink"]}";
 
             // Exit Patcher text
-            string exitPatcher = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string exitPatcher = MainClass.patcherLang == "en-US"
                 ? "Exit Patcher"
                 : $"{MainClass.localizedText?["MainMenu"]?["exitPatcher"]}";
 
@@ -467,22 +467,22 @@ public class MenuClass
 
             // Detect SD Card / USB Drive text
             string SDDetectedOrNot = MainClass.sdcard != null
-                ? $"[bold springgreen2_1]{(MainClass.patcherLang == MainClass.PatcherLanguage.en
+                ? $"[bold springgreen2_1]{(MainClass.patcherLang == "en-US"
                     ? "Detected SD Card / USB Drive:"
                     : MainClass.localizedText?["MainMenu"]?["sdCardDetected"])}[/] {MainClass.sdcard}"
-                : $"[bold red]{(MainClass.patcherLang == MainClass.PatcherLanguage.en
+                : $"[bold red]{(MainClass.patcherLang == "en-US"
                     ? "Could not detect your SD Card / USB Drive!"
                     : MainClass.localizedText?["MainMenu"]?["noSDCard"])}[/]";
             AnsiConsole.MarkupLine(SDDetectedOrNot);
 
             // Automatically detect SD Card / USB Drive text
-            string automaticDetection = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string automaticDetection = MainClass.patcherLang == "en-US"
                 ? "R. Automatically detect SD Card / USB Drive"
                 : $"{MainClass.localizedText?["MainMenu"]?["automaticDetection"]}";
             AnsiConsole.MarkupLine(automaticDetection);
 
             // Manually select SD Card / USB Drive text
-            string manualDetection = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string manualDetection = MainClass.patcherLang == "en-US"
                 ? "M. Manually select SD Card / USB Drive path\n"
                 : $"{MainClass.localizedText?["MainMenu"]?["manualDetection"]}\n";
             AnsiConsole.MarkupLine(manualDetection);
@@ -578,19 +578,19 @@ public class MenuClass
         PrintHeader();
 
         // Connection to server failed text
-        string connectionFailed = MainClass.patcherLang == MainClass.PatcherLanguage.en
+        string connectionFailed = MainClass.patcherLang == "en-US"
             ? "Connection to server failed!"
             : $"{MainClass.localizedText?["ServerDown"]?["connectionFailed"]}";
         AnsiConsole.MarkupLine($"[bold blink red]{connectionFailed}[/]\n");
 
         // Check internet connection text
-        string checkInternet = MainClass.patcherLang == MainClass.PatcherLanguage.en
+        string checkInternet = MainClass.patcherLang == "en-US"
             ? "Connection to the server failed. Please check your internet connection and try again."
             : $"{MainClass.localizedText?["ServerDown"]?["checkInternet"]}";
-        string serverOrInternet = MainClass.patcherLang == MainClass.PatcherLanguage.en
+        string serverOrInternet = MainClass.patcherLang == "en-US"
             ? "It seems that either the server is down or your internet connection is not working."
             : $"{MainClass.localizedText?["ServerDown"]?["serverOrInternet"]}";
-        string reportIssue = MainClass.patcherLang == MainClass.PatcherLanguage.en
+        string reportIssue = MainClass.patcherLang == "en-US"
             ? "If you are sure that your internet connection is working, please join our [link=https://discord.gg/wiilink bold springgreen2_1]Discord Server[/] and report this issue."
             : $"{MainClass.localizedText?["ServerDown"]?["reportIssue"]}";
         AnsiConsole.MarkupLine($"{checkInternet}\n");
@@ -598,13 +598,13 @@ public class MenuClass
         AnsiConsole.MarkupLine($"{reportIssue}\n");
 
         // Status code text
-        string statusCodeText = MainClass.patcherLang == MainClass.PatcherLanguage.en
+        string statusCodeText = MainClass.patcherLang == "en-US"
             ? "Status code:"
             : $"{MainClass.localizedText?["ServerDown"]?["statusCode"]}";
-        string messageText = MainClass.patcherLang == MainClass.PatcherLanguage.en
+        string messageText = MainClass.patcherLang == "en-US"
             ? "Message:"
             : $"{MainClass.localizedText?["ServerDown"]?["message"]}";
-        string exitMessage = MainClass.patcherLang == MainClass.PatcherLanguage.en
+        string exitMessage = MainClass.patcherLang == "en-US"
             ? "Press any key to exit..."
             : $"{MainClass.localizedText?["ServerDown"]?["exitMessage"]}";
         AnsiConsole.MarkupLine($"{statusCodeText} {statusCode}");
@@ -634,25 +634,25 @@ public class MenuClass
         PrintHeader();
 
         // An error has occurred text
-        string errorOccurred = MainClass.patcherLang == MainClass.PatcherLanguage.en
+        string errorOccurred = MainClass.patcherLang == "en-US"
             ? "An error has occurred."
             : $"{MainClass.localizedText?["ErrorScreen"]?["title"]}";
         AnsiConsole.MarkupLine($"[bold red]{errorOccurred}[/]\n");
 
         // Error details text
-        string errorDetails = MainClass.patcherLang == MainClass.PatcherLanguage.en
+        string errorDetails = MainClass.patcherLang == "en-US"
             ? "ERROR DETAILS:"
             : $"{MainClass.localizedText?["ErrorScreen"]?["details"]}";
-        string taskText = MainClass.patcherLang == MainClass.PatcherLanguage.en
+        string taskText = MainClass.patcherLang == "en-US"
             ? "Task: "
             : $"{MainClass.localizedText?["ErrorScreen"]?["task"]}";
-        string commandText = MainClass.patcherLang == MainClass.PatcherLanguage.en
+        string commandText = MainClass.patcherLang == "en-US"
             ? "Command:"
             : $"{MainClass.localizedText?["ErrorScreen"]?["command"]}";
-        string messageText = MainClass.patcherLang == MainClass.PatcherLanguage.en
+        string messageText = MainClass.patcherLang == "en-US"
             ? "Message:"
             : $"{MainClass.localizedText?["ErrorScreen"]?["message"]}";
-        string exitCodeText = MainClass.patcherLang == MainClass.PatcherLanguage.en
+        string exitCodeText = MainClass.patcherLang == "en-US"
             ? "Exit code:"
             : $"{MainClass.localizedText?["ErrorScreen"]?["exitCode"]}";
 
@@ -662,13 +662,13 @@ public class MenuClass
         AnsiConsole.MarkupLine($" * {exitCodeText} {exitCode}\n");
 
         // Please open an issue text
-        string openAnIssue = MainClass.patcherLang == MainClass.PatcherLanguage.en
+        string openAnIssue = MainClass.patcherLang == "en-US"
             ? "Please open an issue on our GitHub page ([link bold springgreen2_1]https://github.com/WiiLink24/WiiLink24-Patcher/issues[/]) and describe the\nerror you encountered. Please include the error details above in your issue."
             : $"{MainClass.localizedText?["ErrorScreen"]?["githubIssue"]}";
         AnsiConsole.MarkupLine($"{openAnIssue}\n");
 
         // Press any key to go back to the main menu text
-        string pressAnyKey = MainClass.patcherLang == MainClass.PatcherLanguage.en
+        string pressAnyKey = MainClass.patcherLang == "en-US"
             ? "Press any key to go back to the main menu..."
             : $"{MainClass.localizedText?["ErrorScreen"]?["pressAnyKey"]}";
         AnsiConsole.MarkupLine($"[bold]{pressAnyKey}[/]");

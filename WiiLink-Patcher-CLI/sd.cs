@@ -13,10 +13,10 @@ public class SdClass
             // Change step number depending on if WiiConnect24 is being installed or not
             string stepNum = setupType switch
             {
-                MainClass.SetupType.express => MainClass.patcherLang == MainClass.PatcherLanguage.en
+                MainClass.SetupType.express => MainClass.patcherLang == "en-US"
                     ? !MainClass.installRegionalChannels ? "Step 3" : "Step 4"
                     : $"{MainClass.localizedText?["SDSetup"]?["ifExpress"]?[MainClass.installRegionalChannels ? "ifWC24" : "ifNoWC24"]?["stepNum"]}",
-                _ => MainClass.patcherLang == MainClass.PatcherLanguage.en
+                _ => MainClass.patcherLang == "en-US"
                     ? "Step 4"
                     : $"{MainClass.localizedText?["SDSetup"]?["ifCustom"]?["stepNum"]}"
             };
@@ -24,42 +24,42 @@ public class SdClass
             // Change header depending on the setup type
             string installType = setupType switch
             {
-                MainClass.SetupType.express => MainClass.patcherLang == MainClass.PatcherLanguage.en
+                MainClass.SetupType.express => MainClass.patcherLang == "en-US"
                     ? "Express Install"
                     : $"{MainClass.localizedText?["ExpressInstall"]?["Header"]}",
-                MainClass.SetupType.custom => MainClass.patcherLang == MainClass.PatcherLanguage.en
+                MainClass.SetupType.custom => MainClass.patcherLang == "en-US"
                     ? "Custom Install"
                     : $"{MainClass.localizedText?["CustomSetup"]?["Header"]}",
-                MainClass.SetupType.extras => MainClass.patcherLang == MainClass.PatcherLanguage.en
+                MainClass.SetupType.extras => MainClass.patcherLang == "en-US"
                     ? "Install Extras"
                     : $"{MainClass.localizedText?["InstallExtras"]?["Header"]}",
                 _ => throw new NotImplementedException()
             };
 
             // Step title
-            string stepTitle = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string stepTitle = MainClass.patcherLang == "en-US"
                 ? "Insert SD Card / USB Drive (if applicable)"
                 : $"{MainClass.localizedText?["SDSetup"]?["stepTitle"]}";
 
             // After passing this step text
-            string afterPassingThisStep = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string afterPassingThisStep = MainClass.patcherLang == "en-US"
                 ? "After passing this step, any user interaction won't be needed, so sit back and relax!"
                 : $"{MainClass.localizedText?["SDSetup"]?["afterPassingThisStep"]}";
 
             // Download to SD card text
-            string downloadToSD = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string downloadToSD = MainClass.patcherLang == "en-US"
                 ? "You can download everything directly to your Wii SD Card / USB Drive if you insert it before starting the patching\nprocess. Otherwise, everything will be saved in the same folder as this patcher on your computer."
                 : $"{MainClass.localizedText?["SDSetup"]?["downloadToSD"]}";
 
 
 
             // SD card detected text
-            string sdDetected = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string sdDetected = MainClass.patcherLang == "en-US"
                 ? MainClass.sdcard != null ? $"SD card detected: [bold springgreen2_1]{MainClass.sdcard}[/]" : ""
                 : MainClass.sdcard != null ? $"{MainClass.localizedText?["SDSetup"]?["sdDetected"]}: [bold springgreen2_1]{MainClass.sdcard}[/]" : "";
 
             // Go Back to Main Menu Text
-            string goBackToMainMenu = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string goBackToMainMenu = MainClass.patcherLang == "en-US"
                 ? "Go Back to Main Menu"
                 : $"{MainClass.localizedText?["goBackToMainMenu"]}";
 
@@ -73,20 +73,20 @@ public class SdClass
 
             if (MainClass.platformType == MainClass.Platform.vWii && setupType == MainClass.SetupType.express)
             {
-                string eulaChannel = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                string eulaChannel = MainClass.patcherLang == "en-US"
                 ? "[bold]NOTE:[/] For [bold deepskyblue1]vWii[/] users, The EULA channel will also be included."
                 : $"{MainClass.localizedText?["ExpressInstall"]?["SDSetup"]?["eulaChannel"]}";
                 AnsiConsole.MarkupLine($"{eulaChannel}\n");
             }
 
             // User Choices
-            string startOption = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string startOption = MainClass.patcherLang == "en-US"
                 ? MainClass.sdcard != null ? "Start [bold]with[/] SD Card / USB Drive" : "Start [bold]without[/] SD Card / USB Drive"
                 : MainClass.sdcard != null ? $"{MainClass.localizedText?["SDSetup"]?["start_withSD"]}" : $"{MainClass.localizedText?["SDSetup"]?["start_noSD"]}";
-            string startWithoutSDOption = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string startWithoutSDOption = MainClass.patcherLang == "en-US"
                 ? "Start [bold]without[/] SD Card / USB Drive"
                 : $"{MainClass.localizedText?["SDSetup"]?["start_noSD"]}";
-            string manualDetection = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string manualDetection = MainClass.patcherLang == "en-US"
                 ? "Manually Select SD Card / USB Drive Path\n"
                 : $"{MainClass.localizedText?["SDSetup"]?["manualDetection"]}\n";
 
@@ -161,7 +161,7 @@ public class SdClass
         if (MainClass.sdcard != null && MainClass.curDir != MainClass.sdcard)
         {
             // Copying files to SD card
-            string copyingFiles = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string copyingFiles = MainClass.patcherLang == "en-US"
                 ? "Copying files to SD card, which may take a while."
                 : $"{MainClass.localizedText?["FinishSDCopy"]?["copyingFiles"]}";
             AnsiConsole.MarkupLine($" [bold][[*]] {copyingFiles}[/]");
@@ -182,7 +182,7 @@ public class SdClass
                     exceptionMessage = exceptionMessage.Replace("]", "]]");
                 
                 // Error message
-                string pressAnyKey_error = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                string pressAnyKey_error = MainClass.patcherLang == "en-US"
                     ? "Press any key to try again..."
                     : $"{MainClass.localizedText?["FinishSDCopy"]?["pressAnyKey_error"]}";
                 AnsiConsole.MarkupLine($"[bold red]ERROR:[/] {exceptionMessage}\n{pressAnyKey_error}");
@@ -213,28 +213,28 @@ public class SdClass
             MenuClass.PrintHeader();
 
             // Manual SD card selection header
-            string header = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string header = MainClass.patcherLang == "en-US"
                 ? "Manually Select SD Card / USB Drive Path"
                 : $"{MainClass.localizedText?["SDCardSelect"]?["header"]}";
             AnsiConsole.MarkupLine($"[bold springgreen2_1]{header}[/]\n");
 
             string inputMessage = "";
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                inputMessage = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                inputMessage = MainClass.patcherLang == "en-US"
                     ? "Please enter the drive letter of your SD card/USB drive (e.g. E)"
                     : $"{MainClass.localizedText?["SDCardSelect"]?["inputMessage"]?["windows"]}";
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                inputMessage = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                inputMessage = MainClass.patcherLang == "en-US"
                     ? "Please enter the mount name of your SD card/USB drive (e.g. /media/username/Wii)"
                     : $"{MainClass.localizedText?["SDCardSelect"]?["inputMessage"]?["linux"]}";
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                inputMessage = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                inputMessage = MainClass.patcherLang == "en-US"
                     ? "Please enter the volume name of your SD card/USB drive (e.g. /Volumes/Wii)"
                     : $"{MainClass.localizedText?["SDCardSelect"]?["inputMessage"]?["osx"]}";
             AnsiConsole.MarkupLine($"{inputMessage}");
 
             // Type EXIT to go back to previous menu
-            string exitMessage = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string exitMessage = MainClass.patcherLang == "en-US"
                 ? "(Type [bold]EXIT[/] to go back to the previous menu)"
                 : $"{MainClass.localizedText?["SDCardSelect"]?["exitMessage"]}";
             AnsiConsole.MarkupLine($"{exitMessage}\n");
@@ -242,15 +242,15 @@ public class SdClass
             // New SD card/USB drive text
             string newSDCardMessage = "";
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                newSDCardMessage = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                newSDCardMessage = MainClass.patcherLang == "en-US"
                     ? "New SD card/USB drive:"
                     : $"{MainClass.localizedText?["SDCardSelect"]?["newSDCardMessage"]?["windows"]}";
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                newSDCardMessage = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                newSDCardMessage = MainClass.patcherLang == "en-US"
                     ? "New SD card/USB drive volume:"
                     : $"{MainClass.localizedText?["SDCardSelect"]?["newSDCardMessage"]?["linux"]}";
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                newSDCardMessage = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                newSDCardMessage = MainClass.patcherLang == "en-US"
                     ? "New SD card/USB drive volume:"
                     : $"{MainClass.localizedText?["SDCardSelect"]?["newSDCardMessage"]?["osx"]}";
             AnsiConsole.Markup($"{newSDCardMessage} ");
@@ -273,7 +273,7 @@ public class SdClass
                 if (sdcard_new?.Length > 1)
                 {
                     // Driver letter must be 1 character text
-                    string driveLetterError = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                    string driveLetterError = MainClass.patcherLang == "en-US"
                         ? "Drive letter must be 1 character!"
                         : $"{MainClass.localizedText?["SDCardSelect"]?["driveLetterError"]}";
                     AnsiConsole.MarkupLine($"[bold red]{driveLetterError}[/]");
@@ -298,7 +298,7 @@ public class SdClass
                 if (sdcard_new == "/")
                 {
                     // You cannot select your boot drive text
-                    string bootDriveError = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                    string bootDriveError = MainClass.patcherLang == "en-US"
                         ? "You cannot select your boot drive!"
                         : $"{MainClass.localizedText?["SDCardSelect"]?["bootDriveError"]}";
                     AnsiConsole.MarkupLine($"[bold red]{bootDriveError}[/]");
@@ -309,7 +309,7 @@ public class SdClass
             else if (Path.GetPathRoot(sdcard_new) == Path.GetPathRoot(Path.GetPathRoot(Environment.SystemDirectory)))
             {
                 // You cannot select your boot drive text
-                string bootDriveError = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                string bootDriveError = MainClass.patcherLang == "en-US"
                     ? "You cannot select your boot drive!"
                     : $"{MainClass.localizedText?["SDCardSelect"]?["bootDriveError"]}";
                 AnsiConsole.MarkupLine($"[bold red]{bootDriveError}[/]");
@@ -327,7 +327,7 @@ public class SdClass
                 if (!driveInfo.IsReady || driveInfo.DriveType != DriveType.Removable)
                 {
                     // Drive is not removable text
-                    string driveNotRemovableError = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                    string driveNotRemovableError = MainClass.patcherLang == "en-US"
                         ? "Drive selected is not a removable drive! Please select a removable drive (e.g. SD card or USB drive)."
                         : $"{MainClass.localizedText?["SDCardSelect"]?["driveNotRemovableError"]}";
                     AnsiConsole.MarkupLine($"[bold red]{driveNotRemovableError}[/]");
@@ -340,7 +340,7 @@ public class SdClass
             if (sdcard_new == MainClass.sdcard)
             {
                 // You have already selected this SD card/USB drive text
-                string alreadySelectedError = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                string alreadySelectedError = MainClass.patcherLang == "en-US"
                     ? "You have already selected this SD card/USB drive!"
                     : $"{MainClass.localizedText?["SDCardSelect"]?["alreadySelectedError"]}";
                 AnsiConsole.MarkupLine($"[bold red]{alreadySelectedError}[/]");
@@ -354,15 +354,15 @@ public class SdClass
                 // Drive does not exist text
                 string driveNotExistError = "";
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                    driveNotExistError = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                    driveNotExistError = MainClass.patcherLang == "en-US"
                         ? "Drive does not exist!"
                         : $"{MainClass.localizedText?["SDCardSelect"]?["driveNotExistError"]?["windows"]}";
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                    driveNotExistError = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                    driveNotExistError = MainClass.patcherLang == "en-US"
                         ? "Volume does not exist!"
                         : $"{MainClass.localizedText?["SDCardSelect"]?["driveNotExistError"]?["linux"]}";
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                    driveNotExistError = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                    driveNotExistError = MainClass.patcherLang == "en-US"
                         ? "Volume does not exist!"
                         : $"{MainClass.localizedText?["SDCardSelect"]?["driveNotExistError"]?["osx"]}";
                 AnsiConsole.MarkupLine($"[bold red]{driveNotExistError}[/]");
@@ -381,17 +381,17 @@ public class SdClass
             else
             {
                 // SD card is invalid text
-                string noAppsFolderError_message = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                string noAppsFolderError_message = MainClass.patcherLang == "en-US"
                     ? "Drive detected, but no /apps folder found!"
                     : $"{MainClass.localizedText?["SDCardSelect"]?["noAppsFolderError"]?["message"]}";
-                string noAppsFolderError_instructions = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                string noAppsFolderError_instructions = MainClass.patcherLang == "en-US"
                     ? "Please create it first and then try again."
                     : $"{MainClass.localizedText?["SDCardSelect"]?["noAppsFolderError"]?["instructions"]}";
                 AnsiConsole.MarkupLine($"[bold]{noAppsFolderError_message}[/]");
                 AnsiConsole.MarkupLine($"{noAppsFolderError_instructions}\n");
 
                 // Press any key to continue text
-                string pressAnyKey = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                string pressAnyKey = MainClass.patcherLang == "en-US"
                     ? "Press any key to continue..."
                     : $"{MainClass.localizedText?["SDCardSelect"]?["pressAnyKey"]}";
                 AnsiConsole.MarkupLine($"{pressAnyKey}");

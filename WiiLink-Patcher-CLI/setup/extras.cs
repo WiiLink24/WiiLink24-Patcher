@@ -11,50 +11,50 @@ public class ExtrasClass
             MenuClass.PrintHeader();
 
             // Print title
-            string installExtras = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string installExtras = MainClass.patcherLang == "en-US"
                 ? "Install Extras"
                 : $"{MainClass.localizedText?["InstallExtras"]?["Header"]}";
             AnsiConsole.MarkupLine($"[bold springgreen2_1]{installExtras}[/]\n");
 
             // Print step number and title
-            string stepNum = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string stepNum = MainClass.patcherLang == "en-US"
                 ? "Step 1"
                 : $"{MainClass.localizedText?["InstallExtras"]?["systemChannelRestorer_Setup"]?["stepNum"]}";
-            string stepTitle = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string stepTitle = MainClass.patcherLang == "en-US"
                 ? "System Channel Restorer"
                 : $"{MainClass.localizedText?["InstallExtras"]?["systemChannelRestorer_Setup"]?["stepTitle"]}";
             AnsiConsole.MarkupLine($"[bold]{stepNum}:[/] {stepTitle}\n");
 
             // Display console platform selection menu
-            string AskSystemChannelRestorer = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string AskSystemChannelRestorer = MainClass.patcherLang == "en-US"
                 ? "Would you like to download System Channel Restorer?"
                 : $"{MainClass.localizedText?["InstallExtras"]?["systemChannelRestorer_Setup"]?["systemChannelRestorer"]}";
             AnsiConsole.MarkupLine($"[bold]{AskSystemChannelRestorer}[/]\n");
 
             // Display console platform selection menu
-            string systemChannelRestorerInfo = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string systemChannelRestorerInfo = MainClass.patcherLang == "en-US"
                 ? "System Channel Restorer is a homebrew application that allows for proper installation of Photo Channel 1.1 directly to your console."
                 : $"{MainClass.localizedText?["InstallExtras"]?["systemChannelRestorer_Setup"]?["systemChannelRestorerInfo"]}";
             AnsiConsole.MarkupLine($"[grey]{systemChannelRestorerInfo}[/]");
 
             // Display console platform selection menu
-            string moreSystemChannelRestorerInfo = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string moreSystemChannelRestorerInfo = MainClass.patcherLang == "en-US"
                 ? "Use of System Channel Restorer requires an internet connection on your console, and is more difficult to use on Dolphin than offline WADs."
                 : $"{MainClass.localizedText?["InstallExtras"]?["systemChannelRestorer_Setup"]?["moreSystemChannelRestorerInfo"]}";
             AnsiConsole.MarkupLine($"[grey]{moreSystemChannelRestorerInfo}[/]\n");
 
             // Print Console Platform options
-            string useSystemChannelRestorer = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string useSystemChannelRestorer = MainClass.patcherLang == "en-US"
                 ? "[bold]System Channel Restorer[/]"
                 : $"{MainClass.localizedText?["InstallExtras"]?["systemChannelRestorer_Setup"]?["getSCR"]}";
-            string offlineWADs = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string offlineWADs = MainClass.patcherLang == "en-US"
                 ? "[bold]Offline WADs[/]"
                 : $"{MainClass.localizedText?["InstallExtras"]?["systemChannelRestorer_Setup"]?["offlineWADs"]}";
             AnsiConsole.MarkupLine($"[bold]1.[/] {useSystemChannelRestorer}");
             AnsiConsole.MarkupLine($"[bold]2.[/] {offlineWADs}\n");
 
             // Print instructions
-            string platformInstructions = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string platformInstructions = MainClass.patcherLang == "en-US"
                 ? "< Press [bold white]a number[/] to make your selection, [bold white]Backspace[/] to go back, [bold white]ESC[/] to go back to exit setup >"
                 : $"{MainClass.localizedText?["InstallExtras"]?["systemChannelRestorer_Setup"]?["selectionInstructions"]}";
             AnsiConsole.MarkupLine($"[grey]{platformInstructions}[/]\n");
@@ -128,22 +128,22 @@ public class ExtrasClass
             MenuClass.PrintHeader();
 
             // Print title
-            string installExtras = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string installExtras = MainClass.patcherLang == "en-US"
                 ? "Install Extras"
                 : $"{MainClass.localizedText?["InstallExtras"]?["Header"]}";
             AnsiConsole.MarkupLine($"[bold springgreen2_1]{installExtras}[/]\n");
 
             // Print step number and title
-            string stepNum = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string stepNum = MainClass.patcherLang == "en-US"
                 ? "Step 2"
                 : $"{MainClass.localizedText?["InstallExtras"]?["ExtraChannels_Setup"]?["stepNum"]}";
-            string stepTitle = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string stepTitle = MainClass.patcherLang == "en-US"
                 ? "Select extra channel(s) to install"
                 : $"{MainClass.localizedText?["InstallExtras"]?["ExtraChannels_Setup"]?["stepTitle"]}";
             AnsiConsole.MarkupLine($"[bold]{stepNum}:[/] {stepTitle}\n");
 
             // Display extra channel selection menu
-            string selectExtraChns = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string selectExtraChns = MainClass.patcherLang == "en-US"
                 ? "Select extra channel(s) to install:"
                 : $"{MainClass.localizedText?["InstallExtras"]?["ExtraChannels_Setup"]?["selectExtraChns"]}";
             AnsiConsole.MarkupLine($"[bold]{selectExtraChns}[/]\n");
@@ -187,7 +187,7 @@ public class ExtrasClass
                 AnsiConsole.Markup(currentPage > 1 ? "[bold white]<<[/] " : "   ");
 
                 // Print page number
-                string pageNum = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                string pageNum = MainClass.patcherLang == "en-US"
                     ? $"Page {currentPage} of {totalPages}"
                     : $"{MainClass.localizedText?["CustomSetup"]?["pageNum"]}"
                         .Replace("{currentPage}", currentPage.ToString())
@@ -200,14 +200,14 @@ public class ExtrasClass
 
                 // Print instructions
                 //AnsiConsole.MarkupLine(" [grey](Press [bold white]<-[/] or [bold white]->[/] to navigate pages)[/]\n");
-                string pageInstructions = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                string pageInstructions = MainClass.patcherLang == "en-US"
                     ? "(Press [bold white]<-[/] or [bold white]->[/] to navigate pages)"
                     : $"{MainClass.localizedText?["InstallExtras"]?["pageInstructions"]}";
                 AnsiConsole.MarkupLine($" [grey]{pageInstructions}[/]\n");
             }
 
             // Print regular instructions
-            string regInstructions = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string regInstructions = MainClass.patcherLang == "en-US"
                 ? "< Press [bold white]a number[/] to select/deselect a channel, [bold white]ENTER[/] to continue, [bold white]Backspace[/] to go back, [bold white]ESC[/] to go back to exit setup >"
                 : $"{MainClass.localizedText?["InstallExtras"]?["regInstructions"]}";
             AnsiConsole.MarkupLine($"[grey]{regInstructions}[/]\n");
@@ -227,10 +227,10 @@ public class ExtrasClass
             }
 
             // Not selected and Selected strings
-            string notSelected = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string notSelected = MainClass.patcherLang == "en-US"
                 ? "Not selected"
                 : $"{MainClass.localizedText?["InstallExtras"]?["notSelected"]}";
-            string selectedText = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string selectedText = MainClass.patcherLang == "en-US"
                 ? "Selected"
                 : $"{MainClass.localizedText?["InstallExtras"]?["selected"]}";
 
@@ -262,7 +262,7 @@ public class ExtrasClass
                     if (!channelMap.Values.Any(MainClass.combinedChannels_selection.Contains))
                     {
                         //AnsiConsole.MarkupLine("\n[bold red]ERROR:[/] You must select at least one channel to proceed!");
-                        string mustSelectOneChannel = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                        string mustSelectOneChannel = MainClass.patcherLang == "en-US"
                             ? "[bold red]ERROR:[/] You must select at least one channel to proceed!"
                             : $"{MainClass.localizedText?["InstallExtras"]?["mustSelectOneChannel"]}";
                         AnsiConsole.MarkupLine($"\n{mustSelectOneChannel}");
@@ -303,34 +303,34 @@ public class ExtrasClass
             MenuClass.PrintHeader();
 
             // Print title
-            string installExtras = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string installExtras = MainClass.patcherLang == "en-US"
                 ? "Install Extras"
                 : $"{MainClass.localizedText?["InstallExtras"]?["Header"]}";
             AnsiConsole.MarkupLine($"[bold springgreen2_1]{installExtras}[/]\n");
 
             // Print step number and title
-            string stepNum = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string stepNum = MainClass.patcherLang == "en-US"
                 ? "Step 3"
                 : $"{MainClass.localizedText?["CustomSetup"]?["ConsolePlatform_Setup"]?["stepNum"]}";
-            string stepTitle = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string stepTitle = MainClass.patcherLang == "en-US"
                 ? "Select Console Platform"
                 : $"{MainClass.localizedText?["CustomSetup"]?["ConsolePlatform_Setup"]?["stepTitle"]}";
             AnsiConsole.MarkupLine($"[bold]{stepNum}:[/] {stepTitle}\n");
 
             // Display console platform selection menu
-            string selectConsolePlatform = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string selectConsolePlatform = MainClass.patcherLang == "en-US"
                 ? "Which console platform are you installing these channels on?"
                 : $"{MainClass.localizedText?["CustomSetup"]?["ConsolePlatform_Setup"]?["selectConsolePlatform"]}";
             AnsiConsole.MarkupLine($"[bold]{selectConsolePlatform}[/]\n");
 
             // Print Console Platform options
-            string onWii = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string onWii = MainClass.patcherLang == "en-US"
                 ? "[bold]Wii[/]"
                 : $"{MainClass.localizedText?["CustomSetup"]?["ConsolePlatform_Setup"]?["onWii"]}";
-            string onvWii = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string onvWii = MainClass.patcherLang == "en-US"
                 ? "[bold]vWii (Wii U)[/]"
                 : $"{MainClass.localizedText?["CustomSetup"]?["ConsolePlatform_Setup"]?["onvWii"]}";
-            string onDolphin = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string onDolphin = MainClass.patcherLang == "en-US"
                 ? "[bold]Dolphin Emulator[/]"
                 : $"{MainClass.localizedText?["CustomSetup"]?["ConsolePlatform_Setup"]?["onDolphin"]}";
             AnsiConsole.MarkupLine($"[bold]1.[/] {onWii}");
@@ -338,7 +338,7 @@ public class ExtrasClass
             AnsiConsole.MarkupLine($"[bold]3.[/] {onDolphin}\n");
 
             // Print instructions
-            string platformInstructions = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string platformInstructions = MainClass.patcherLang == "en-US"
                 ? "< Press [bold white]a number[/] to select platform, [bold white]Backspace[/] to go back, [bold white]ESC[/] to go back to exit setup >"
                 : $"{MainClass.localizedText?["CustomSetup"]?["ConsolePlatform_Setup"]?["platformInstructions"]}";
             AnsiConsole.MarkupLine($"[grey]{platformInstructions}[/]\n");
@@ -410,10 +410,10 @@ public class ExtrasClass
             MenuClass.PrintHeader();
 
             // Print title
-            string installExtras = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string installExtras = MainClass.patcherLang == "en-US"
                 ? "Install Extras"
                 : $"{MainClass.localizedText?["InstallExtras"]?["Header"]}";
-            string summaryHeader = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string summaryHeader = MainClass.patcherLang == "en-US"
                 ? "Summary of selected channels to be installed:"
                 : $"{MainClass.localizedText?["InstallExtras"]?["summaryScreen"]?["summaryHeader"]}";
             AnsiConsole.MarkupLine($"[bold springgreen2_1]{installExtras}[/]\n");
@@ -425,10 +425,10 @@ public class ExtrasClass
             grid.AddColumn();
 
             // Grid header text
-            string extraChannels = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string extraChannels = MainClass.patcherLang == "en-US"
                 ? "Extra Channels:"
                 : $"{MainClass.localizedText?["InstallExtras"]?["summaryScreen"]?["extraChannels"]}";
-            string consoleVersion = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string consoleVersion = MainClass.patcherLang == "en-US"
                 ? "Console Platform:"
                 : $"{MainClass.localizedText?["InstallExtras"]?["summaryScreen"]?["ConsoleVersion"]}";
 
@@ -444,18 +444,18 @@ public class ExtrasClass
             AnsiConsole.Write(grid);
 
             // Print instructions
-            string prompt = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string prompt = MainClass.patcherLang == "en-US"
                 ? "Are you sure you want to install these selected channels?"
                 : $"{MainClass.localizedText?["InstallExtras"]?["summaryScreen"]?["confirmation"]?["prompt"]}";
 
             // User confirmation strings
-            string yes = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string yes = MainClass.patcherLang == "en-US"
                 ? "Yes"
                 : $"{MainClass.localizedText?["yes"]}";
-            string noStartOver = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string noStartOver = MainClass.patcherLang == "en-US"
                 ? "No, start over"
                 : $"{MainClass.localizedText?["InstallExtras"]?["summaryScreen"]?["confirmation"]?["noStartOver"]}";
-            string noGoBackToMainMenu = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string noGoBackToMainMenu = MainClass.patcherLang == "en-US"
                 ? "No, go back to Main Menu"
                 : $"{MainClass.localizedText?["InstallExtras"]?["summaryScreen"]?["confirmation"]?["noGoBackToMainMenu"]}";
 

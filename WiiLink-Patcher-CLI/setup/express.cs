@@ -11,44 +11,44 @@ public class ExpressClass
             MenuClass.PrintHeader();
 
             // Express Install Header Text
-            string EIHeader = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string EIHeader = MainClass.patcherLang == "en-US"
                 ? "Express Install"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["Header"]}";
             AnsiConsole.MarkupLine($"[bold springgreen2_1]{EIHeader}[/]\n");
 
             // Welcome the user to the Express Install of WiiLink
-            string welcome = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string welcome = MainClass.patcherLang == "en-US"
                 ? "[bold]Welcome to the Express Install of [springgreen2_1]WiiLink[/]![/]"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["WC24Setup"]?["welcome"]}";
             AnsiConsole.MarkupLine($"{welcome}\n");
 
             // Step 1 Text
-            string stepNum = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string stepNum = MainClass.patcherLang == "en-US"
                 ? "Step 1"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["WC24Setup"]?["stepNum"]}";
-            string stepTitle = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string stepTitle = MainClass.patcherLang == "en-US"
                 ? "Choose region for WiiConnect24 services"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["WC24Setup"]?["stepTitle"]}";
 
             AnsiConsole.MarkupLine($"[bold]{stepNum}: {stepTitle}[/]\n");
 
             // Instructions Text
-            string instructions = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string instructions = MainClass.patcherLang == "en-US"
                 ? "For the WiiConnect24 services, which region would you like to install?"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["WC24Setup"]?["instructions"]}";
             AnsiConsole.MarkupLine($"{instructions}\n");
 
             // User Choices
-            string northAmerica = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string northAmerica = MainClass.patcherLang == "en-US"
                 ? "North America (NTSC-U)"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["WC24Setup"]?["northAmerica"]}";
-            string pal = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string pal = MainClass.patcherLang == "en-US"
                 ? "Europe (PAL)"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["WC24Setup"]?["pal"]}";
-            string japan = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string japan = MainClass.patcherLang == "en-US"
                 ? "Japan (NTSC-J)"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["WC24Setup"]?["japan"]}";
-            string goBackToMainMenu = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string goBackToMainMenu = MainClass.patcherLang == "en-US"
                 ? "Go Back to Main Menu"
                 : $"{MainClass.localizedText?["goBackToMainMenu"]}";
 
@@ -90,34 +90,34 @@ public class ExpressClass
             MenuClass.PrintHeader();
 
             // Express Install Header Text
-            string EIHeader = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string EIHeader = MainClass.patcherLang == "en-US"
                 ? "Express Install"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["Header"]}";
             AnsiConsole.MarkupLine($"[bold springgreen2_1]{EIHeader}[/]\n");
 
             // Would you like to install WiiLink's regional channel services Text
-            string wouldYouLike = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string wouldYouLike = MainClass.patcherLang == "en-US"
                 ? "Would you like to install [bold][springgreen2_1]WiiLink[/]'s regional channel services[/]?"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["WiiLinkSetup"]?["wouldYouLike"]}";
             AnsiConsole.MarkupLine($"{wouldYouLike}\n");
 
             // Services that would be installed Text
-            string toBeInstalled = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string toBeInstalled = MainClass.patcherLang == "en-US"
                 ? "Services that would be installed:"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["WiiLinkSetup"]?["toBeInstalled"]}";
             AnsiConsole.MarkupLine($"{toBeInstalled}\n");
 
             // Channel Names
-            string wiiRoom = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string wiiRoom = MainClass.patcherLang == "en-US"
                 ? "Wii Room [bold](Wii no Ma)[/]"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["WiiLinkSetup"]?["WiiRoom"]}";
-            string photoPrints = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string photoPrints = MainClass.patcherLang == "en-US"
                 ? "Photo Prints Channel [bold](Digicam Print Channel)[/]"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["WiiLinkSetup"]?["PhotoPrints"]}";
-            string foodChannel = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string foodChannel = MainClass.patcherLang == "en-US"
                 ? "Food Channel [bold](Demae Channel)[/]"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["WiiLinkSetup"]?["FoodChannel"]}";
-            string kirbyTV = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string kirbyTV = MainClass.patcherLang == "en-US"
                 ? "Kirby TV Channel"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["WiiLinkSetup"]?["KirbyTV"]}";
 
@@ -127,10 +127,10 @@ public class ExpressClass
             AnsiConsole.MarkupLine($"  ● {kirbyTV}\n");
 
             // Yes or No Text
-            string yes = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string yes = MainClass.patcherLang == "en-US"
                 ? "Yes"
                 : $"{MainClass.localizedText?["yes"]}";
-            string no = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string no = MainClass.patcherLang == "en-US"
                 ? "No"
                 : $"{MainClass.localizedText?["no"]}";
 
@@ -138,7 +138,7 @@ public class ExpressClass
             Console.WriteLine($"2. {no}\n");
 
             // Go Back to Main Menu Text
-            string goBackToMainMenu = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string goBackToMainMenu = MainClass.patcherLang == "en-US"
                 ? "Go Back to Main Menu"
                 : $"{MainClass.localizedText?["goBackToMainMenu"]}";
             Console.WriteLine($"3. {goBackToMainMenu}\n");
@@ -171,31 +171,31 @@ public class ExpressClass
             MenuClass.PrintHeader();
 
             // Express Install Header Text
-            string EIHeader = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string EIHeader = MainClass.patcherLang == "en-US"
                 ? "Express Install"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["Header"]}";
             AnsiConsole.MarkupLine($"[bold springgreen2_1]{EIHeader}[/]\n");
 
             // Step 2 Text
-            string step2Message = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string step2Message = MainClass.patcherLang == "en-US"
                 ? "Step 2: Choose WiiLink's regional channels language"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["WiiLinkChannels_LangSetup"]?["step2Message"]}";
             AnsiConsole.MarkupLine($"[bold]{step2Message}[/]\n");
 
             // Instructions Text
-            string instructions = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string instructions = MainClass.patcherLang == "en-US"
                 ? "For [bold]Wii Room[/], [bold]Photo Prints Channel[/], and [bold]Food Channel[/], which language would you like to select?"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["WiiLinkChannels_LangSetup"]?["instructions"]}";
             AnsiConsole.MarkupLine($"{instructions}\n");
 
             // User Choices
-            string translated = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string translated = MainClass.patcherLang == "en-US"
                 ? "Translated (eg. English, French, etc.)"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["WiiLinkChannels_LangSetup"]?["translatedOption"]}";
-            string japanese = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string japanese = MainClass.patcherLang == "en-US"
                 ? "Japanese"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["WiiLinkChannels_LangSetup"]?["japaneseOption"]}";
-            string goBackToMainMenu = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string goBackToMainMenu = MainClass.patcherLang == "en-US"
                 ? "Go Back to Main Menu"
                 : $"{MainClass.localizedText?["goBackToMainMenu"]}";
 
@@ -234,27 +234,27 @@ public class ExpressClass
             MenuClass.PrintHeader();
 
             // Express Install Header Text
-            string EIHeader = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string EIHeader = MainClass.patcherLang == "en-US"
                 ? "Express Install"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["Header"]}";
             AnsiConsole.MarkupLine($"[bold springgreen2_1]{EIHeader}[/]\n");
 
             // Step 2A Text
-            string stepNumber = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string stepNumber = MainClass.patcherLang == "en-US"
                 ? "Step 2A"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["WiiRoomConfiguration"]?["stepNum"]}";
-            string step1aTitle = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string step1aTitle = MainClass.patcherLang == "en-US"
                 ? "Choose Wii Room language"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["WiiRoomConfiguration"]?["stepTitle"]}";
             AnsiConsole.MarkupLine($"[bold]{stepNumber}: {step1aTitle}[/]\n");
 
             // Instructions Text
-            string instructions = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string instructions = MainClass.patcherLang == "en-US"
                 ? "For [bold]Wii Room[/], which language would you like to select?"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["WiiRoomConfiguration"]?["instructions"]}";
             AnsiConsole.MarkupLine($"{instructions}\n");
 
-            string goBackToMainMenu = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string goBackToMainMenu = MainClass.patcherLang == "en-US"
                 ? "Go Back to Main Menu"
                 : $"{MainClass.localizedText?["goBackToMainMenu"]}";
 
@@ -339,34 +339,34 @@ public class ExpressClass
             MenuClass.PrintHeader();
 
             // Express Install Header Text
-            string EIHeader = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string EIHeader = MainClass.patcherLang == "en-US"
                 ? "Express Install"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["Header"]}";
             AnsiConsole.MarkupLine($"[bold springgreen2_1]{EIHeader}[/]\n");
 
             // Step 2B Text
-            string stepNumber = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string stepNumber = MainClass.patcherLang == "en-US"
                 ? "Step 2B"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["DemaeConfiguration"]?["stepNum"]}";
-            string step1bTitle = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string step1bTitle = MainClass.patcherLang == "en-US"
                 ? "Choose Food Channel version"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["DemaeConfiguration"]?["stepTitle"]}";
             AnsiConsole.MarkupLine($"[bold]{stepNumber}: {step1bTitle}[/]\n");
 
             // Instructions Text
-            string instructions = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string instructions = MainClass.patcherLang == "en-US"
                 ? "For [bold]Food Channel[/], which version would you like to install?"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["DemaeConfiguration"]?["instructions"]}";
             AnsiConsole.MarkupLine($"{instructions}\n");
 
             // User Choices
-            string demaeStandard = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string demaeStandard = MainClass.patcherLang == "en-US"
                 ? "Standard [bold](Fake Ordering)[/]"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["DemaeConfiguration"]?["demaeStandard"]}";
-            string demaeDominos = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string demaeDominos = MainClass.patcherLang == "en-US"
                 ? "Domino's [bold](US and Canada only)[/]"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["DemaeConfiguration"]?["demaeDominos"]}";
-            string goBackToMainMenu = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string goBackToMainMenu = MainClass.patcherLang == "en-US"
                 ? "Go Back to Main Menu"
                 : $"{MainClass.localizedText?["goBackToMainMenu"]}";
 
@@ -403,38 +403,38 @@ public class ExpressClass
             MenuClass.PrintHeader();
 
             // Express Install Header Text
-            string EIHeader = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string EIHeader = MainClass.patcherLang == "en-US"
                 ? "Express Install"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["Header"]}";
             AnsiConsole.MarkupLine($"[bold springgreen2_1]{EIHeader}[/]\n");
 
             // Change step number depending on if WiiConnect24 is being installed or not
-            string stepNum = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string stepNum = MainClass.patcherLang == "en-US"
                 ? !MainClass.installRegionalChannels ? "Step 2" : "Step 3"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["ChoosePlatform"]?[!MainClass.installRegionalChannels ? "ifNoWC24" : "ifWC24"]?["stepNum"]}";
-            string stepTitle = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string stepTitle = MainClass.patcherLang == "en-US"
                 ? "Choose console platform"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["ChoosePlatform"]?["stepTitle"]}";
 
             AnsiConsole.MarkupLine($"[bold]{stepNum}: {stepTitle}[/]\n");
 
             // Instructions Text
-            string instructions = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string instructions = MainClass.patcherLang == "en-US"
                 ? "Which Wii version are you installing to?"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["ChoosePlatform"]?["instructions"]}";
             AnsiConsole.MarkupLine($"{instructions}\n");
 
             // User Choices
-            string wii = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string wii = MainClass.patcherLang == "en-US"
                 ? "Wii"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["ChoosePlatform"]?["wii"]}";
-            string vWii = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string vWii = MainClass.patcherLang == "en-US"
                 ? "vWii [bold](Wii U)[/]"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["ChoosePlatform"]?["vWii"]}";
-            string Dolphin = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string Dolphin = MainClass.patcherLang == "en-US"
                 ? "Dolphin Emulator"
                 : $"{MainClass.localizedText?["ExpressInstall"]?["ChoosePlatform"]?["dolphin"]}";
-            string goBackToMainMenu = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string goBackToMainMenu = MainClass.patcherLang == "en-US"
                 ? "Go Back to Main Menu"
                 : $"{MainClass.localizedText?["goBackToMainMenu"]}";
 
@@ -503,7 +503,7 @@ public class ExpressClass
         string internationalOrJapanese = (MainClass.wc24_reg == MainClass.Region.USA || MainClass.wc24_reg == MainClass.Region.PAL) ? "International" : "Japanese";
         string NCTitle, forecastTitle, newsTitle, evcTitle, cmocTitle;
 
-        if (MainClass.patcherLang == MainClass.PatcherLanguage.en)
+        if (MainClass.patcherLang == "en-US")
         {
             NCTitle = $"{(MainClass.wc24_reg == MainClass.Region.USA || MainClass.wc24_reg == MainClass.Region.PAL ? "Nintendo Channel" : "Minna no Nintendo Channel")} [bold]({MainClass.wc24_reg})[/]";
             forecastTitle = $"Forecast Channel [bold]({MainClass.wc24_reg})[/]";
@@ -585,10 +585,10 @@ public class ExpressClass
             MenuClass.PrintHeader();
 
             // Progress bar and completion display
-            string patching = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string patching = MainClass.patcherLang == "en-US"
                 ? "Patching... this can take some time depending on the processing speed (CPU) of your computer."
                 : $"{MainClass.localizedText?["PatchingProgress"]?["patching"]}";
-            string progress = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string progress = MainClass.patcherLang == "en-US"
                 ? "Progress"
                 : $"{MainClass.localizedText?["PatchingProgress"]?["progress"]}";
             AnsiConsole.MarkupLine($"[bold][[*]] {patching}[/]\n");
@@ -612,10 +612,10 @@ public class ExpressClass
             AnsiConsole.Markup(progressBar.ToString());
 
             // Display percentage
-            string percentComplete = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string percentComplete = MainClass.patcherLang == "en-US"
                 ? "completed"
                 : $"{MainClass.localizedText?["PatchingProgress"]?["percentComplete"]}";
-            string pleaseWait = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string pleaseWait = MainClass.patcherLang == "en-US"
                 ? "Please wait while the patching process is in progress..."
                 : $"{MainClass.localizedText?["PatchingProgress"]?["pleaseWait"]}";
             AnsiConsole.Markup($" [bold]{percentage}%[/] {percentComplete}\n\n");
@@ -624,10 +624,10 @@ public class ExpressClass
             //// Display progress for each channel ////
 
             // Pre-Patching Section: Downloading files
-            string prePatching = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string prePatching = MainClass.patcherLang == "en-US"
                 ? "Pre-Patching"
                 : $"{MainClass.localizedText?["PatchingProgress"]?["prePatching"]}";
-            string downloadingFiles = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string downloadingFiles = MainClass.patcherLang == "en-US"
                 ? "Downloading files..."
                 : $"{MainClass.localizedText?["PatchingProgress"]?["downloadingFiles"]}";
             AnsiConsole.MarkupLine($"[bold]{prePatching}:[/]");
@@ -645,7 +645,7 @@ public class ExpressClass
             }
 
             // Patching Section: Patching WiiConnect24 channels (if applicable)
-            string patchingWiiConnect24Channels = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string patchingWiiConnect24Channels = MainClass.patcherLang == "en-US"
                 ? "Patching WiiConnect24 Channels"
                 : $"{MainClass.localizedText?["PatchingProgress"]?["patchingWiiConnect24Channels"]}";
 
@@ -669,7 +669,7 @@ public class ExpressClass
             // Patching Section: Patching Regional Channels
             if (MainClass.installRegionalChannels)
             {
-                string patchingWiiLinkChannels = MainClass.patcherLang == MainClass.PatcherLanguage.en
+                string patchingWiiLinkChannels = MainClass.patcherLang == "en-US"
                     ? "Patching Regional Channels"
                     : $"{MainClass.localizedText?["PatchingProgress"]?["patchingWiiLinkChannels"]}";
                 AnsiConsole.MarkupLine($"\n[bold]{patchingWiiLinkChannels}:[/]");
@@ -691,10 +691,10 @@ public class ExpressClass
             }
 
             // Post-Patching Section: Finishing up
-            string postPatching = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string postPatching = MainClass.patcherLang == "en-US"
                 ? "Post-Patching"
                 : $"{MainClass.localizedText?["PatchingProgress"]?["postPatching"]}";
-            string finishingUp = MainClass.patcherLang == MainClass.PatcherLanguage.en
+            string finishingUp = MainClass.patcherLang == "en-US"
                 ? "Finishing up..."
                 : $"{MainClass.localizedText?["PatchingProgress"]?["finishingUp"]}";
             AnsiConsole.MarkupLine($"\n[bold]{postPatching}:[/]");
