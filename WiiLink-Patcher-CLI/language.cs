@@ -34,9 +34,6 @@ public class LanguageClass
                 MenuClass.PrintHeader();
                 MenuClass.PrintNotice();
 
-                Console.WriteLine($"{MainClass.shortLang}");
-                Console.WriteLine($"{MainClass.sysLang}\n");
-
                 AnsiConsole.MarkupLine($"[bold springgreen2_1]Detected Language:[/] {detectedLang}\n");
                 AnsiConsole.MarkupLine("Press [bold]C[/] to change language, or any other key to continue with this language.\n");
 
