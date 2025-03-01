@@ -14,6 +14,9 @@ public class LanguageClass
             // Dictionary for language codes and their names
             Dictionary<string, string> languages = JsonConvert.DeserializeObject<Dictionary<string, string>>(MainClass.languageList) ?? throw new InvalidOperationException();
 
+            MenuClass.PrintHeader();
+            MenuClass.PrintNotice();
+
             if (languages.ContainsKey(MainClass.sysLang))
             {
                 langMatches = 1;
@@ -23,17 +26,16 @@ public class LanguageClass
             {
                 foreach (string langCode in languages.Keys)
                 {
-                    if (langCode.Contains(MainClass.shortLang))
+                    if (langCode.StartsWith(MainClass.shortLang))
+                    {
                         langMatches += 1;
                         detectedLang = languages[langCode];
+                    }
                 }
             }
 
             if (langMatches == 1)
             {
-                MenuClass.PrintHeader();
-                MenuClass.PrintNotice();
-
                 AnsiConsole.MarkupLine($"[bold springgreen2_1]Detected Language:[/] {detectedLang}\n");
                 AnsiConsole.MarkupLine("Press [bold]C[/] to change language, or any other key to continue with this language.\n");
 

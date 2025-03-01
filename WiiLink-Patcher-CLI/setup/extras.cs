@@ -105,13 +105,20 @@ public class ExtrasClass
             extraChannelMap.Add("Internet Channel [bold](Japan)[/]", "ic_jp");
         }
         
+        // Not selected and Selected strings
+        string notSelected = MainClass.patcherLang == "en-US"
+            ? "Not selected"
+            : $"{MainClass.localizedText?["CustomSetup"]?["notSelected"]}";
+        string selectedText = MainClass.patcherLang == "en-US"
+            ? "Selected"
+            : $"{MainClass.localizedText?["CustomSetup"]?["selected"]}";
 
         // Create channel map dictionary
         var channelMap = extraChannelMap.ToDictionary(x => x.Key, x => x.Value);
 
         // Initialize selection list to "Not selected" using LINQ
         if (MainClass.combinedChannels_selection.Count == 0) // Only do this
-            MainClass.combinedChannels_selection = channelMap.Values.Select(_ => "[grey]Not selected[/]").ToList();
+            MainClass.combinedChannels_selection = channelMap.Values.Select(_ => $"[grey]{notSelected}[/]").ToList();
 
         if (systemChannelRestorer == true)
         {
@@ -225,14 +232,6 @@ public class ExtrasClass
             {
                 currentPage++;
             }
-
-            // Not selected and Selected strings
-            string notSelected = MainClass.patcherLang == "en-US"
-                ? "Not selected"
-                : $"{MainClass.localizedText?["InstallExtras"]?["notSelected"]}";
-            string selectedText = MainClass.patcherLang == "en-US"
-                ? "Selected"
-                : $"{MainClass.localizedText?["InstallExtras"]?["selected"]}";
 
             // Handle user input
             switch (choice)

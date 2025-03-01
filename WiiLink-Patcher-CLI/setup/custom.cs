@@ -53,12 +53,12 @@ public class CustomClass
         var channelMap = wc24ChannelMap.Concat(wiiLinkChannelMap).ToDictionary(x => x.Key, x => x.Value);
 
         // Not selected and Selected strings
-            string notSelected = MainClass.patcherLang == "en-US"
-                ? "Not selected"
-                : $"{MainClass.localizedText?["CustomSetup"]?["notSelected"]}";
-            string selectedText = MainClass.patcherLang == "en-US"
-                ? "Selected"
-                : $"{MainClass.localizedText?["CustomSetup"]?["selected"]}";
+        string notSelected = MainClass.patcherLang == "en-US"
+            ? "Not selected"
+            : $"{MainClass.localizedText?["CustomSetup"]?["notSelected"]}";
+        string selectedText = MainClass.patcherLang == "en-US"
+            ? "Selected"
+            : $"{MainClass.localizedText?["CustomSetup"]?["selected"]}";
 
         // Initialize selection list to "Not selected" using LINQ
         if (MainClass.combinedChannels_selection.Count == 0) // Only do this

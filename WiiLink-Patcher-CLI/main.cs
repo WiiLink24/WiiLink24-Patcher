@@ -14,8 +14,8 @@ public class MainClass
     //// Build Info ////
     public static readonly string version = "v3.0.0 RC1";
     public static readonly string copyrightYear = DateTime.Now.Year.ToString();
-    public static readonly string buildDate = "February 14th, 2025";
-    public static readonly string buildTime = "9:40 PM";
+    public static readonly string buildDate = "March 1st, 2025";
+    public static readonly string buildTime = "8:25 PM";
     public static string? sdcard = SdClass.DetectRemovableDrive;
     public static readonly string wiiLinkPatcherUrl = "https://patcher.wiilink24.com";
     ////////////////////
@@ -62,8 +62,8 @@ public class MainClass
     public static int console_height = 0;
 
     // Get system language
-    public static string sysLang = CultureInfo.InstalledUICulture.Name;
-    public static string shortLang = sysLang[..2];
+    public static readonly string sysLang = CultureInfo.InstalledUICulture.Name;
+    public static readonly string shortLang = CultureInfo.InstalledUICulture.TwoLetterISOLanguageName;
 
     // HttpClient
     public static readonly HttpClient httpClient = new() { Timeout = TimeSpan.FromMinutes(1) };
