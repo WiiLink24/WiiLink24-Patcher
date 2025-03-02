@@ -1,4 +1,3 @@
-using System.Text;
 using Spectre.Console;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
@@ -10,6 +9,7 @@ public class LanguageClass
     {
             int langMatches = 0;
             string detectedLang = "";
+            string detectedLangName = "";
 
             // Dictionary for language codes and their names
             Dictionary<string, string> languages = JsonConvert.DeserializeObject<Dictionary<string, string>>(MainClass.languageList) ?? throw new InvalidOperationException();
@@ -20,7 +20,8 @@ public class LanguageClass
             if (languages.ContainsKey(MainClass.sysLang))
             {
                 langMatches = 1;
-                detectedLang = languages[MainClass.sysLang];
+                detectedLang = MainClass.sysLang;
+                detectedLangName = languages[MainClass.sysLang];
             }
             else
             {
@@ -29,14 +30,15 @@ public class LanguageClass
                     if (langCode.StartsWith(MainClass.shortLang))
                     {
                         langMatches += 1;
-                        detectedLang = languages[langCode];
+                        detectedLang = langCode;
+                        detectedLangName = languages[langCode];
                     }
                 }
             }
 
             if (langMatches == 1)
             {
-                AnsiConsole.MarkupLine($"[bold springgreen2_1]Detected Language:[/] {detectedLang}\n");
+                AnsiConsole.MarkupLine($"[bold springgreen2_1]Detected Language:[/] {detectedLangName}\n");
                 AnsiConsole.MarkupLine("Press [bold]C[/] to change language, or any other key to continue with this language.\n");
 
                 AnsiConsole.Markup("Choose: ");
@@ -61,6 +63,10 @@ public class LanguageClass
     // Language Menu function, supports English, Spanish, French, and Japanese
     public static void LanguageMenu(bool startup)
     {
+        // Page setup
+        const int ITEMS_PER_PAGE = 9;
+        int currentPage = 1;
+
         while (true)
         {
             MenuClass.PrintHeader();
@@ -75,67 +81,105 @@ public class LanguageClass
                 : $"{MainClass.localizedText?["LanguageSettings"]?["chooseALanguage"]}";
             AnsiConsole.MarkupLine($"[bold springgreen2_1]{chooseALanguage}[/]\n");
 
-            // Display languages
-            StringBuilder choices = new();
-            for (int i = 1; i <= languages.Count; i++)
+            var grid = new Grid();
+
+            grid.AddColumn();
+
+            // Calculate the start and end indices for the items on the current page
+            (int start, int end) = MenuClass.GetPageIndices(currentPage, languages.Count, ITEMS_PER_PAGE);
+
+            // Display list of channels
+            for (int i = start; i < end; i++)
             {
-                AnsiConsole.MarkupLine($"[bold]{i}.[/] {languages.ElementAt(i - 1).Value}");
-                choices.Append(i);
+                KeyValuePair<string, string> language = languages.ElementAt(i);
+                grid.AddRow($"[bold][[{i - start + 1}]][/] {language.Value}");
+
+                // Add blank rows if there are less than nine pages
+                if (i == end - 1 && end - start < 9)
+                {
+                    int numBlankRows = 9 - (end - start);
+                    for (int j = 0; j < numBlankRows; j++)
+                    {
+                        grid.AddRow("");
+                    }
+                }
             }
 
-            AnsiConsole.Markup("\n");
+            AnsiConsole.Write(grid);
+            Console.WriteLine();
 
-            if (!startup)
+            // Page navigation
+            double totalPages = Math.Ceiling((double)languages.Count / ITEMS_PER_PAGE);
+
+            // Only display page navigation and number if there's more than one page
+            if (totalPages > 1)
             {
-                choices.Append(languages.Count + 1); // So user can go back to Settings Menu
+                // If the current page is greater than 1, display a bold white '<<' for previous page navigation
+                // Otherwise, display two lines '||'
+                AnsiConsole.Markup(currentPage > 1 ? "[bold white]<<[/] " : "   ");
 
-                // Go back to Settings Menu text
-                string goBack = MainClass.patcherLang == "en-US"
-                    ? "Go back to Settings Menu"
-                    : $"{MainClass.localizedText?["LanguageSettings"]?["goBack"]}";
-                AnsiConsole.MarkupLine($"[bold]{languages.Count + 1}.[/] {goBack}\n");
+                // Print page number
+                string pageNum = MainClass.patcherLang == "en-US"
+                    ? $"Page {currentPage} of {totalPages}"
+                    : $"{MainClass.localizedText?["CustomSetup"]?["pageNum"]}"
+                        .Replace("{currentPage}", currentPage.ToString())
+                        .Replace("{totalPages}", totalPages.ToString());
+                AnsiConsole.Markup($"[bold]{pageNum}[/] ");
+
+                // If the current page is less than total pages, display a bold white '>?' for next page navigation
+                // Otherwise, display a space '  '
+                AnsiConsole.Markup(currentPage < totalPages ? "[bold white]>>[/]" : "  ");
+
+                // Print instructions
+                AnsiConsole.MarkupLine($" [grey](Press [bold white]<-[/] or [bold white]->[/] to navigate pages)[/]\n");
             }
 
-            int choice = MenuClass.UserChoose(choices.ToString());
+            // Print regular instructions
+            string regInstructions = "";
+            if (startup)
+                regInstructions = "< Press [bold white]a number[/] to select your language >";
+            else
+            {
+                regInstructions = "< Press [bold white]a number[/] to select your language or [bold white]ESC[/] to return to settings >";
+            }
+            AnsiConsole.MarkupLine($"[grey]{regInstructions}[/]\n");
 
-            // Check if choice is valid
-            if (choice < 1 || choice > languages.Count + 1)
-                continue; // Restart LanguageMenu
+            // Generate the choice string dynamically
+            string choices = string.Join("", Enumerable.Range(1, ITEMS_PER_PAGE).Select(n => n.ToString()));
+            int choice = MenuClass.UserChoose(choices);
+
+            // Handle page navigation
+            if (choice == -99 && currentPage > 1) // Left arrow
+            {
+                currentPage--;
+            }
+            else if (choice == 99 && currentPage < totalPages) // Right arrow
+            {
+                currentPage++;
+            }
+            
+            if (choice == -1 && !startup) // Escape
+            {
+                break;
+            }
 
             // Map choice to language code
-            if (choice <= languages.Count)
+            if (choice >= 1 && choice <= Math.Min(ITEMS_PER_PAGE, languages.Count - start))
             {
-                var selectedLanguage = languages.ElementAt(choice - 1);
+                var selectedLanguage = languages.ElementAt(start + choice - 1);
                 var langCode = selectedLanguage.Key;
 
                 // Since English is hardcoded, there's no language pack for it
                 if (langCode == "en-US")
                 {
-                    if (startup)
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        SettingsClass.SettingsMenu();
-                        break;
-                    }
+                    MainClass.patcherLang = "en-US";
+                    break;
                 }
 
                 // Download language pack
                 DownloadLanguagePack(langCode);
 
-                // Set localizedText to use the language pack
-                MainClass.localizedText = JObject.Parse(File.ReadAllText(Path.Join(MainClass.tempDir, "LanguagePack", $"LocalizedText.{langCode}.json")));
-
-                if (startup)
-                    break;
-                else
-                    SettingsClass.SettingsMenu();
-            }
-            else if (choice == languages.Count + 1 && !startup)
-            {
-                SettingsClass.SettingsMenu();
+                break;
             }
         }
     }
@@ -195,6 +239,10 @@ public class LanguageClass
         {
             // Set programLang to chosen language code
             MainClass.patcherLang = languageCode;
+
+
+            // Set localizedText to use the language pack
+            MainClass.localizedText = JObject.Parse(File.ReadAllText(Path.Join(MainClass.tempDir, "LanguagePack", $"LocalizedText.{languageCode}.json")));
         }
     }
 
