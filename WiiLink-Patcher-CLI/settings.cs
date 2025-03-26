@@ -73,8 +73,8 @@ public class SettingsClass
         string buildInfo = MainClass.patcherLang == "en-US"
             ? $"This build was compiled on [bold springgreen2_1]{MainClass.buildDate}[/] at [bold springgreen2_1]{MainClass.buildTime}[/]."
             : $"{MainClass.localizedText?["Credits"]?["buildInfo"]}"
-                .Replace("{MainClass.buildDate}", MainClass.buildDate)
-                .Replace("{MainClass.buildTime}", MainClass.buildTime);
+                .Replace("{main.buildDate}", MainClass.buildDate)
+                .Replace("{main.buildTime}", MainClass.buildTime);
         AnsiConsole.MarkupLine($"{buildInfo}\n");
 
         // Credits table
