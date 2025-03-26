@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using System.Runtime.InteropServices;
 using Spectre.Console;
 using System.Net;
@@ -12,7 +12,7 @@ using System.Globalization;
 public class MainClass
 {
     //// Build Info ////
-    public static readonly string version = "v3.0.0 RC1";
+    public static readonly string version = "v2.1.0";
     public static readonly string copyrightYear = DateTime.Now.Year.ToString();
     public static readonly DateTime buildDateTime = new DateTime(2025, 3, 26, 15, 30, 00); // Year, Month, Day, Hour, Minute, Second
     public static readonly string buildDate = buildDateTime.ToLongDateString();
