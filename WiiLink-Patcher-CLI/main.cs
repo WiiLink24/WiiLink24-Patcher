@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Runtime.InteropServices;
 using Spectre.Console;
 using System.Net;
@@ -14,8 +14,9 @@ public class MainClass
     //// Build Info ////
     public static readonly string version = "v3.0.0 RC1";
     public static readonly string copyrightYear = DateTime.Now.Year.ToString();
-    public static readonly string buildDate = "March 1st, 2025";
-    public static readonly string buildTime = "8:25 PM";
+    public static readonly DateTime buildDateTime = new DateTime(2025, 3, 26, 15, 30, 00); // Year, Month, Day, Hour, Minute, Second
+    public static readonly string buildDate = buildDateTime.ToLongDateString();
+    public static readonly string buildTime = buildDateTime.ToShortTimeString();
     public static string? sdcard = SdClass.DetectRemovableDrive;
     public static readonly string wiiLinkPatcherUrl = "https://patcher.wiilink24.com";
     ////////////////////
