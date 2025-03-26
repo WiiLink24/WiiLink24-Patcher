@@ -11,7 +11,7 @@ public class PatchClass
     public static void DownloadOSCApp(string appName)
     {
         MainClass.task = $"Downloading {appName}";
-        string appPath = Path.Join("apps", appName);
+        string appPath = Path.Join("WiiLink", "apps", appName);
 
         if (!Directory.Exists(appPath))
             Directory.CreateDirectory(appPath);
@@ -19,22 +19,6 @@ public class PatchClass
         DownloadFile($"https://hbb1.oscwii.org/unzipped_apps/{appName}/apps/{appName}/boot.dol", Path.Join(appPath, "boot.dol"), appName);
         DownloadFile($"https://hbb1.oscwii.org/unzipped_apps/{appName}/apps/{appName}/meta.xml", Path.Join(appPath, "meta.xml"), appName);
         DownloadFile($"https://hbb1.oscwii.org/api/v3/contents/{appName}/icon.png", Path.Join(appPath, "icon.png"), appName);
-    }
-
-    // <summary>
-    /// Downloads WiiLink Account Linker from Patcher Server
-    /// </summary>
-    public static void DownloadLinker()
-    {
-        MainClass.task = "Downloading WiiLink Account Linker";
-        string appPath = Path.Join("apps", "WiiLinkAccountLinker");
-
-        if (!Directory.Exists(appPath))
-            Directory.CreateDirectory(appPath);
-
-        DownloadFile($"{MainClass.wiiLinkPatcherUrl}/linker/boot.dol", Path.Join(appPath, "boot.dol"), "WiiLink Account Linker");
-        DownloadFile($"{MainClass.wiiLinkPatcherUrl}/linker/meta.xml", Path.Join(appPath, "meta.xml"), "WiiLink Account Linker");
-        DownloadFile($"{MainClass.wiiLinkPatcherUrl}/linker/icon.png", Path.Join(appPath, "icon.png"), "WiiLink Account Linker");
     }
 
     /// <summary>
@@ -48,18 +32,18 @@ public class PatchClass
             return;
         }
         
-        if (Directory.Exists("./apps/AnyGlobe Changer"))
-            return;
-            
-        // Dolphin users need v1.0 of AnyGlobe Changer, as the latest OSC release doesn't work with Dolphin, for some reason.
+        if (!Directory.Exists(Path.Join("WiiLink", "apps", "AnyGlobe Changer")))
+        {
+            // Dolphin users need v1.0 of AnyGlobe Changer, as the latest OSC release doesn't work with Dolphin, for some reason.
             MainClass.task = $"Downloading AnyGlobe_Changer";
             string appPath = Path.Join(MainClass.tempDir, "AGC");
             Directory.CreateDirectory(appPath);
-        DownloadFile($"https://github.com/fishguy6564/AnyGlobe-Changer/releases/download/1.0/AnyGlobe.Changer.zip", 
-                     Path.Join(appPath, "AGC.zip"), 
-                     "AnyGlobe_Changer");
+            DownloadFile($"https://github.com/fishguy6564/AnyGlobe-Changer/releases/download/1.0/AnyGlobe.Changer.zip", 
+                Path.Join(appPath, "AGC.zip"), 
+                "AnyGlobe_Changer");
             ZipFile.ExtractToDirectory(Path.Join(appPath, "AGC.zip"), "./");
             Directory.Delete(appPath, true);
+        }
     }
 
     /// <summary>
@@ -241,12 +225,12 @@ public class PatchClass
 
     public static void DownloadSPD(MainClass.Platform platformType)
     {
-        // Create WAD folder in current directory if it doesn't exist
-        if (!Directory.Exists(Path.Join("WAD")))
-            Directory.CreateDirectory(Path.Join("WAD"));
+        // Create WiiLink/WAD folders in current directory if they don't exist
+        if (!Directory.Exists(Path.Join("WiiLink", "WAD")))
+            Directory.CreateDirectory(Path.Join("WiiLink", "WAD"));
 
         string spdUrl = $"{MainClass.wiiLinkPatcherUrl}/spd/WiiLink_SPD.wad";
-        string spdDestinationPath = Path.Join("WAD", $"WiiLink Address Settings.wad");
+        string spdDestinationPath = Path.Join("WiiLink", "WAD", $"WiiLink Address Settings.wad");
 
         DownloadFile(spdUrl, spdDestinationPath, "SPD");
     }
@@ -259,7 +243,7 @@ public class PatchClass
         string titleFolder = Path.Join(MainClass.tempDir, "Unpack");
         string tempFolder = Path.Join(MainClass.tempDir, "Unpack_Patched");
         string patchFolder = Path.Join(MainClass.tempDir, "Patches", channelName);
-        string outputChannel = lang == null ? Path.Join("WAD", $"{channelTitle}.wad") : Path.Join("WAD", $"{channelTitle} [{lang}] (WiiLink).wad");
+        string outputChannel = lang == null ? Path.Join("WiiLink", "WAD", $"{channelTitle}.wad") : Path.Join("WiiLink", "WAD", $"{channelTitle} [{lang}] (WiiLink).wad");
         string urlSubdir = channelName.ToLower();
 
         // Create unpack and unpack-patched folders
@@ -332,11 +316,11 @@ public class PatchClass
         // Append the region to the output WAD name if it has a region
         string outputWad;
         if (channelName == "ktv" || channelRegion == null)
-            outputWad = Path.Join("WAD", $"{channelTitle} (WiiLink).wad");
+            outputWad = Path.Join("WiiLink", "WAD", $"{channelTitle} (WiiLink).wad");
         else if (channelName == "ws")
-            outputWad = Path.Join("WAD", $"{channelTitle} [{channelRegion}] (Wiimmfi).wad");
+            outputWad = Path.Join("WiiLink", "WAD", $"{channelTitle} [{channelRegion}] (Wiimmfi).wad");
         else
-            outputWad = Path.Join("WAD", $"{channelTitle} [{channelRegion}] (WiiLink).wad");
+            outputWad = Path.Join("WiiLink", "WAD", $"{channelTitle} [{channelRegion}] (WiiLink).wad");
 
         // Create unpack and unpack-patched folders
         Directory.CreateDirectory(titleFolder);
@@ -421,16 +405,16 @@ public class PatchClass
         // Define the necessary paths and filenames
         string titleFolder = Path.Join(MainClass.tempDir, "Unpack");
 
-        // Create WAD folder in current directory if it doesn't exist
-        if (!Directory.Exists(Path.Join("WAD")))
-            Directory.CreateDirectory(Path.Join("WAD"));
+        // Create WiiLink/WAD folder in current directory if they don't exist
+        if (!Directory.Exists(Path.Join("WiiLink", "WAD")))
+            Directory.CreateDirectory(Path.Join("WiiLink", "WAD"));
 
         // Name the output WAD file
         string outputWad;
         if (channelName == "ktv" || channelRegion == null)
-            outputWad = Path.Join("WAD", $"{channelTitle} (WiiLink).wad");
+            outputWad = Path.Join("WiiLink", "WAD", $"{channelTitle} (WiiLink).wad");
         else
-            outputWad = Path.Join("WAD", $"{channelTitle} [{channelRegion}] (WiiLink).wad");
+            outputWad = Path.Join("WiiLink", "WAD", $"{channelTitle} [{channelRegion}] (WiiLink).wad");
 
         // Create unpack and unpack-patched folders
         Directory.CreateDirectory(titleFolder);
@@ -461,8 +445,9 @@ public class PatchClass
             DownloadSPD(MainClass.platformType);
         else
         {
-            if (!Directory.Exists("WAD"))
-                Directory.CreateDirectory("WAD");
+            // Create "WiiLink/WAD" folder in current directory if they don't exist
+            if (!Directory.Exists(Path.Join("WiiLink", "WAD")))
+                Directory.CreateDirectory(Path.Join("WiiLink", "WAD"));
         }
 
         //// Downloading All Channel Patches ////
@@ -521,7 +506,7 @@ public class PatchClass
                     DownloadPatch("Dominos", $"Dominos_0.delta", "Dominos_0.delta", "Food Channel (Dominos)");
                     DownloadPatch("Dominos", $"Dominos_1.delta", "Dominos_1.delta", "Food Channel (Dominos)");
                     DownloadPatch("Dominos", $"Dominos_2.delta", "Dominos_2.delta", "Food Channel (Dominos)");
-                    DownloadLinker();
+                    DownloadOSCApp("wiilink-account-linker");
                     break;
             }
 
@@ -597,7 +582,9 @@ public class PatchClass
         if (MainClass.wiiLinkChannels_selection.Any(channel => channel.Contains("food_us") || channel.Contains("food_eu") || channel.Contains("food_dominos") || channel.Contains("digicam_en") || channel.Contains("wiiroom_en") || channel.Contains("wiiroom_es") || channel.Contains("wiiroom_fr") || channel.Contains("wiiroom_de") || channel.Contains("wiiroom_it") || channel.Contains("wiiroom_du") || channel.Contains("wiiroom_ptbr") || channel.Contains("wiiroom_ru")))
             DownloadSPD(MainClass.platformType_custom);
         else
-            Directory.CreateDirectory("WAD");
+            // Create WiiLink/WAD folders in current directory if they don't exist
+            if (!Directory.Exists(Path.Join("WiiLink", "WAD")))
+                Directory.CreateDirectory(Path.Join("WiiLink", "WAD"));
 
         // Download ww-43db-patcher for vWii if applicable
         if (MainClass.platformType_custom == MainClass.Platform.vWii)
@@ -724,7 +711,7 @@ public class PatchClass
                     DownloadPatch("Dominos", $"Dominos_0.delta", "Dominos_0.delta", "Food Channel (Domino's)");
                     DownloadPatch("Dominos", $"Dominos_1.delta", "Dominos_1.delta", "Food Channel (Domino's)");
                     DownloadPatch("Dominos", $"Dominos_2.delta", "Dominos_2.delta", "Food Channel (Domino's)");
-                    DownloadLinker();
+                    DownloadOSCApp("wiilink-account-linker");
                     break;
                 case "nc_us":
                     MainClass.task = "Downloading Nintendo Channel (USA)";
@@ -1132,9 +1119,12 @@ public class PatchClass
         {
             case MainClass.Region.PAL:
                 string titleFolder = Path.Join(MainClass.tempDir, "Unpack");
-                string outputWad = Path.Join("WAD", "Today and Tomorrow Channel [Europe] (WiiLink).wad");
+                string outputWad = Path.Join("WiiLink", "WAD", "Today and Tomorrow Channel [Europe] (WiiLink).wad");
                 
-                Directory.CreateDirectory("WAD");
+                // Create WiiLink/WAD folder in current directory if they don't exist
+                if (!Directory.Exists(Path.Join("WiiLink", "WAD")))
+                    Directory.CreateDirectory(Path.Join("WiiLink", "WAD"));
+
                 Directory.CreateDirectory(titleFolder);
     
                 string baseId = "0001000148415650";
@@ -1209,9 +1199,12 @@ public class PatchClass
         MainClass.task = "Downloading Photo Channel 1.1";
         
         string titleFolder = Path.Join(MainClass.tempDir, "Unpack");
-        string outputWad = Path.Join("WAD", "Photo Channel 1.1 (WiiLink).wad");
+        string outputWad = Path.Join("WiiLink", "WAD", "Photo Channel 1.1 (WiiLink).wad");
                 
-        Directory.CreateDirectory("WAD");
+        // Create WiiLink/WAD folder in current directory if they don't exist
+        if (!Directory.Exists(Path.Join("WiiLink", "WAD")))
+            Directory.CreateDirectory(Path.Join("WiiLink", "WAD"));
+        
         Directory.CreateDirectory(titleFolder);
     
         string baseId = "0001000248415941";

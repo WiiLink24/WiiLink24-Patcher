@@ -112,7 +112,7 @@ public class MenuClass
     public static void WADFolderCheck(MainClass.SetupType setupType)
     {
         // Start patching process if WAD folder doesn't exist
-        if (!Directory.Exists("WAD"))
+        if (!Directory.Exists(Path.Join("WiiLink", "WAD")))
         {
             if (setupType == MainClass.SetupType.express)
                 ExpressClass.PatchingProgress_Express();
@@ -188,7 +188,7 @@ public class MenuClass
                     case 1: // Delete WAD folder in a try catch block
                         try
                         {
-                            Directory.Delete("WAD", true);
+                            Directory.Delete(Path.Join("WiiLink", "WAD"), true);
                         }
                         catch (Exception e)
                         {
@@ -264,7 +264,7 @@ public class MenuClass
                     string canFindFolders = MainClass.patcherLang == "en-US"
                         ? "You can find these folders in the [u]{curDir}[/] folder of your computer."
                         : $"{MainClass.localizedText?["Finished"]?["canFindFolders"]}";
-                    canFindFolders = canFindFolders.Replace("{curDir}", MainClass.curDir);
+                    canFindFolders = canFindFolders.Replace("{curDir}", Path.Join(MainClass.curDir, "WiiLink"));
                     AnsiConsole.MarkupLine($"{canFindFolders}\n");
                 }
             }
@@ -272,43 +272,45 @@ public class MenuClass
             // Please proceed text
             if (MainClass.extraChannels_selection.Count == 0)
             {
-                if (MainClass.platformType == MainClass.Platform.Wii)
+                switch (MainClass.platformType)
                 {
-                    string pleaseProceed = MainClass.patcherLang == "en-US"
-                        ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://wiilink.ca/guide/wii/#section-ii---installing-wads-and-patching-wii-mail[/]"
-                        : $"{MainClass.localizedText?["Finished"]?["pleaseProceed"]?["Wii"]}";
-                    AnsiConsole.MarkupLine($"{pleaseProceed}\n");
-                }
-                else if (MainClass.platformType == MainClass.Platform.vWii)
-                {
-                    string pleaseProceed = MainClass.patcherLang == "en-US"
-                        ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://wiilink.ca/guide/vwii/#section-iii---installing-wads-and-patching-wii-mail[/]"
-                        : $"{MainClass.localizedText?["Finished"]?["pleaseProceed"]?["vWii"]}";
-                    AnsiConsole.MarkupLine($"{pleaseProceed}\n");
-                }
-                else
-                {
-                    string pleaseProceed = MainClass.patcherLang == "en-US"
-                        ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://wiilink.ca/guide/dolphin/#section-ii---installing-wads[/]"
-                        : $"{MainClass.localizedText?["Finished"]?["pleaseProceed"]?["Dolphin"]}";
-                    AnsiConsole.MarkupLine($"{pleaseProceed}\n");
+                    case MainClass.Platform.Wii:
+                        string pleaseProceedWii = MainClass.patcherLang == "en-US"
+                            ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://wiilink.ca/guide/wii/#section-ii---installing-wads-and-patching-wii-mail[/]"
+                            : $"{MainClass.localizedText?["Finished"]?["pleaseProceed"]?["Wii"]}";
+                        AnsiConsole.MarkupLine($"{pleaseProceedWii}\n");
+                        break;
+                    case MainClass.Platform.vWii:
+                        string pleaseProceedvWii = MainClass.patcherLang == "en-US"
+                            ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://wiilink.ca/guide/vwii/#section-iii---installing-wads-and-patching-wii-mail[/]"
+                            : $"{MainClass.localizedText?["Finished"]?["pleaseProceed"]?["vWii"]}";
+                        AnsiConsole.MarkupLine($"{pleaseProceedvWii}\n");
+                        break;
+                    case MainClass.Platform.Dolphin:
+                        string pleaseProceedDolphin = MainClass.patcherLang == "en-US"
+                            ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://wiilink.ca/guide/dolphin/#section-ii---installing-wads[/]"
+                            : $"{MainClass.localizedText?["Finished"]?["pleaseProceed"]?["Dolphin"]}";
+                        AnsiConsole.MarkupLine($"{pleaseProceedDolphin}\n");
+                        break;
                 }
             }
             else
             {
-                if (MainClass.platformType == MainClass.Platform.Dolphin)
+                switch (MainClass.platformType)
                 {
-                    string installWad = MainClass.patcherLang == "en-US"
-                        ? "Please proceed with installing the WADs through the Dolphin interface (Tools > Install WAD...)"
-                        : $"{MainClass.localizedText?["Finished"]?["installWad"]?["Dolphin"]}";
-                    AnsiConsole.MarkupLine($"{installWad}\n");
-                }
-                else
-                {
-                    string installWad = MainClass.patcherLang == "en-US"
-                        ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://wii.hacks.guide/yawmme[/]"
-                        : $"{MainClass.localizedText?["Finished"]?["installWad"]?["yawmME"]}";
-                    AnsiConsole.MarkupLine($"{installWad}\n");
+                    case MainClass.Platform.Dolphin:
+                        string installWadDolphin = MainClass.patcherLang == "en-US"
+                            ? "Please proceed with installing the WADs through the Dolphin interface (Tools > Install WAD...)"
+                            : $"{MainClass.localizedText?["Finished"]?["installWad"]?["Dolphin"]}";
+                        AnsiConsole.MarkupLine($"{installWadDolphin}\n");
+                        break;
+                    case MainClass.Platform.Wii:
+                    case MainClass.Platform.vWii:
+                        string installWad = MainClass.patcherLang == "en-US"
+                            ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://wii.hacks.guide/yawmme[/]"
+                            : $"{MainClass.localizedText?["Finished"]?["installWad"]?["yawmME"]}";
+                        AnsiConsole.MarkupLine($"{installWad}\n");
+                        break;
                 }
             }
 
@@ -342,7 +344,7 @@ public class MenuClass
                         var psi = new ProcessStartInfo
                         {
                             FileName = "explorer.exe",
-                            ArgumentList = { MainClass.sdcard ?? MainClass.curDir },
+                            ArgumentList = { MainClass.sdcard ?? Path.Join(MainClass.curDir, "WiiLink") },
                             UseShellExecute = false,
                         };
                         Process.Start(psi);
@@ -352,7 +354,7 @@ public class MenuClass
                         var psi = new ProcessStartInfo
                         {
                             FileName = "xdg-open",
-                            ArgumentList = { MainClass.sdcard ?? MainClass.curDir },
+                            ArgumentList = { MainClass.sdcard ?? Path.Join(MainClass.curDir, "WiiLink") },
                             UseShellExecute = false,
                         };
                         Process.Start(psi);
@@ -362,7 +364,7 @@ public class MenuClass
                         var psi = new ProcessStartInfo
                         {
                             FileName = "open",
-                            ArgumentList = { MainClass.sdcard ?? MainClass.curDir },
+                            ArgumentList = { MainClass.sdcard ?? Path.Join(MainClass.curDir, "WiiLink") },
                             UseShellExecute = false,
                         };
                         Process.Start(psi);

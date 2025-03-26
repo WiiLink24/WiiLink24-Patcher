@@ -169,8 +169,8 @@ public class SdClass
             try
             {
                 // Copy apps and WAD folder to SD card
-                MainClass.CopyFolder("apps", Path.Join(MainClass.sdcard, "apps"));
-                MainClass.CopyFolder("WAD", Path.Join(MainClass.sdcard, "WAD"));
+                MainClass.CopyFolder(Path.Join("WiiLink", "apps"), Path.Join(MainClass.sdcard, "apps"));
+                MainClass.CopyFolder(Path.Join("WiiLink", "WAD"), Path.Join(MainClass.sdcard, "WAD"));
             }
             catch (Exception e)
             {
@@ -190,16 +190,10 @@ public class SdClass
                 FinishSDCopy();
             }
 
-            // Delete the WAD and apps folder if they exist
-            if (Directory.Exists("WAD"))
-                Directory.Delete("WAD", true);
-            if (Directory.Exists("apps"))
-                Directory.Delete("apps", true);
+            // Delete the WiiLink folder if it exists
+            if (Directory.Exists("WiiLink"))
+                Directory.Delete("WiiLink", true);
         }
-
-        // Delete WiiLink_Patcher folder
-        if (Directory.Exists("WiiLink_Patcher"))
-            Directory.Delete("WiiLink_Patcher", true);
 
         // Finished patching
         MainClass.patchingProgress_express["finishing"] = "done";
