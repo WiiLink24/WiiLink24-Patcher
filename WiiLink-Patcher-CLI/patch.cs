@@ -3,6 +3,7 @@ using libWiiSharp;
 using System.IO.Compression;
 using System.Net.Http;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Collections.Generic;
 
 public class PatchClass
@@ -86,14 +87,10 @@ public class PatchClass
         try
         {
             string apiUrl = $"https://api.github.com/repos/{author}/{repo}/releases";
-            MainClass.httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0");
-            var response = MainClass.httpClient.GetStringAsync(apiUrl).Result;
+            httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0");
+            var response = httpClient.GetStringAsync(apiUrl).Result;
 
-            // JSON Deserialisierung mit Optionen, die die Groß-/Kleinschreibung ignorieren
-            var releases = JsonSerializer.Deserialize<List<GitHubRelease>>(response, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            var releases = JsonSerializer.Deserialize(response, GitHubJsonContext.Default.ListGitHubRelease);
 
             if (releases != null && releases.Count > 0)
             {
@@ -1350,12 +1347,15 @@ public class PatchClass
     }
 }
 
+[JsonSerializable(typeof(List<GitHubRelease>))]
+internal partial class GitHubJsonContext : JsonSerializerContext {}
+
 public class GitHubRelease
 {
-    public List<GitHubAsset> assets { get; set; }
+    public List<GitHubAsset> assets { get; set; } = new();
 }
 
 public class GitHubAsset
 {
-    public string browser_download_url { get; set; }
+    public string browser_download_url { get; set; } = "";
 }
