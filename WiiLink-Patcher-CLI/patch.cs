@@ -87,8 +87,8 @@ public class PatchClass
         try
         {
             string apiUrl = $"https://api.github.com/repos/{author}/{repo}/releases";
-            httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0");
-            var response = httpClient.GetStringAsync(apiUrl).Result;
+            MainClass.httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0");
+            var response = MainClass.httpClient.GetStringAsync(apiUrl).Result;
 
             var releases = JsonSerializer.Deserialize(response, GitHubJsonContext.Default.ListGitHubRelease);
 
