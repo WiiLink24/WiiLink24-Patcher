@@ -24,6 +24,9 @@ public class PatchClass
     /// <param name="appName"></param>
     public static void DownloadOSCApp(string appName)
     {
+        MainClass.task = $"Downloading {appName}";
+        string appPath = Path.Join("WiiLink", "apps", appName);
+        
         if (!Directory.Exists(appPath))
             Directory.CreateDirectory(appPath);
 
