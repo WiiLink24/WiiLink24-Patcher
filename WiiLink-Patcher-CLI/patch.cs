@@ -8,6 +8,9 @@ using System.Collections.Generic;
 public class PatchClass
 {
 
+    /// <summary>
+    /// Dictionary for GitHub Repositorys in case of OSC not available
+    /// </summary>
     private static readonly Dictionary<string, (string author, string repo)> githubRepos = new()
     {
         { "AnyGlobe_Changer", ("fishguy6564", "AnyGlobe-Changer") },
@@ -26,7 +29,7 @@ public class PatchClass
     {
         MainClass.task = $"Downloading {appName}";
         string appPath = Path.Join("WiiLink", "apps", appName);
-        
+
         if (!Directory.Exists(appPath))
             Directory.CreateDirectory(appPath);
 
@@ -56,6 +59,10 @@ public class PatchClass
         }
     }
 
+    /// <summary>
+    /// Tests if the URL is available
+    /// </summary>
+    /// <param name="url"></param>
     private static bool TestUrl(string url)
     {
         try
@@ -69,6 +76,11 @@ public class PatchClass
         }
     }
     
+    /// <summary>
+    /// Gets the latest GitHub Release
+    /// </summary>
+    /// <param name="author"></param>
+    /// <param name="repo"></param>
     private static string GetLatestGitHubRelease(string author, string repo)
     {
         try
@@ -76,7 +88,12 @@ public class PatchClass
             string apiUrl = $"https://api.github.com/repos/{author}/{repo}/releases";
             MainClass.httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0");
             var response = MainClass.httpClient.GetStringAsync(apiUrl).Result;
-            var releases = JsonSerializer.Deserialize<List<GitHubRelease>>(response);
+
+            // JSON Deserialisierung mit Optionen, die die Groß-/Kleinschreibung ignorieren
+            var releases = JsonSerializer.Deserialize<List<GitHubRelease>>(response, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
 
             if (releases != null && releases.Count > 0)
             {
@@ -91,6 +108,12 @@ public class PatchClass
         return "";
     }
 
+
+    /// <summary>
+    /// Extracts the required files from the .zip
+    /// </summary>
+    /// <param name="zipFilePath"></param>
+    /// <param name="destination">The destination to save the file to.</param>
     private static void ExtractRequiredFiles(string zipFilePath, string destination)
     {
         using ZipArchive archive = ZipFile.OpenRead(zipFilePath);
