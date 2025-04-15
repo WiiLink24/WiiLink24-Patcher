@@ -41,7 +41,7 @@ public class PatchClass
             DownloadFile($"https://github.com/fishguy6564/AnyGlobe-Changer/releases/download/1.0/AnyGlobe.Changer.zip", 
                 Path.Join(appPath, "AGC.zip"), 
                 "AnyGlobe_Changer");
-            ZipFile.ExtractToDirectory(Path.Join(appPath, "AGC.zip"), "./");
+            ZipFile.ExtractToDirectory(Path.Join(appPath, "AGC.zip"), Path.Join("WiiLink"));
             Directory.Delete(appPath, true);
         }
     }
