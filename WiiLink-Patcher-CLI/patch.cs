@@ -440,8 +440,8 @@ public class PatchClass
     {
         MainClass.task = "Downloading patches";
 
-        // Download SPD if English is selected
-        if (MainClass.lang != MainClass.Language.Japan)
+        // Download SPD if console region isn't Japan
+        if (MainClass.wc24_reg != MainClass.Region.Japan)
             DownloadSPD(MainClass.platformType);
         else
         {

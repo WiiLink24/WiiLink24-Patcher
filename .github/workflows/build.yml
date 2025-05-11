@@ -26,7 +26,7 @@ jobs:
     
     - name: Tar Build
       run: |
-        tar cvf WiiLinkPatcher_Linux-x64_${{ github.sha }}.tar --directory=WiiLink-Patcher-CLI/bin/Release/net9.0-windows10.0.22621.0/linux-x64/native/ WiiLinkPatcher_Linux-x64_${{ github.sha }}
+        tar cvf WiiLinkPatcher_Linux-x64_${{ github.sha }}.tar --directory=WiiLink-Patcher-CLI/bin/Release/net9.0-windows10.0.22621.0/linux-x64/publish/ WiiLinkPatcher_Linux-x64_${{ github.sha }}
 
     - name: Upload Build
       uses: actions/upload-artifact@v4
@@ -52,7 +52,7 @@ jobs:
     
     - name: Tar Build
       run: |
-        tar cvf WiiLinkPatcher_Linux-ARM64_${{ github.sha }}.tar --directory=WiiLink-Patcher-CLI/bin/Release/net9.0-windows10.0.22621.0/linux-arm64/native/ WiiLinkPatcher_Linux-ARM64_${{ github.sha }}
+        tar cvf WiiLinkPatcher_Linux-ARM64_${{ github.sha }}.tar --directory=WiiLink-Patcher-CLI/bin/Release/net9.0-windows10.0.22621.0/linux-arm64/publish/ WiiLinkPatcher_Linux-ARM64_${{ github.sha }}
 
     - name: Upload Build
       uses: actions/upload-artifact@v4
@@ -122,7 +122,7 @@ jobs:
 
     - name: Tar Build
       run: |
-        tar cvf WiiLinkPatcher_macOS-x64_${{ github.sha }}.tar --directory=WiiLink-Patcher-CLI/bin/Release/net9.0-windows10.0.22621.0/osx-x64/native/ WiiLinkPatcher_macOS-x64_${{ github.sha }}
+        tar cvf WiiLinkPatcher_macOS-x64_${{ github.sha }}.tar --directory=WiiLink-Patcher-CLI/bin/Release/net9.0-windows10.0.22621.0/osx-x64/publish/ WiiLinkPatcher_macOS-x64_${{ github.sha }}
 
     - name: Upload Build
       uses: actions/upload-artifact@v4
@@ -148,7 +148,7 @@ jobs:
 
     - name: Tar Build
       run: |
-        tar cvf WiiLinkPatcher_macOS-ARM64_${{ github.sha }}.tar --directory=WiiLink-Patcher-CLI/bin/Release/net9.0-windows10.0.22621.0/osx-arm64/native/ WiiLinkPatcher_macOS-ARM64_${{ github.sha }}
+        tar cvf WiiLinkPatcher_macOS-ARM64_${{ github.sha }}.tar --directory=WiiLink-Patcher-CLI/bin/Release/net9.0-windows10.0.22621.0/osx-arm64/publish/ WiiLinkPatcher_macOS-ARM64_${{ github.sha }}
 
     - name: Upload Build
       uses: actions/upload-artifact@v4

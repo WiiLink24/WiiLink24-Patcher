@@ -320,7 +320,7 @@ public class ExpressClass
 
         AnsiConsole.MarkupLine("[bold yellow]NOTICE FOR RUSSIAN USERS[/]\n");
         AnsiConsole.MarkupLine("You have selected Russian translation in the installation options.\n");
-        AnsiConsole.MarkupLine("Proper functionality is not guaranteed for systems without the Russian Wii MenuClass.\n");
+        AnsiConsole.MarkupLine("Proper functionality is not guaranteed for systems without the Russian Wii Menu.\n");
         AnsiConsole.MarkupLine("Read the installation guide here:");
         AnsiConsole.MarkupLine("[bold link springgreen2_1]https://wii.zazios.ru/rus_menu[/]\n");
         AnsiConsole.MarkupLine("[italic](The guide is only available in Russian for now)[/]\n");
