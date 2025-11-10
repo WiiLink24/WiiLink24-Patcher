@@ -32,7 +32,7 @@ public class MenuClass
             ? "Notice"
             : $"{MainClass.localizedText?["Notice"]?["noticeTitle"]}";
         string text = MainClass.patcherLang == "en-US"
-            ? "If you have any issues with the patcher or services offered by WiiLink, please report them on our [springgreen2_1 link=https://discord.gg/wiilink]Discord Server[/]!"
+            ? "Check out our new [springgreen2_1 link=https://github.com/WiiLink24/WiiLink-Patcher-GUI/releases/latest]GUI Patcher[/]!"
             : $"{MainClass.localizedText?["Notice"]?["noticeMsg"]}";
 
         var panel = new Panel($"[bold]{text}[/]")
