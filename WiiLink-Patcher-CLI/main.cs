@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using Spectre.Console;
 using System.Net;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Globalization;
 
@@ -14,7 +15,7 @@ public class MainClass
     //// Build Info ////
     public static readonly string version = "v2.1.1";
     public static readonly string copyrightYear = DateTime.Now.Year.ToString();
-    public static readonly DateTime buildDateTime = new DateTime(2025, 5, 11, 19, 03, 45); // Year, Month, Day, Hour, Minute, Second
+    public static readonly DateTime buildDateTime = new DateTime(2025, 11, 10, 18, 50, 45); // Year, Month, Day, Hour, Minute, Second
     public static readonly string buildDate = buildDateTime.ToLongDateString();
     public static readonly string buildTime = buildDateTime.ToShortTimeString();
     public static string? sdcard = SdClass.DetectRemovableDrive;
@@ -142,14 +143,17 @@ public class MainClass
             : $"{localizedText?["CheckForUpdates"]?["checking"]}";
         AnsiConsole.MarkupLine($"{checkingForUpdates}\n");
 
-        // URL of the text file containing the latest version number
-        string updateUrl = "https://raw.githubusercontent.com/PablosCorner/wiilink-patcher-version/main/version.txt";
+        // API URL to get tag of latest release
+        string apiURL = "https://api.github.com/repos/WiiLink24/WiiLink24-Patcher/releases/latest";
+
+        HttpClient githubClient = httpClient;
+        githubClient.DefaultRequestHeaders.UserAgent.TryParseAdd("request");
 
         // Download the latest version number from the server
-        string updateInfo;
+        string apiResponse;
         try
         {
-            updateInfo = await httpClient.GetStringAsync(updateUrl);
+            apiResponse = await githubClient.GetStringAsync(apiURL);
         }
         catch (HttpRequestException ex)
         {
@@ -177,8 +181,9 @@ public class MainClass
             return;
         }
 
-        // Get the latest version number from the text file
-        string latestVersion = updateInfo.Split('\n')[0].Trim();
+        // Deserialize JSON response
+        dynamic apiResponseObject = JsonConvert.DeserializeObject(apiResponse) ?? throw new InvalidOperationException();
+        string latestVersion = apiResponseObject.tag_name;
 
         // Remove any . from the version number (v2.0.2-1 -> v202-1)
         string versionWithoutDots = latestVersion.Replace(".", "");
