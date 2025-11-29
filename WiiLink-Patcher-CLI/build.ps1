@@ -18,11 +18,13 @@ function Build-For-Platform {
 
     switch ($Platform) {
         "win-x64" { $PlatformName = "Windows-x64" }
+        "win-x86" { $PlatformName = "Windows-x86" }
         "win-arm64" { $PlatformName = "Windows-ARM64" }
         "osx-x64" { $PlatformName = "macOS-x64" }
         "osx-arm64" { $PlatformName = "macOS-ARM64" }
         "linux-x64" { $PlatformName = "Linux-x64" }
         "linux-arm64" { $PlatformName = "Linux-ARM64" }
+        "linux-arm" { $PlatformName = "Linux-ARM32" }
         default {
             Write-Error "Invalid platform: $Platform"
             Write-Output "Available platforms:"
@@ -55,7 +57,7 @@ function Show-Help {
 
 # Initialize variables
 $versionString = ""
-$Global:Platforms = "win-x64", "win-arm64", "osx-x64", "osx-arm64", "linux-x64", "linux-arm64"
+$Global:Platforms = "win-x64", "win-x86", "win-arm64", "osx-x64", "osx-arm64", "linux-x64", "linux-arm64", "linux-arm"
 
 # Parse command line arguments
 $build_invoked = $false

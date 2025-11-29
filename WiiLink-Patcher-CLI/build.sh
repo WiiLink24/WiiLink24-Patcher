@@ -17,6 +17,9 @@ function build_for_platform {
         win-x64)
             platform="Windows-x64"
         ;;
+        win-x86)
+            platform="Windows-x86"
+        ;;
         win-arm64)
             platform="Windows-ARM64"
         ;;
@@ -31,6 +34,9 @@ function build_for_platform {
         ;;
         linux-arm64)
             platform="Linux-ARM64"
+        ;;
+        linux-arm)
+            platform="Linux-ARM32"
         ;;
         *)
             echo "Invalid platform: $1"
@@ -47,7 +53,7 @@ function build_for_platform {
 
 # Initialize variables
 versionString=""
-platforms=("win-x64" "win-arm64" "osx-x64" "osx-arm64" "linux-x64" "linux-arm64")
+platforms=("win-x64" "win-x86" "win-arm64" "osx-x64" "osx-arm64" "linux-x64" "linux-arm64" "linux-arm")
 
 # Parse command line arguments
 build_invoked=false
