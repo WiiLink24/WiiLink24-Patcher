@@ -60,6 +60,32 @@ jobs:
         path: WiiLinkPatcher_Linux-ARM64_${{ github.sha }}.tar
         name: WiiLinkPatcher_Linux-ARM64_${{ github.sha }}
 
+  build-linux-arm32:
+
+    runs-on: ubuntu-24.04-arm
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+      
+    - name: Build
+      run: |
+        cd WiiLink-Patcher-CLI
+        dotnet publish -c Release -r "linux-arm" /p:AssemblyName="WiiLinkPatcher_Linux-ARM32_${{ github.sha }}"
+    
+    - name: Tar Build
+      run: |
+        tar cvf WiiLinkPatcher_Linux-ARM32_${{ github.sha }}.tar --directory=WiiLink-Patcher-CLI/bin/Release/net9.0-windows10.0.22621.0/linux-arm/publish/ WiiLinkPatcher_Linux-ARM32_${{ github.sha }}
+
+    - name: Upload Build
+      uses: actions/upload-artifact@v4
+      with:
+        path: WiiLinkPatcher_Linux-ARM32_${{ github.sha }}.tar
+        name: WiiLinkPatcher_Linux-ARM32_${{ github.sha }}
+
   build-windows-x64:
 
     runs-on: ubuntu-latest
@@ -81,6 +107,28 @@ jobs:
       with:
         path: WiiLink-Patcher-CLI/bin/Release/net9.0-windows10.0.22621.0/win-x64/publish/WiiLinkPatcher_Windows-x64_${{ github.sha }}.exe
         name: WiiLinkPatcher_Windows-x64_${{ github.sha }}
+
+  build-windows-x86:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+      
+    - name: Build
+      run: |
+        cd WiiLink-Patcher-CLI
+        dotnet publish -c Release -r "win-x86" /p:AssemblyName="WiiLinkPatcher_Windows-x86_${{ github.sha }}"
+
+    - name: Upload Build
+      uses: actions/upload-artifact@v4
+      with:
+        path: WiiLink-Patcher-CLI/bin/Release/net9.0-windows10.0.22621.0/win-x86/publish/WiiLinkPatcher_Windows-x86_${{ github.sha }}.exe
+        name: WiiLinkPatcher_Windows-x86_${{ github.sha }}
   
   build-windows-arm64:
 
