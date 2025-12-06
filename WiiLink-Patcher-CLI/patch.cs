@@ -1,9 +1,27 @@
 using Spectre.Console;
 using libWiiSharp;
 using System.IO.Compression;
+using System.Net.Http;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Collections.Generic;
 
 public class PatchClass
 {
+
+    /// <summary>
+    /// Dictionary for GitHub Repositorys in case of OSC not available
+    /// </summary>
+    private static readonly Dictionary<string, (string author, string repo)> githubRepos = new()
+    {
+        { "AnyGlobe_Changer", ("fishguy6564", "AnyGlobe-Changer") },
+        { "wiilink-account-linker", ("WiiLink24", "AccountLinker") },
+        { "yawmME", ("modmii", "YAWM-ModMii-Edition") },
+        { "sntp", ("ErikAndren", "sntp") },
+        { "Mail-Patcher", ("WiiLink24", "Mail-Patcher") },
+        { "app_name", ("author", "repo") }, // Beispiel-Eintrag, ergänze eigene Werte
+    };
+
     /// <summary>
     /// Downloads an app from the Open Shop Channel
     /// </summary>
@@ -16,9 +34,96 @@ public class PatchClass
         if (!Directory.Exists(appPath))
             Directory.CreateDirectory(appPath);
 
-        DownloadFile($"https://hbb1.oscwii.org/unzipped_apps/{appName}/apps/{appName}/boot.dol", Path.Join(appPath, "boot.dol"), appName);
-        DownloadFile($"https://hbb1.oscwii.org/unzipped_apps/{appName}/apps/{appName}/meta.xml", Path.Join(appPath, "meta.xml"), appName);
-        DownloadFile($"https://hbb1.oscwii.org/api/v3/contents/{appName}/icon.png", Path.Join(appPath, "icon.png"), appName);
+        string oscwiiBaseUrl = $"https://hbb1.oscwii.org/unzipped_apps/{appName}/apps/{appName}/";
+        bool oscwiiAvailable = TestUrl(oscwiiBaseUrl + "boot.dol");
+
+        if (oscwiiAvailable)
+        {
+            DownloadFile(oscwiiBaseUrl + "boot.dol", Path.Join(appPath, "boot.dol"), appName);
+            DownloadFile(oscwiiBaseUrl + "meta.xml", Path.Join(appPath, "meta.xml"), appName);
+            DownloadFile($"https://hbb1.oscwii.org/api/v3/contents/{appName}/icon.png", Path.Join(appPath, "icon.png"), appName);
+        }
+        else if (githubRepos.TryGetValue(appName, out var repoInfo))
+        {
+            string latestReleaseUrl = GetLatestGitHubRelease(repoInfo.author, repoInfo.repo);
+            if (!string.IsNullOrEmpty(latestReleaseUrl))
+            {
+                string zipPath = Path.Join(appPath, $"{appName}.zip");
+                DownloadFile(latestReleaseUrl, zipPath, appName);
+                ExtractRequiredFiles(zipPath, appPath);
+                File.Delete(zipPath); // ZIP-Datei nach Extraktion löschen
+            }
+        }
+        else
+        {
+            AnsiConsole.MarkupLine($"[bold red]ERROR:[/] No alternative source found for {appName}");
+        }
+    }
+
+    /// <summary>
+    /// Tests if the URL is available
+    /// </summary>
+    /// <param name="url"></param>
+    private static bool TestUrl(string url)
+    {
+        try
+        {
+            var response = MainClass.httpClient.Send(new HttpRequestMessage(HttpMethod.Head, url));
+            return response.IsSuccessStatusCode;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+    
+    /// <summary>
+    /// Gets the latest GitHub Release
+    /// </summary>
+    /// <param name="author"></param>
+    /// <param name="repo"></param>
+    private static string GetLatestGitHubRelease(string author, string repo)
+    {
+        try
+        {
+            string apiUrl = $"https://api.github.com/repos/{author}/{repo}/releases";
+            MainClass.httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0");
+            var response = MainClass.httpClient.GetStringAsync(apiUrl).Result;
+
+            var releases = JsonSerializer.Deserialize(response, GitHubJsonContext.Default.ListGitHubRelease);
+
+            if (releases != null && releases.Count > 0)
+            {
+                return releases[0].assets.Count > 0 ? releases[0].assets[0].browser_download_url : "";
+            }
+        }
+        catch (Exception e)
+        {
+            AnsiConsole.MarkupLine($"[bold red]ERROR:[/] GitHub API request failed: {e.Message}");
+        }
+
+        return "";
+    }
+
+
+    /// <summary>
+    /// Extracts the required files from the .zip
+    /// </summary>
+    /// <param name="zipFilePath"></param>
+    /// <param name="destination">The destination to save the file to.</param>
+    private static void ExtractRequiredFiles(string zipFilePath, string destination)
+    {
+        using ZipArchive archive = ZipFile.OpenRead(zipFilePath);
+        string[] requiredFiles = { "boot.dol", "meta.xml", "icon.png" };
+
+        foreach (var entry in archive.Entries)
+        {
+            if (requiredFiles.Contains(entry.Name))
+            {
+                string outputPath = Path.Combine(destination, entry.Name);
+                entry.ExtractToFile(outputPath, overwrite: true);
+            }
+        }
     }
 
     /// <summary>
@@ -1240,4 +1345,17 @@ public class PatchClass
                 
         Directory.Delete(titleFolder, true);
     }
+}
+
+[JsonSerializable(typeof(List<GitHubRelease>))]
+internal partial class GitHubJsonContext : JsonSerializerContext {}
+
+public class GitHubRelease
+{
+    public List<GitHubAsset> assets { get; set; } = new();
+}
+
+public class GitHubAsset
+{
+    public string browser_download_url { get; set; } = "";
 }
