@@ -546,6 +546,7 @@ public class PatchClass
 
         // Check Mii Out/Mii Contest Channel
         DownloadPatch("cmoc", $"CMOC_1_{MainClass.wc24_reg}.delta", $"CMOC_1_{MainClass.wc24_reg}.delta", "Check Mii Out Channel");
+        DownloadPatch("cmoc", $"CMOC_4_{MainClass.wc24_reg}.delta", $"CMOC_4_{MainClass.wc24_reg}.delta", "Check Mii Out Channel");
 
         // Download ww-43db-patcher for vWii if applicable
         if (MainClass.platformType == MainClass.Platform.vWii)
@@ -757,14 +758,17 @@ public class PatchClass
                 case "cmoc_us":
                     MainClass.task = $"Downloading Check Mii Out Channel (USA)";
                     DownloadPatch("cmoc", $"CMOC_1_USA.delta", "CMOC_1_USA.delta", "Check Mii Out Channel");
+                    DownloadPatch("cmoc", $"CMOC_4_USA.delta", "CMOC_4_USA.delta", "Check Mii Out Channel");
                     break;
                 case "cmoc_eu":
                     MainClass.task = $"Downloading Mii Contest Channel (Europe)";
                     DownloadPatch("cmoc", $"CMOC_1_PAL.delta", "CMOC_1_PAL.delta", "Mii Contest Channel");
+                    DownloadPatch("cmoc", $"CMOC_4_PAL.delta", "CMOC_4_PAL.delta", "Mii Contest Channel");
                     break;
                 case "cmoc_jp":
                     MainClass.task = $"Downloading Mii Contest Channel (Japan)";
                     DownloadPatch("cmoc", $"CMOC_1_Japan.delta", "CMOC_1_Japan.delta", "Mii Contest Channel");
+                    DownloadPatch("cmoc", $"CMOC_4_Japan.delta", "CMOC_4_Japan.delta", "Mii Contest Channel");
                     break;
                 case "kirbytv":
                     MainClass.task = "Downloading Kirby TV Channel";
@@ -1080,8 +1084,8 @@ public class PatchClass
             _ => "Mii Contest Channel",
         };
 
-        List<string> patches = [$"CMOC_1_{region}"];
-        List<string> appNums = ["0000000c"];
+        List<string> patches = [$"CMOC_1_{region}", $"CMOC_4_{region}"];
+        List<string> appNums = ["0000000c", "0000000d"];
 
         PatchWC24Channel("cmoc", $"{channelTitle}", 512, region, channelID, patches, appNums);
 
