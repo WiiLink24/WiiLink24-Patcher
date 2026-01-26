@@ -13,9 +13,9 @@ using System.Globalization;
 public class MainClass
 {
     //// Build Info ////
-    public static readonly string version = "v2.1.2";
+    public static readonly string version = "v2.1.3";
     public static readonly string copyrightYear = DateTime.Now.Year.ToString();
-    public static readonly DateTime buildDateTime = new DateTime(2025, 12, 29, 18, 48, 50); // Year, Month, Day, Hour, Minute, Second
+    public static readonly DateTime buildDateTime = new DateTime(2026, 01, 26, 17, 47, 40); // Year, Month, Day, Hour, Minute, Second
     public static readonly string buildDate = buildDateTime.ToLongDateString();
     public static readonly string buildTime = buildDateTime.ToShortTimeString();
     public static string? sdcard = SdClass.DetectRemovableDrive;

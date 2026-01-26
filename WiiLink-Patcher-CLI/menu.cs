@@ -272,27 +272,10 @@ public class MenuClass
             // Please proceed text
             if (MainClass.extraChannels_selection.Count == 0)
             {
-                switch (MainClass.platformType)
-                {
-                    case MainClass.Platform.Wii:
-                        string pleaseProceedWii = MainClass.patcherLang == "en-US"
-                            ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://wiilink.ca/guide/wii/#section-ii---installing-wads-and-patching-wii-mail[/]"
-                            : $"{MainClass.localizedText?["Finished"]?["pleaseProceed"]?["Wii"]}";
-                        AnsiConsole.MarkupLine($"{pleaseProceedWii}\n");
-                        break;
-                    case MainClass.Platform.vWii:
-                        string pleaseProceedvWii = MainClass.patcherLang == "en-US"
-                            ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://wiilink.ca/guide/vwii/#section-iii---installing-wads-and-patching-wii-mail[/]"
-                            : $"{MainClass.localizedText?["Finished"]?["pleaseProceed"]?["vWii"]}";
-                        AnsiConsole.MarkupLine($"{pleaseProceedvWii}\n");
-                        break;
-                    case MainClass.Platform.Dolphin:
-                        string pleaseProceedDolphin = MainClass.patcherLang == "en-US"
-                            ? "Please proceed with the tutorial that you can find on [bold springgreen2_1 link]https://wiilink.ca/guide/dolphin/#section-ii---installing-wads[/]"
-                            : $"{MainClass.localizedText?["Finished"]?["pleaseProceed"]?["Dolphin"]}";
-                        AnsiConsole.MarkupLine($"{pleaseProceedDolphin}\n");
-                        break;
-                }
+                string pleaseProceed = MainClass.patcherLang == "en-US"
+                    ? "Please proceed with the tutorial that you can find at [bold springgreen2_1 link]https://wiilink.ca/guide/wads[/]"
+                    : $"{MainClass.localizedText?["Finished"]?["pleaseProceed"]?["Wii"]}";
+                AnsiConsole.MarkupLine($"{pleaseProceed}\n");
             }
             else
             {
