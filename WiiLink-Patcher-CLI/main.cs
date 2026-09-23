@@ -443,8 +443,9 @@ public class MainClass
         // Attempt to automatically set language, showing a prompt to ensure it was correctly detected
         LanguageClass.AutoSetLang();
 
-        // Check latest version if not on a nightly build or release candidate
-        if (!version.Contains("Nightly") && !version.Contains("RC"))
+        // Check latest version if not on a nightly build, release candidate, or if it hasn't been added by a package manager.
+        bool isManaged = File.Exists(Path.Combine(AppContext.BaseDirectory, ".managed"));
+        if (!version.Contains("Nightly") && !version.Contains("RC") && !isManaged)
             await CheckForUpdates(version);
 
         // Go to the main menu
