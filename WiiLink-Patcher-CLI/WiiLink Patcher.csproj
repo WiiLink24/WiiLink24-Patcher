@@ -10,7 +10,7 @@
     <Title>WiiLink Patcher CLI</Title>
     <Authors>WiiLink</Authors>
     <Product>WiiLink Patcher (CLI)</Product>
-    <Copyright>2025 WiiLink</Copyright>
+    <Copyright>2026 WiiLink</Copyright>
     <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
     <RuntimeIdentifiers>win-x64;win-x86;win-arm64;linux-x64;linux-arm64;linux-arm;osx-arm64;osx-x64</RuntimeIdentifiers>
     <PublishSingleFile>true</PublishSingleFile>
@@ -21,18 +21,6 @@
 
   <ItemGroup>
     <Content Include="WiiLink Icon.ico" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Spectre.Console" Version="0.47.0" />
-    <PackageReference Include="VCDiff" Version="4.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="libWiiSharp">
-      <HintPath>WiiLink-Patcher-CLI\libWiiSharp.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>
