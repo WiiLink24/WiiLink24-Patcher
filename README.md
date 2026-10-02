@@ -1,4 +1,11 @@
-# WiiLink Patcher
+# WiiLink Patcher CLI
+
+> [!IMPORTANT]
+> This application has been discontinued! To install WiiLink going forwards, use our [GUI Patcher](https://github.com/WiiLink24/WiiLink-Patcher-GUI/releases/latest).
+
+---
+
+# Original README
 
 WiiLink Patcher is a program made for easier installation of WiiLink. With it, you can just sit back and relax while the patcher does everything for you.
 
